@@ -14,8 +14,8 @@ import time
 import urllib.parse
 import shutil
 
-# 项目根目录（本文件在 看板/ 下，上一级是 AI开发规范/，再上一级是项目根目录）
-BASE_DIR = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+# 项目根目录（本文件在 看板/ 下，上一级是项目根目录 cyq_UI）
+BASE_DIR = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 def safe_path(path):
     """安全检查：确保路径在项目目录内，防止越权访问"""
@@ -40,7 +40,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
 
     def __init__(self, *args, **kwargs):
         # 静态文件根目录 = 看板/
-        self.directory = os.path.join(BASE_DIR, 'AI开发规范', '看板')
+        self.directory = os.path.join(BASE_DIR, '看板')
         super().__init__(*args, **kwargs, directory=self.directory)
 
     def end_headers(self):
