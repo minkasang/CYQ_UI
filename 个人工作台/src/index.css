@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+/* 默认暗色背景（防止首次加载闪烁） */
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 文本截断 */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Markdown 样式（用于日记预览） */
+.prose {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.prose h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 0.6em 0 0.4em;
+  color: white;
+}
+
+.prose h2 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin: 0.5em 0 0.3em;
+  color: white;
+}
+
+.prose h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.4em 0 0.3em;
+  color: white;
+}
+
+.prose p {
+  margin: 0.4em 0;
+  line-height: 1.7;
+}
+
+.prose ul, .prose ol {
+  margin: 0.4em 0;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin: 0.2em 0;
+}
+
+.prose blockquote {
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding-left: 1em;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0.6em 0;
+}
+
+.prose code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.prose pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.8em;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose a {
+  color: #5ac8fa;
+  text-decoration: underline;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 1em 0;
+}
