@@ -6,13 +6,22 @@ import type { GlassConfig, AppSettings } from '../types'
 import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage'
 
 const DEFAULT_GLASS: GlassConfig = {
-  mode: 'standard',
-  displacementScale: 70,
-  blurAmount: 0.4,
-  saturation: 140,
-  aberrationIntensity: 2,
-  elasticity: 0.15,
-  cornerRadius: 16,
+  refraction: 0.69,
+  chromAberration: 0.05,
+  fresnel: 1.0,
+  specular: 0.0,
+  cornerRadius: 24,
+  zRadius: 40,
+  opacity: 1.0,
+  saturation: 0.0,
+  brightness: 0.0,
+  tintStrength: 0.0,
+  shadowOpacity: 0.30,
+  shadowSpread: 10,
+  shadowOffsetY: 1,
+  blurAmount: 0.0,
+  distortion: 0.0,
+  edgeHighlight: 0.05,
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -38,8 +47,38 @@ interface SettingsState {
   resetAll: () => void
 }
 
+// 安全加载设置
+function loadSettings(): AppSettings {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS)
+    if (!raw) return DEFAULT_SETTINGS
+    
+    const saved = JSON.parse(raw)
+    
+    // 检查是否是旧格式（包含 mode 字段）
+    if (saved.glass && 'mode' in saved.glass) {
+      // 旧格式，直接使用默认值
+      console.log('[settings] 检测到旧格式设置，使用默认玻璃参数')
+      return DEFAULT_SETTINGS
+    }
+    
+    // 合并保存的设置和默认设置
+    return {
+      ...DEFAULT_SETTINGS,
+      ...saved,
+      glass: {
+        ...DEFAULT_GLASS,
+        ...(saved.glass || {}),
+      },
+    }
+  } catch (err) {
+    console.error('[settings] 加载设置失败:', err)
+    return DEFAULT_SETTINGS
+  }
+}
+
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  settings: loadFromStorage<AppSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS),
+  settings: loadSettings(),
 
   setGlass: (patch) => {
     const newGlass = { ...get().settings.glass, ...patch }

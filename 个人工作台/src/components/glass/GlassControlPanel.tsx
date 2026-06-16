@@ -1,20 +1,17 @@
-// 玻璃参数调优面板
-// 给 AI 的话：参考看板项目的 🎛 调参功能，用户可实时调节
+// 液态玻璃参数调优面板
+// 给 AI 的话：实时调节液态玻璃的所有参数，参考 liquid-glass.ts 中的 DEFAULTS
 
 import { useSettingsStore } from '../../store/useSettingsStore'
-import { GlassPanel } from './GlassPanel'
 import { RotateCcw } from 'lucide-react'
-import type { GlassMode } from '../../types'
-
-const MODES: { value: GlassMode; label: string; desc: string }[] = [
-  { value: 'standard', label: '标准', desc: '通用，兼容性好' },
-  { value: 'polar', label: '极坐标', desc: '圆形，中心扩散' },
-  { value: 'prominent', label: '强烈', desc: '凸起明显' },
-  { value: 'shader', label: '动态', desc: '着色器计算' },
-]
+import type { LiquidGlass } from '../../lib/liquid-glass'
 
 interface GlassControlPanelProps {
   onClose?: () => void
+}
+
+// 获取全局 LiquidGlass 实例
+function getLG(): LiquidGlass | undefined {
+  return (window as any).__lg
 }
 
 export function GlassControlPanel({ onClose }: GlassControlPanelProps) {
@@ -22,26 +19,40 @@ export function GlassControlPanel({ onClose }: GlassControlPanelProps) {
   const setGlass = useSettingsStore(s => s.setGlass)
   const resetGlass = useSettingsStore(s => s.resetGlass)
 
+  // 更新参数并实时应用到玻璃面板
+  const updateParam = (key: string, value: number) => {
+    setGlass({ [key]: value } as any)
+    // 立即应用到所有面板
+    const lg = getLG()
+    if (lg) {
+      lg.updateConfig({ [key]: value } as any)
+    }
+  }
+
+  // 重置参数
+  const handleReset = () => {
+    resetGlass()
+    // 立即应用到所有面板
+    const lg = getLG()
+    if (lg) {
+      lg.updateConfig(useSettingsStore.getState().settings.glass)
+    }
+  }
+
   return (
-    <GlassPanel
-      cornerRadius={20}
-      blurAmount={20}
-      padding="20px"
+    <div
+      className="fixed top-20 right-4 w-80 max-h-[calc(100vh-120px)] overflow-auto rounded-2xl p-5 z-50"
       style={{
-        position: 'fixed',
-        top: 80,
-        right: 20,
-        width: 320,
-        maxHeight: 'calc(100vh - 100px)',
-        overflow: 'auto',
-        zIndex: 100,
+        background: 'rgba(30, 30, 40, 0.85)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-white">🎛 玻璃调参</h3>
+        <h3 className="text-base font-semibold text-white">🎛 液态玻璃调参</h3>
         <div className="flex gap-2">
           <button
-            onClick={resetGlass}
+            onClick={handleReset}
             className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white/80"
             title="重置为默认"
           >
@@ -58,83 +69,61 @@ export function GlassControlPanel({ onClose }: GlassControlPanelProps) {
         </div>
       </div>
 
-      {/* 模式选择 */}
+      {/* 核心光学参数 */}
       <div className="mb-4">
-        <label className="text-xs text-white/70 mb-1.5 block">变形模式</label>
-        <div className="grid grid-cols-4 gap-1.5">
-          {MODES.map(m => (
-            <button
-              key={m.value}
-              onClick={() => setGlass({ mode: m.value })}
-              className={`text-xs py-1.5 px-1 rounded transition ${
-                glass.mode === m.value
-                  ? 'bg-blue-500/40 text-white border border-blue-400/50'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10 border border-transparent'
-              }`}
-              title={m.desc}
-            >
-              {m.label}
-            </button>
-          ))}
+        <h4 className="text-xs text-white/50 mb-2 uppercase tracking-wider">核心光学</h4>
+        <div className="space-y-2">
+          <ParamSlider label="折射强度" value={glass.refraction} min={0} max={2} step={0.01} onChange={v => updateParam('refraction', v)} />
+          <ParamSlider label="色散 (色差)" value={glass.chromAberration} min={0} max={0.5} step={0.01} onChange={v => updateParam('chromAberration', v)} />
+          <ParamSlider label="菲涅尔 (边缘反光)" value={glass.fresnel} min={0} max={3} step={0.01} onChange={v => updateParam('fresnel', v)} />
+          <ParamSlider label="高光强度" value={glass.specular} min={0} max={2} step={0.01} onChange={v => updateParam('specular', v)} />
         </div>
       </div>
 
-      {/* 滑块参数 */}
-      <div className="space-y-3">
-        <ParamSlider
-          label="变形强度"
-          value={glass.displacementScale}
-          min={0}
-          max={200}
-          step={1}
-          onChange={v => setGlass({ displacementScale: v })}
-        />
-        <ParamSlider
-          label="模糊程度"
-          value={glass.blurAmount}
-          min={0}
-          max={2}
-          step={0.05}
-          onChange={v => setGlass({ blurAmount: v })}
-        />
-        <ParamSlider
-          label="饱和度"
-          value={glass.saturation}
-          min={0}
-          max={300}
-          step={5}
-          onChange={v => setGlass({ saturation: v })}
-        />
-        <ParamSlider
-          label="色差强度"
-          value={glass.aberrationIntensity}
-          min={0}
-          max={10}
-          step={0.5}
-          onChange={v => setGlass({ aberrationIntensity: v })}
-        />
-        <ParamSlider
-          label="弹性系数"
-          value={glass.elasticity}
-          min={0}
-          max={1}
-          step={0.05}
-          onChange={v => setGlass({ elasticity: v })}
-        />
-        <ParamSlider
-          label="圆角半径"
-          value={glass.cornerRadius}
-          min={0}
-          max={50}
-          step={1}
-          onChange={v => setGlass({ cornerRadius: v })}
-        />
+      {/* 外观参数 */}
+      <div className="mb-4">
+        <h4 className="text-xs text-white/50 mb-2 uppercase tracking-wider">外观</h4>
+        <div className="space-y-2">
+          <ParamSlider label="圆角半径" value={glass.cornerRadius} min={0} max={100} step={1} onChange={v => updateParam('cornerRadius', v)} />
+          <ParamSlider label="Z轴厚度 (立体感)" value={glass.zRadius} min={0} max={100} step={1} onChange={v => updateParam('zRadius', v)} />
+          <ParamSlider label="不透明度" value={glass.opacity} min={0} max={1} step={0.01} onChange={v => updateParam('opacity', v)} />
+        </div>
+      </div>
+
+      {/* 颜色调整 */}
+      <div className="mb-4">
+        <h4 className="text-xs text-white/50 mb-2 uppercase tracking-wider">颜色</h4>
+        <div className="space-y-2">
+          <ParamSlider label="饱和度" value={glass.saturation} min={-1} max={1} step={0.01} onChange={v => updateParam('saturation', v)} />
+          <ParamSlider label="亮度" value={glass.brightness} min={-1} max={1} step={0.01} onChange={v => updateParam('brightness', v)} />
+          <ParamSlider label="色调强度" value={glass.tintStrength} min={0} max={1} step={0.01} onChange={v => updateParam('tintStrength', v)} />
+        </div>
+      </div>
+
+      {/* 阴影参数 */}
+      <div className="mb-4">
+        <h4 className="text-xs text-white/50 mb-2 uppercase tracking-wider">阴影</h4>
+        <div className="space-y-2">
+          <ParamSlider label="阴影透明度" value={glass.shadowOpacity} min={0} max={1} step={0.01} onChange={v => updateParam('shadowOpacity', v)} />
+          <ParamSlider label="阴影扩散" value={glass.shadowSpread} min={0} max={40} step={1} onChange={v => updateParam('shadowSpread', v)} />
+          <ParamSlider label="阴影垂直偏移" value={glass.shadowOffsetY} min={-20} max={20} step={1} onChange={v => updateParam('shadowOffsetY', v)} />
+        </div>
+      </div>
+
+      {/* 其他效果 */}
+      <div className="mb-4">
+        <h4 className="text-xs text-white/50 mb-2 uppercase tracking-wider">其他</h4>
+        <div className="space-y-2">
+          <ParamSlider label="背景模糊" value={glass.blurAmount} min={0} max={30} step={0.5} onChange={v => updateParam('blurAmount', v)} />
+          <ParamSlider label="扭曲/噪点" value={glass.distortion} min={0} max={1} step={0.01} onChange={v => updateParam('distortion', v)} />
+          <ParamSlider label="边缘高亮" value={glass.edgeHighlight} min={0} max={1} step={0.01} onChange={v => updateParam('edgeHighlight', v)} />
+        </div>
       </div>
 
       <p className="text-xs text-white/50 mt-4 leading-relaxed">
-        💡 提示：参数自动保存到本地。Safari/Firefox 下位移效果不可见，自动降级为毛玻璃。
+        💡 提示：拖动滑块实时预览效果，参数自动保存。
       </p>
-    </GlassPanel>
+    </div>
   )
 }
 
@@ -148,11 +137,12 @@ interface ParamSliderProps {
 }
 
 function ParamSlider({ label, value, min, max, step, onChange }: ParamSliderProps) {
+  const decimals = step < 1 ? 2 : 0
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs text-white/80">{label}</span>
-        <span className="text-xs text-white/60 font-mono">{value.toFixed(step < 1 ? 2 : 0)}</span>
+        <span className="text-xs text-white/60 font-mono">{value.toFixed(decimals)}</span>
       </div>
       <input
         type="range"

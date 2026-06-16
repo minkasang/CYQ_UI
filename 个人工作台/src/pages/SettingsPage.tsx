@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import { AlertTriangle, Database, Trash2, Download, Upload } from 'lucide-react'
 import { APIConfig } from '../components/ai/APIConfig'
-import { GlassControlPanel } from '../components/glass/GlassControlPanel'
 import { clearAllStorage } from '../utils/storage'
 import { downloadExport, importData, readFileAsText } from '../utils/export'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
@@ -81,7 +80,6 @@ export function SettingsPage() {
         <p className="text-xs text-white/60 mb-3">
           点击顶部「玻璃调参」按钮可实时调节参数
         </p>
-        <GlassControlPanel />
       </div>
 
       {/* 数据管理 */}

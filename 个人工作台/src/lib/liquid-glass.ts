@@ -636,6 +636,16 @@ export class LiquidGlass {
     this.panels.push({ el, canvas, config: { ...DEFAULTS, ...overrides }, _forceFrames: 3 });
   }
 
+  /**
+   * 更新所有面板的配置参数（用于调参面板实时调节）
+   */
+  updateConfig(overrides: LiquidGlassConfig) {
+    for (const panel of this.panels) {
+      panel.config = { ...panel.config, ...overrides };
+      panel._forceFrames = 3; // 强制重渲染
+    }
+  }
+
   start() {
     const loop = () => {
       this.render();

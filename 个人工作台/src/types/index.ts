@@ -63,17 +63,39 @@ export interface WallpaperState {
   history: Wallpaper[]
 }
 
-// ============== 玻璃效果配置 ==============
-export type GlassMode = 'standard' | 'polar' | 'prominent' | 'shader'
-
+// ============== 液态玻璃效果配置 ==============
+// 对应 liquid-glass.ts 中的 DEFAULTS
 export interface GlassConfig {
-  mode: GlassMode
-  displacementScale: number
-  blurAmount: number
-  saturation: number
-  aberrationIntensity: number
-  elasticity: number
-  cornerRadius: number
+  // 核心光学参数
+  refraction: number        // 折射强度 (0-2)
+  chromAberration: number   // 色散/色差 (0-0.2)
+  fresnel: number          // 菲涅尔/边缘反光 (0-2)
+  specular: number         // 高光强度 (0-1)
+  
+  // 外观参数
+  cornerRadius: number     // 圆角半径 (0-100)
+  zRadius: number          // Z轴厚度/立体感 (0-80)
+  opacity: number          // 不透明度 (0-1)
+  
+  // 颜色调整
+  saturation: number       // 饱和度调整 (-1-1)
+  brightness: number       // 亮度调整 (-0.5-0.5)
+  tintStrength: number     // 色调强度 (0-1)
+  
+  // 阴影参数
+  shadowOpacity: number    // 阴影透明度 (0-1)
+  shadowSpread: number     // 阴影扩散 (0-30)
+  shadowOffsetY: number    // 阴影垂直偏移 (-10-10)
+  
+  // 其他效果
+  blurAmount: number       // 背景模糊 (0-5)
+  distortion: number       // 扭曲/噪点 (0-0.5)
+  edgeHighlight: number    // 边缘高亮 (0-0.2)
+  
+  // 特殊模式（可选）
+  floating?: boolean       // 悬浮效果
+  button?: boolean         // 按钮模式
+  bevelMode?: number       // 倒角模式 (0-1)
 }
 
 // ============== 设置 ==============
