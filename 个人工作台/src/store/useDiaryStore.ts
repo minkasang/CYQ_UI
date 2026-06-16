@@ -1,14 +1,17 @@
 // 日记 Store
-// 给 AI 的话：使用 Zustand 管理日记状态，自动持久化到 localStorage
+// 使用文件存储实现数据持久化，调用 server.py API 读写本地文件
 
 import { create } from 'zustand'
 import type { Diary } from '../types'
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage'
+import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 import { getToday } from '../utils/date'
 
 interface DiaryState {
   diaries: Diary[]
   currentId: string | null
+  loading: boolean
+  loaded: boolean
+  loadDiaries: () => Promise<void>
   setCurrent: (id: string | null) => void
   createDiary: (date?: string) => Diary
   updateDiary: (id: string, patch: Partial<Diary>) => void
@@ -21,8 +24,23 @@ function genId(): string {
 }
 
 export const useDiaryStore = create<DiaryState>((set, get) => ({
-  diaries: loadFromStorage<Diary[]>(STORAGE_KEYS.DIARIES, []),
+  diaries: [],
   currentId: null,
+  loading: false,
+  loaded: false,
+
+  // 从文件加载日记数据
+  loadDiaries: async () => {
+    if (get().loaded || get().loading) return
+    set({ loading: true })
+    try {
+      const diaries = await loadFromFile<Diary[]>(FILE_KEYS.DIARIES, [])
+      set({ diaries, loading: false, loaded: true })
+    } catch (err) {
+      console.error('[DiaryStore] 加载失败:', err)
+      set({ loading: false, loaded: true })
+    }
+  },
 
   setCurrent: (id) => set({ currentId: id }),
 
@@ -43,7 +61,7 @@ export const useDiaryStore = create<DiaryState>((set, get) => ({
     }
     const newDiaries = [diary, ...get().diaries]
     set({ diaries: newDiaries, currentId: diary.id })
-    saveToStorage(STORAGE_KEYS.DIARIES, newDiaries)
+    saveToFile(FILE_KEYS.DIARIES, newDiaries)
     return diary
   },
 
@@ -52,13 +70,13 @@ export const useDiaryStore = create<DiaryState>((set, get) => ({
       d.id === id ? { ...d, ...patch, updatedAt: Date.now() } : d
     )
     set({ diaries: newDiaries })
-    saveToStorage(STORAGE_KEYS.DIARIES, newDiaries)
+    saveToFile(FILE_KEYS.DIARIES, newDiaries)
   },
 
   deleteDiary: (id) => {
     const newDiaries = get().diaries.filter(d => d.id !== id)
     set({ diaries: newDiaries, currentId: null })
-    saveToStorage(STORAGE_KEYS.DIARIES, newDiaries)
+    saveToFile(FILE_KEYS.DIARIES, newDiaries)
   },
 
   getDiaryByDate: (date) => {

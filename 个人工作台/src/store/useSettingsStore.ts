@@ -3,7 +3,7 @@
 
 import { create } from 'zustand'
 import type { GlassConfig, AppSettings } from '../types'
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage'
+import { saveToStorage, STORAGE_KEYS } from '../utils/storage'
 
 const DEFAULT_GLASS: GlassConfig = {
   refraction: 0.69,

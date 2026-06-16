@@ -1,12 +1,20 @@
 // 待办管理页面
+import { useEffect } from 'react'
 import { TodoList } from '../components/todo/TodoList'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
 import { useWallpaperStore } from '../store/useWallpaperStore'
+import { useTodoStore } from '../store/useTodoStore'
 
 export function TodoPage() {
   const wallpaper = useWallpaperStore(s => s.current)
   const bgUrl = wallpaper.type === 'url' || wallpaper.type === 'local' ? wallpaper.value : undefined
   const { registerPanel } = useLiquidGlass(bgUrl)
+  const loadTodos = useTodoStore(s => s.loadTodos)
+
+  // 加载待办数据
+  useEffect(() => {
+    loadTodos()
+  }, [loadTodos])
 
   return (
     <div className="max-w-3xl mx-auto">

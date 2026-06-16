@@ -1,14 +1,17 @@
 // 待办 Store
-// 给 AI 的话：使用 Zustand 管理待办状态，自动持久化到 localStorage
+// 使用文件存储实现数据持久化，调用 server.py API 读写本地文件
 
 import { create } from 'zustand'
 import type { Todo, TodoCategory, TodoPriority } from '../types'
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage'
+import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 import { getToday, startOfToday } from '../utils/date'
 
 interface TodoState {
   todos: Todo[]
   filter: 'all' | 'today' | 'pending' | 'completed'
+  loading: boolean
+  loaded: boolean
+  loadTodos: () => Promise<void>
   addTodo: (data: Omit<Todo, 'id' | 'createdAt' | 'completed'>) => void
   updateTodo: (id: string, patch: Partial<Todo>) => void
   deleteTodo: (id: string) => void
@@ -23,8 +26,23 @@ function genId(): string {
 }
 
 export const useTodoStore = create<TodoState>((set, get) => ({
-  todos: loadFromStorage<Todo[]>(STORAGE_KEYS.TODOS, []),
+  todos: [],
   filter: 'today',
+  loading: false,
+  loaded: false,
+
+  // 从文件加载待办数据
+  loadTodos: async () => {
+    if (get().loaded || get().loading) return
+    set({ loading: true })
+    try {
+      const todos = await loadFromFile<Todo[]>(FILE_KEYS.TODOS, [])
+      set({ todos, loading: false, loaded: true })
+    } catch (err) {
+      console.error('[TodoStore] 加载失败:', err)
+      set({ loading: false, loaded: true })
+    }
+  },
 
   addTodo: (data) => {
     const todo: Todo = {
@@ -35,19 +53,19 @@ export const useTodoStore = create<TodoState>((set, get) => ({
     }
     const newTodos = [todo, ...get().todos]
     set({ todos: newTodos })
-    saveToStorage(STORAGE_KEYS.TODOS, newTodos)
+    saveToFile(FILE_KEYS.TODOS, newTodos)
   },
 
   updateTodo: (id, patch) => {
     const newTodos = get().todos.map(t => t.id === id ? { ...t, ...patch } : t)
     set({ todos: newTodos })
-    saveToStorage(STORAGE_KEYS.TODOS, newTodos)
+    saveToFile(FILE_KEYS.TODOS, newTodos)
   },
 
   deleteTodo: (id) => {
     const newTodos = get().todos.filter(t => t.id !== id)
     set({ todos: newTodos })
-    saveToStorage(STORAGE_KEYS.TODOS, newTodos)
+    saveToFile(FILE_KEYS.TODOS, newTodos)
   },
 
   toggleComplete: (id) => {
@@ -61,7 +79,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
       }
     })
     set({ todos: newTodos })
-    saveToStorage(STORAGE_KEYS.TODOS, newTodos)
+    saveToFile(FILE_KEYS.TODOS, newTodos)
   },
 
   setFilter: (filter) => set({ filter }),
@@ -69,7 +87,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   clearCompleted: () => {
     const newTodos = get().todos.filter(t => !t.completed)
     set({ todos: newTodos })
-    saveToStorage(STORAGE_KEYS.TODOS, newTodos)
+    saveToFile(FILE_KEYS.TODOS, newTodos)
   },
 }))
 

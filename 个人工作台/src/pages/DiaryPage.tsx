@@ -1,13 +1,21 @@
 // 日记页面
+import { useEffect } from 'react'
 import { DiaryList } from '../components/diary/DiaryList'
 import { DiaryEditor } from '../components/diary/DiaryEditor'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
 import { useWallpaperStore } from '../store/useWallpaperStore'
+import { useDiaryStore } from '../store/useDiaryStore'
 
 export function DiaryPage() {
   const wallpaper = useWallpaperStore(s => s.current)
   const bgUrl = wallpaper.type === 'url' || wallpaper.type === 'local' ? wallpaper.value : undefined
   const { registerPanel } = useLiquidGlass(bgUrl)
+  const loadDiaries = useDiaryStore(s => s.loadDiaries)
+
+  // 加载日记数据
+  useEffect(() => {
+    loadDiaries()
+  }, [loadDiaries])
 
   return (
     <div className="max-w-6xl mx-auto">
