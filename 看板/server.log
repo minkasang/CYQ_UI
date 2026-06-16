@@ -4,3 +4,55 @@
 [2026-06-16 18:16:53] READ  个人工作台/data/todos.json
 [2026-06-16 18:16:53] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0/data/todos.json HTTP/1.1" 200 -
 [2026-06-16 18:18:32] 127.0.0.1 "GET /api/list?dir= HTTP/1.1" 200 -
+[2026-06-16 18:24:46] 127.0.0.1 "OPTIONS /api/write HTTP/1.1" 204 -
+[2026-06-16 18:24:46] WRITE 个人工作台/data/todos.json (171 bytes)
+[2026-06-16 18:24:46] 127.0.0.1 "POST /api/write HTTP/1.1" 200 -
+[2026-06-16 18:26:07] READ  个人工作台/data/todos.json
+[2026-06-16 18:26:07] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0/data/todos.json HTTP/1.1" 200 -
+[2026-06-16 18:27:03] READ  个人工作台/data/todos.json
+[2026-06-16 18:27:03] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:27:03] READ  个人工作台/data/diaries.json
+[2026-06-16 18:27:04] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:27:04] READ  个人工作台/data/todos.json
+[2026-06-16 18:27:04] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:27:04] READ  个人工作台/data/diaries.json
+[2026-06-16 18:27:04] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:30:30] READ  个人工作台/data/todos.json
+[2026-06-16 18:30:30] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:30:30] READ  个人工作台/data/diaries.json
+[2026-06-16 18:30:30] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:30:33] READ  个人工作台/data/todos.json
+[2026-06-16 18:30:33] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:30:33] READ  个人工作台/data/diaries.json
+[2026-06-16 18:30:33] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:30:53] 127.0.0.1 "OPTIONS /api/write HTTP/1.1" 204 -
+[2026-06-16 18:30:53] WRITE 个人工作台/data/todos.json (343 bytes)
+[2026-06-16 18:30:53] 127.0.0.1 "POST /api/write HTTP/1.1" 200 -
+[2026-06-16 18:30:58] READ  个人工作台/data/todos.json
+[2026-06-16 18:30:58] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:30:58] READ  个人工作台/data/diaries.json
+[2026-06-16 18:30:58] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:31:09] READ  个人工作台/data/todos.json
+[2026-06-16 18:31:09] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:31:09] READ  个人工作台/data/diaries.json
+[2026-06-16 18:31:09] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:36:06] READ  个人工作台/data/todos.json
+[2026-06-16 18:36:06] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:36:06] READ  个人工作台/data/diaries.json
+[2026-06-16 18:36:06] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:36:09] READ  个人工作台/data/todos.json
+[2026-06-16 18:36:09] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:36:09] READ  个人工作台/data/diaries.json
+[2026-06-16 18:36:09] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:45:27] READ  个人工作台/data/todos.json
+[2026-06-16 18:45:27] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:45:27] READ  个人工作台/data/diaries.json
+[2026-06-16 18:45:27] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:46:35] READ  个人工作台/data/todos.json
+[2026-06-16 18:46:35] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:46:35] READ  个人工作台/data/diaries.json
+[2026-06-16 18:46:35] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -
+[2026-06-16 18:52:03] READ  个人工作台/data/todos.json
+[2026-06-16 18:52:03] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Ftodos.json HTTP/1.1" 200 -
+[2026-06-16 18:52:03] READ  个人工作台/data/diaries.json
+[2026-06-16 18:52:03] 127.0.0.1 "GET /api/read?path=%E4%B8%AA%E4%BA%BA%E5%B7%A5%E4%BD%9C%E5%8F%B0%2Fdata%2Fdiaries.json HTTP/1.1" 200 -

@@ -40,12 +40,20 @@ function useScrollAnimation(threshold = 0.2) {
 export function HomePage() {
   const stats = useTodoStore(selectTodoStats)
   const diaries = useDiaryStore(selectSortedDiaries)
+  const loadTodos = useTodoStore(s => s.loadTodos)
+  const loadDiaries = useDiaryStore(s => s.loadDiaries)
   const today = getToday()
   const todayDiary = diaries.find(d => d.date === today)
   const wallpaper = useWallpaperStore(s => s.current)
   const bgUrl = wallpaper.type === 'url' || wallpaper.type === 'local' ? wallpaper.value : undefined
 
   const { registerPanel } = useLiquidGlass(bgUrl)
+
+  // 加载待办和日记数据
+  useEffect(() => {
+    loadTodos()
+    loadDiaries()
+  }, [loadTodos, loadDiaries])
 
   // 各个 section 的滚动动画
   const welcomeAnim = useScrollAnimation(0.3)
