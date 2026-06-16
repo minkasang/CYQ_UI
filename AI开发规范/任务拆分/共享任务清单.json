@@ -1,0 +1,287 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-14",
+  "description": "项目共享任务清单 - 双轨制：本文件为数据源，Markdown版本为只读备份",
+  
+  "aiTasks": [
+    {
+      "id": 1,
+      "name": "深读 mimihansa 全部40+设计文档，逐模块提炼核心设计",
+      "category": "本系统",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "大（分多次）",
+      "detailFile": null,
+      "lastUpdate": "2026-06-06 全部57份md已读完，审查报告已输出"
+    },
+    {
+      "id": 2,
+      "name": "深读 Ensemble Engine 全部源码，提炼社会动力学公式",
+      "category": "本系统",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-06 6个核心JS全部读毕。结论：trait只是布尔标签非5维模型，社会引擎与性格维度数无关"
+    },
+    {
+      "id": 3,
+      "name": "深读 Prosperity Wars 源码，提炼经济供需算法",
+      "category": "本系统",
+      "status": "移交",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-06 已移交至独立拆解项目，主项目不再直接接触GPL源码"
+    },
+    {
+      "id": 4,
+      "name": "深读 LPC Spritesheet 结构，了解角色生成能力",
+      "category": "本系统",
+      "status": "待开始",
+      "priority": "中",
+      "estimatedWork": "小",
+      "detailFile": null,
+      "lastUpdate": null
+    },
+    {
+      "id": 5,
+      "name": "基于4个开源项目 + mimihansa，逐模块输出融合分析报告 + 规范文档",
+      "category": "本系统",
+      "status": "进行中",
+      "priority": "高",
+      "estimatedWork": "大",
+      "detailFile": null,
+      "lastUpdate": "2026-06-06 融合分析7/8完成；规范文档6/6完成(性格+社会动力学+决策+认知+生理+技能)"
+    },
+    {
+      "id": 6,
+      "name": "搭建 Unity 最小可运行骨架项目",
+      "category": "本系统",
+      "status": "待开始",
+      "priority": "中",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": null
+    },
+    {
+      "id": 7,
+      "name": "定期检查规范文档交叉引用一致性",
+      "category": "框架",
+      "status": "需定期执行",
+      "priority": "低",
+      "estimatedWork": "小",
+      "detailFile": null,
+      "lastUpdate": "2026-06-06 已修一轮"
+    },
+    {
+      "id": 8,
+      "name": "每轮对话结束前扫视本文件，同步更新状态",
+      "category": "框架",
+      "status": "持续",
+      "priority": "高",
+      "estimatedWork": null,
+      "detailFile": null,
+      "lastUpdate": null
+    },
+    {
+      "id": 9,
+      "name": "监督拆解项目完成 GPL 源码→脱敏规范的 Clean Room 全流程",
+      "category": "隔离项目",
+      "status": "待对方完成",
+      "priority": "高",
+      "estimatedWork": null,
+      "detailFile": null,
+      "lastUpdate": "2026-06-06 用户正在用另一个AI建立独立拆解项目，完成后需检查主项目残留"
+    },
+    {
+      "id": 10,
+      "name": "补充现有7份规范的致命漏洞 + 新增3份世界基础设施规范",
+      "category": "技术规范补洞",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "大",
+      "detailFile": "技术规范补洞_任务拆分.md",
+      "lastUpdate": "2026-06-06 新增3份规范(时间+地图+物品)，补洞4份(决策+社会动力学+系统集成+认知)，新增2份(对话+NPC生命周期)"
+    },
+    {
+      "id": 11,
+      "name": "基于mimihansa 57份文档+TotalAI源码的审查，补三个优先级规范",
+      "category": "技术规范深审",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "大",
+      "detailFile": "技术规范深审_任务拆分.md",
+      "lastUpdate": "2026-06-06 三批12份新规范全部完成，现有规范补洞待执行"
+    },
+    {
+      "id": 12,
+      "name": "创建独立感知系统规范（含人类+动物感知参数、天气影响、潜行机制）",
+      "category": "感知系统规范",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-07 已创建 `技术规范/感知系统规范.md`"
+    },
+    {
+      "id": 13,
+      "name": "设计动物叫声/声音事件系统（警报、求偶、领地、狩猎信号）",
+      "category": "动物叫声系统",
+      "status": "待开始",
+      "priority": "中",
+      "estimatedWork": "小",
+      "detailFile": null,
+      "lastUpdate": "2026-06-07 已预留设计草案在感知系统规范§8，待实现"
+    },
+    {
+      "id": 14,
+      "name": "修复文字毛玻璃衬底开关无响应问题",
+      "category": "看板系统",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "小",
+      "detailFile": "看板优化任务拆分.md",
+      "lastUpdate": "2026-06-14 随Bug修复一起解决——移除卡片glass类+背景透明化，文字衬底问题已不存在"
+    },
+    {
+      "id": 15,
+      "name": "玻璃边缘渲染质量优化",
+      "category": "看板系统",
+      "status": "待开始",
+      "priority": "中",
+      "estimatedWork": "小",
+      "detailFile": "看板优化任务拆分.md",
+      "lastUpdate": "2026-06-14 特定壁纸下边缘有瑕疵"
+    },
+    {
+      "id": 16,
+      "name": "任务追踪可视化功能",
+      "category": "看板系统",
+      "status": "待开始",
+      "priority": "中",
+      "estimatedWork": "中",
+      "detailFile": "看板优化任务拆分.md",
+      "lastUpdate": "2026-06-14 需求待确认"
+    },
+    {
+      "id": 17,
+      "name": "修复液态玻璃6个核心Bug（底黑/效果消失/白条/背景遮挡/不跟随/壁纸偏移）",
+      "category": "看板系统",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "大",
+      "detailFile": "看板/bug修复记录/液态玻璃Bug修复记录.json",
+      "lastUpdate": "2026-06-14 6个Bug全部修复，详见bug修复记录"
+    },
+    {
+      "id": 18,
+      "name": "新增液态玻璃调参面板（19个参数实时调节，16滑块+2开关+恢复默认）",
+      "category": "看板系统",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-14 调参面板已集成，点击顶栏🎛按钮打开"
+    },
+    {
+      "id": 19,
+      "name": "编写液态玻璃渲染原理技术文档 + Bug修复记录JSON",
+      "category": "看板系统",
+      "status": "已完成",
+      "priority": "中",
+      "estimatedWork": "小",
+      "detailFile": "看板/液态玻璃渲染原理.md",
+      "lastUpdate": "2026-06-14 两份文档已写入看板目录"
+    },
+    {
+      "id": 20,
+      "name": "在看板加入文件浏览器面板（浏览项目文件+实时读取Markdown）",
+      "category": "看板系统",
+      "status": "进行中",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-14 开始开发"
+    },
+    {
+      "id": 21,
+      "name": "在看板加入项目导航面板（0-启动入口等关键文件快速跳转）",
+      "category": "看板系统",
+      "status": "待开始",
+      "priority": "中",
+      "estimatedWork": "小",
+      "detailFile": null,
+      "lastUpdate": "2026-06-14 待确认"
+    },
+    {
+      "id": 22,
+      "name": "优化待办清单交互：AI自动读取/写入任务进度",
+      "category": "看板系统",
+      "status": "待开始",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-14 需求：AI每轮对话读任务清单"
+    },
+    {
+      "id": 23,
+      "name": "新建Python API服务器，替代python -m http.server",
+      "category": "看板系统",
+      "status": "进行中",
+      "priority": "高",
+      "estimatedWork": "中",
+      "detailFile": null,
+      "lastUpdate": "2026-06-14 server.py已创建"
+    }
+  ],
+  
+  "userTasks": [
+    {
+      "id": 1,
+      "name": "安装 Unity（三台设备任意一台先装）",
+      "status": "待开始",
+      "priority": "中",
+      "note": "后续开发需要"
+    },
+    {
+      "id": 2,
+      "name": "配置 GitHub/Gitee 远程仓库",
+      "status": "待开始",
+      "priority": "中",
+      "note": "跨设备同步用"
+    },
+    {
+      "id": 3,
+      "name": "阅读并反馈「世界设计文档」15个维度",
+      "status": "随时反馈",
+      "priority": "高",
+      "note": "文件在 `产品设计/世界设计文档.md`"
+    },
+    {
+      "id": 4,
+      "name": "决定是否还需要下载更多开源项目",
+      "status": "待确认",
+      "priority": "低",
+      "note": "AI可搜索推荐"
+    }
+  ],
+  
+  "decisions": [
+    {
+      "question": "引擎确定用Unity 2D？",
+      "status": "已确认",
+      "conclusion": "Unity 2D"
+    },
+    {
+      "question": "性格系统：34维 vs Ensemble trait？",
+      "status": "已分析",
+      "conclusion": "Ensemble trait是7个布尔标签非5维模型。结论：34维性格 + Ensemble社会引擎 = 互补融合"
+    },
+    {
+      "question": "还有没有其他开源项目想下载？",
+      "status": "待回答",
+      "conclusion": null
+    }
+  ]
+}

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blueprint 指挥中心</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 光斑层 -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div class="orb orb4"></div>
+
+<div id="app" style="position:relative;z-index:1" :class="{ 'text-glass': textGlass }">
+
+  <!-- 左侧快速导航 -->
+  <aside class="side-nav" :class="{show:showSideNav}">
+    <div class="side-nav-toggle" @click="showSideNav=!showSideNav">☰</div>
+    <div class="side-nav-inner">
+      <div class="side-nav-item" @click="scrollTo('stats')">📊 统计</div>
+      <div class="side-nav-item" @click="scrollTo('specs')">📋 规范</div>
+      <div class="side-nav-item" @click="scrollTo('todos')">✅ 待办</div>
+      <div class="side-nav-item" @click="scrollTo('quick')">⚡ 快捷</div>
+      <div class="side-nav-item" @click="scrollTo('feed')">🔔 动态</div>
+      <div class="side-nav-item" @click="scrollTo('inspo')">💡 灵感</div>
+    </div>
+  </aside>
+
+  <!-- 顶部导航 -->
+  <nav class="topbar glass-chrome">
+    <div class="container topbar-inner">
+      <div class="project-pill glass" style="font-size:13px">
+        <span class="txt-primary">{{project.名称}}</span>
+        <span class="txt-tertiary" style="margin:0 8px">|</span>
+        <span class="txt-secondary">{{project.阶段}}</span>
+        <span class="txt-tertiary" style="margin:0 8px">|</span>
+        <span :style="{color:healthColor,fontWeight:600}">{{healthScore}}分</span>
+      </div>
+      <div class="search-wrap">
+        <input v-model="search" placeholder="搜索规范、待办..." type="text">
+      </div>
+      <button @click="textGlass=!textGlass" style="padding:6px 12px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;backdrop-filter:blur(12px)">{{textGlass?'🪟':'📃'}} 文字衬底</button>
+      <button @click="showGlassCtrl=!showGlassCtrl" style="padding:6px 12px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;backdrop-filter:blur(12px)">🎛 调参</button>
+      <button @click="openFileBrowser()" style="padding:6px 12px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;backdrop-filter:blur(12px)">📂 文件</button>
+      <div style="position:relative">
+        <button @click="showWallpaperPanel=!showWallpaperPanel" style="padding:6px 12px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;backdrop-filter:blur(12px)">🖼 换壁纸</button>
+        <div v-if="showWallpaperPanel" style="position:absolute;right:0;top:calc(100% + 8px);padding:12px;border-radius:16px;background:rgba(30,30,35,.85);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.08);box-shadow:0 16px 48px rgba(0,0,0,.4);z-index:100;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:280px">
+          <div v-for="w in wallpapers" :key="w.url" @click="setWallpaper(w.url)" style="cursor:pointer;border-radius:10px;overflow:hidden;height:56px;background:center/cover no-repeat;position:relative;border:2px solid transparent;transition:border-color .2s" :style="{backgroundImage:'url('+w.url+')'}" onmouseover="this.style.borderColor='rgba(10,132,255,.6)'" onmouseout="this.style.borderColor='transparent'">
+            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8)">{{w.name}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="txt-tertiary" style="font-size:12px">{{fmtDate()}}</div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:20px">
+
+    <!-- 统计卡片 -->
+    <section class="stats-row" id="sec-stats">
+      <div class="stat-card reveal" :class="'reveal-d'+(i+1)" ref="lgCard" v-for="(s,i) in [
+        {label:'规范初稿',val:project.规范初稿完成,color:'#0a84ff',max:project.规范总数},
+        {label:'评审通过',val:project.规范评审通过,color:'#30d158',max:project.规范总数},
+        {label:'风险规范',val:riskCount,color:'#ff453a',max:project.规范总数},
+        {label:'本周完成',val:project.本周完成,color:'#ff9f0a',max:10}
+      ]" :key="i">
+        <div class="stat-value" :style="{color:s.color}">{{animReady?s.val:0}}</div>
+        <div class="stat-label txt-secondary">{{s.label}}</div>
+        <div class="stat-bar"><div :style="{width:animReady?Math.min(100,s.val/s.max*100)+'%':'0%',background:s.color}"></div></div>
+      </div>
+    </section>
+
+    <!-- 健康度 -->
+    <div class="glass panel reveal reveal-d2" ref="lgPanelHealth" style="padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+      <span class="txt-secondary" style="font-size:13px;font-weight:500">项目健康度</span>
+      <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
+        <div :style="{width:healthBarWidth,height:'100%',background:healthColor,borderRadius:'3px',transition:'width 1s cubic-bezier(.4,0,.2,1)'}"></div>
+      </div>
+      <span style="font-size:13px;font-weight:600" :style="{color:healthColor}">{{healthScore}}</span>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main-grid">
+
+      <!-- 左栏 -->
+      <div class="left-col">
+
+        <!-- 规范列表 -->
+        <div class="panel glass reveal reveal-d3" ref="lgPanelSpecs" id="sec-specs" :class="{'panel-collapsed':collapsed.specs}">
+          <div class="panel-header" @click="toggle('specs')">
+            <span class="panel-title txt-primary">技术规范 ({{filteredSpecs.length}})</span>
+            <span class="txt-tertiary" style="font-size:12px">{{collapsed.specs?'展开':'收起'}}</span>
+          </div>
+          <div class="panel-body">
+            <div class="filter-bar">
+              <button class="filter-btn" :class="{active:filter==='全部'}" @click="filter='全部'">全部</button>
+              <button class="filter-btn" :class="{active:filter==='核心'}" @click="filter='核心'">核心</button>
+              <button class="filter-btn" :class="{active:filter==='扩展'}" @click="filter='扩展'">扩展</button>
+              <button class="filter-btn" :class="{active:filter==='支撑'}" @click="filter='支撑'">支撑</button>
+              <button class="filter-btn" :class="{active:filter==='风险'}" @click="filter='风险'" style="color:#ff453a">风险</button>
+            </div>
+            <div class="spec-item" :class="{risk:s.风险}" v-for="s in filteredSpecs" :key="s.名称" @click="openFile(s.file,s.名称)">
+              <div class="spec-name txt-primary">{{s.名称}}</div>
+              <div class="spec-meta">
+                <span class="spec-tag" :class="'tag-'+{'核心':'core','扩展':'ext','支撑':'sup'}[s.分类]">{{s.分类}}</span>
+                <span class="txt-tertiary" v-if="s.风险" style="color:#ff453a;font-size:11px">{{s.风险}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 待办清单 -->
+        <div class="panel glass reveal reveal-d4" ref="lgPanelTodos" id="sec-todos" :class="{'panel-collapsed':collapsed.todos}">
+          <div class="panel-header" @click="toggle('todos')">
+            <span class="panel-title txt-primary">待办清单</span>
+            <span class="txt-tertiary" style="font-size:12px">{{collapsed.todos?'展开':'收起'}}</span>
+          </div>
+          <div class="panel-body">
+            <!-- 阻塞 -->
+            <div class="todo-item block glass" v-for="t in filteredTodosBlock" :key="t.编号">
+              <div class="todo-id" style="color:#ff453a">{{t.编号}} · 阻塞 · 已等 {{t.等待天数}} 天</div>
+              <div class="todo-title txt-primary">{{t.标题}}</div>
+              <div class="todo-desc txt-secondary">{{t.描述}}</div>
+              <div class="todo-wait" v-if="t.建议">建议：{{t.建议}}</div>
+            </div>
+            <!-- 进行中 -->
+            <div class="todo-item doing glass" v-for="t in filteredTodosDoing" :key="t.编号">
+              <div class="todo-id" style="color:#0a84ff">{{t.编号}} · 进行中 · {{t.优先级}}优先级</div>
+              <div class="todo-title txt-primary">{{t.标题}}</div>
+              <div class="todo-desc txt-secondary">{{t.描述}}</div>
+            </div>
+            <!-- 待处理 -->
+            <div class="todo-item pending glass" v-for="t in filteredTodosPending" :key="t.编号">
+              <div class="todo-id" style="color:#ff9f0a">{{t.编号}} · 待处理 · {{t.优先级}}优先级</div>
+              <div class="todo-title txt-primary">{{t.标题}}</div>
+              <div class="todo-desc txt-secondary">{{t.描述}}</div>
+            </div>
+            <!-- 已完成 -->
+            <div class="todo-item done glass" v-for="t in todos.已完成.slice(0,3)" :key="t.编号">
+              <div class="todo-id" style="color:#30d158">{{t.编号}} · {{t.时间}} 完成</div>
+              <div class="todo-title txt-primary" style="opacity:.6">{{t.标题}}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 右栏 -->
+      <div class="right-col">
+
+        <!-- 快捷入口 -->
+        <div class="panel glass reveal reveal-d3" ref="lgPanelQuick" id="sec-quick">
+          <div class="panel-header" style="cursor:default">
+            <span class="panel-title txt-primary">快捷入口</span>
+          </div>
+          <div class="quick-grid">
+            <div class="quick-btn glass" v-for="q in quicks" :key="q.名称" @click="openFile(q.file,q.名称)">
+              <span class="quick-icon">{{q.图标}}</span>
+              <span class="quick-name txt-secondary">{{q.名称}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近动态 -->
+        <div class="panel glass reveal reveal-d4" ref="lgPanelFeed" id="sec-feed" :class="{'panel-collapsed':collapsed.feed}">
+          <div class="panel-header" @click="toggle('feed')">
+            <span class="panel-title txt-primary">最近动态</span>
+            <span class="txt-tertiary" style="font-size:12px">{{collapsed.feed?'展开':'收起'}}</span>
+          </div>
+          <div class="panel-body">
+            <div class="feed-item" v-for="f in feeds" :key="f.时间+f.内容">
+              <div class="feed-time">{{f.时间}} · {{f.阶段}}</div>
+              <div class="txt-secondary">{{f.内容}}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 灵感墙 -->
+        <div class="panel glass reveal reveal-d5" ref="lgPanelInspo" id="sec-inspo" :class="{'panel-collapsed':collapsed.inspo}">
+          <div class="panel-header" @click="toggle('inspo')">
+            <span class="panel-title txt-primary">灵感墙 ({{inspos.length}})</span>
+            <span class="txt-tertiary" style="font-size:12px">{{collapsed.inspo?'展开':'收起'}}</span>
+          </div>
+          <div class="panel-body">
+            <div class="inspo-grid">
+              <div class="inspo-card" :class="'inspo-'+n.color" v-for="n in inspos.slice(0,4)" :key="n.id" @dblclick="delInspo(n.id)">
+                {{n.text}}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <input v-model="newInspoText" placeholder="贴个便签..." style="flex:1;padding:8px 12px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#f5f5f7;font-size:13px;outline:none">
+              <select v-model="newInspoColor" style="padding:8px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#f5f5f7;font-size:13px">
+                <option value="pink">粉</option>
+                <option value="blue">蓝</option>
+                <option value="yellow">黄</option>
+                <option value="green">绿</option>
+              </select>
+              <button @click="addInspo" style="padding:8px 14px;border-radius:10px;border:none;background:#0a84ff;color:#fff;font-size:13px;font-weight:500;cursor:pointer">贴上</button>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button @click="aiInspo" style="flex:1;padding:8px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-size:12px;cursor:pointer">🤖 AI 帮我想一个</button>
+              <button @click="exportInspo" style="padding:8px 12px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);font-size:12px;cursor:pointer">💾 导出</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 底部 -->
+    <div style="text-align:center;padding:30px 0;font-size:12px" class="txt-quat">
+      Blueprint 指挥中心 · 数据更新于 {{project.阶段}}
+    </div>
+
+  </div>
+
+  <!-- 右侧 Markdown 预览面板 -->
+  <div class="preview-overlay" v-if="showPreview" @click="closePreview"></div>
+  <div class="preview-panel" :class="{show:showPreview}">
+    <div class="preview-header">
+      <span class="preview-title txt-primary">{{previewTitle}}</span>
+      <button class="preview-close" @click="closePreview">✕</button>
+    </div>
+    <div class="preview-body" v-html="previewContent"></div>
+  </div>
+
+  <!-- 液态玻璃调参面板 -->
+  <div class="glass-ctrl-overlay" v-if="showGlassCtrl" @click="showGlassCtrl=false"></div>
+  <div class="glass-ctrl-panel" :class="{show:showGlassCtrl}">
+    <div class="glass-ctrl-header">
+      <span class="glass-ctrl-title">🎛 液态玻璃参数</span>
+      <button class="glass-ctrl-close" @click="showGlassCtrl=false">✕</button>
+    </div>
+    <div class="glass-ctrl-body">
+      <template v-for="(p,key) in glassParams" :key="key">
+        <div class="glass-ctrl-group" v-if="p.type==='range'">
+          <div class="glass-ctrl-label">
+            <span>{{p.label}}</span>
+            <span class="glass-ctrl-val">{{p.val}}</span>
+          </div>
+          <input type="range" :min="p.min" :max="p.max" :step="p.step" v-model.number="p.val" @input="updateGlassParam(key)">
+          <div class="glass-ctrl-range-labels">
+            <span>{{p.min}}</span><span>{{p.max}}</span>
+          </div>
+        </div>
+        <div class="glass-ctrl-group" v-else-if="p.type==='toggle'">
+          <div class="glass-ctrl-label">
+            <span>{{p.label}}</span>
+          </div>
+          <label class="glass-ctrl-toggle">
+            <input type="checkbox" v-model="p.val" @change="updateGlassParam(key)">
+            <span class="glass-ctrl-toggle-slider"></span>
+          </label>
+        </div>
+      </template>
+      <button class="glass-ctrl-reset" @click="resetGlassParams">↩ 恢复默认</button>
+    </div>
+  </div>
+
+  <!-- 文件浏览器面板 -->
+  <div class="file-browser-overlay" v-if="showFileBrowser" @click="showFileBrowser=false"></div>
+  <div class="file-browser-panel" :class="{show:showFileBrowser}">
+    <div class="file-browser-header">
+      <span class="file-browser-title">📂 文件浏览</span>
+      <button class="file-browser-close" @click="showFileBrowser=false">✕</button>
+    </div>
+    <div class="file-browser-body">
+      <div class="file-browser-breadcrumb">
+        <span v-for="(seg,i) in fileBrowserBread" :key="i" style="cursor:pointer;color:rgba(255,255,255,.6);font-size:12px" @click="navigateFileBrowser(seg.path)">{{i>0?' / ':''}}{{seg.name}}</span>
+      </div>
+      <div v-if="fileBrowserLoading" class="file-browser-loading">加载中...</div>
+      <div class="file-browser-list" v-else>
+        <div class="file-browser-item dir" v-for="d in fileBrowserDirs" :key="d.name" @click="navigateFileBrowser(d.path)">
+          <span class="file-browser-icon">📁</span>
+          <span class="file-browser-name">{{d.name}}</span>
+        </div>
+        <div class="file-browser-item file" v-for="f in fileBrowserFiles" :key="f.name" @click="openFromFileBrowser(f)">
+          <span class="file-browser-icon">{{f.name.endsWith('.md')?'📝':f.name.endsWith('.json')?'📋':f.name.endsWith('.js')?'📜':'📄'}}</span>
+          <span class="file-browser-name">{{f.name}}</span>
+          <span class="file-browser-size" v-if="f.size">{{(f.size/1024).toFixed(1)}}KB</span>
+        </div>
+        <div v-if="!fileBrowserDirs.length && !fileBrowserFiles.length" class="file-browser-empty">空目录</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="任务拆分/任务数据.js"></script>
+<script src="js/数据.js"></script>
+<script src="js/liquid-glass.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
