@@ -30,7 +30,6 @@ export function ChatPanel() {
   const keys = useAPIKeysStore(s => s.keys)
   const loadKeys = useAPIKeysStore(s => s.loadFromFile)
   const hasKey = useAPIKeysStore(s => s.hasKey)
-  const getKey = useAPIKeysStore(s => s.getKey)
 
   // Chat store
   const chats = useChatStore(s => s.chats)
@@ -60,15 +59,6 @@ export function ChatPanel() {
 
   // 当前提供商是否有 API Key
   const currentProviderHasKey = hasKey(config.provider)
-  
-  // 构建完整的 AI 配置（包含 API Key）
-  const getFullConfig = (): AIConfig => {
-    const apiKey = getKey(config.provider) || ''
-    return {
-      ...config,
-      apiKey,
-    }
-  }
 
   // 滚动到底部（只滚动消息列表容器，不影响整个页面）
   useEffect(() => {
@@ -81,7 +71,12 @@ export function ChatPanel() {
   // 发送消息
   const handleSend = async () => {
     if (!input.trim() || loading) return
-    if (!currentProviderHasKey) return
+    
+    // 从 store 获取最新配置（避免闭包问题）
+    const latestConfig = useAIConfigStore.getState().config
+    const latestProviderHasKey = useAPIKeysStore.getState().hasKey(latestConfig.provider)
+    
+    if (!latestProviderHasKey) return
     if (!activeChatId) {
       const newId = createChat()
       setActiveChat(newId)
@@ -110,8 +105,12 @@ export function ChatPanel() {
         { role: 'user', content: userMessage },
       ]
 
-      // 调用 AI（流式）
-      const fullConfig = getFullConfig()
+      // 调用 AI（流式）- 使用最新配置
+      const apiKey = useAPIKeysStore.getState().getKey(latestConfig.provider) || ''
+      const fullConfig: AIConfig = {
+        ...latestConfig,
+        apiKey,
+      }
       const result = await chat(fullConfig, {
         messages,
         stream: true,
