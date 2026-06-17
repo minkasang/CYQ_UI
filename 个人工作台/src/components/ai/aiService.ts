@@ -17,6 +17,15 @@ export interface ImageOptions {
   n?: number
 }
 
+export interface VideoOptions {
+  prompt: string
+  width?: number
+  height?: number
+  numFrames?: number
+  frameRate?: number
+  onProgress?: (status: string) => void
+}
+
 export interface ChatResult {
   content: string
   usage?: {
@@ -28,6 +37,11 @@ export interface ChatResult {
 
 export interface ImageResult {
   url: string
+}
+
+export interface VideoResult {
+  url: string
+  taskId: string
 }
 
 // 通用错误类型
@@ -131,6 +145,115 @@ export async function generateImage(config: AIConfig, options: ImageOptions): Pr
   }
 
   return { url: imageUrl }
+}
+
+// 视频生成（异步任务）
+export async function generateVideo(config: AIConfig, options: VideoOptions): Promise<VideoResult> {
+  if (!config.apiKey) {
+    throw new AIServiceError('未配置 API Key，请先在设置中配置', 'NO_API_KEY')
+  }
+  if (!config.baseUrl) {
+    throw new AIServiceError('未配置 API 地址', 'NO_BASE_URL')
+  }
+  if (!isVideoModel(config.model)) {
+    throw new AIServiceError('当前模型不支持视频生成，请选择视频模型', 'WRONG_MODEL_TYPE')
+  }
+
+  const baseUrl = config.baseUrl.replace(/\/$/, '')
+  
+  // Step 1: 创建视频任务
+  const createUrl = `${baseUrl}/videos`
+  const createBody = {
+    model: config.model,
+    prompt: options.prompt,
+    width: options.width || 1152,
+    height: options.height || 768,
+    num_frames: options.numFrames || 121, // 5秒 @ 24fps
+    frame_rate: options.frameRate || 24,
+  }
+
+  console.log('[AI] 创建视频任务:', createUrl, createBody)
+  options.onProgress?.('创建视频任务...')
+
+  const createResp = await fetch(createUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`,
+    },
+    body: JSON.stringify(createBody),
+  })
+
+  if (!createResp.ok) {
+    const errText = await createResp.text()
+    let errMsg = `HTTP ${createResp.status}`
+    try {
+      const errJson = JSON.parse(errText)
+      errMsg = errJson.error?.message || errJson.message || errJson.detail || errText
+    } catch {
+      errMsg = errText || errMsg
+    }
+    throw new AIServiceError(`视频任务创建失败: ${errMsg}`, `HTTP_${createResp.status}`)
+  }
+
+  const createData = await createResp.json()
+  const taskId = createData.id || createData.task_id || createData.data?.id
+  
+  if (!taskId) {
+    throw new AIServiceError('视频任务创建返回空 task_id', 'EMPTY_TASK_ID')
+  }
+
+  console.log('[AI] 视频任务已创建:', taskId)
+  options.onProgress?.(`任务已创建，等待生成...`)
+
+  // Step 2: 轮询任务状态
+  const statusUrl = `${baseUrl}/videos/${taskId}`
+  const maxAttempts = 120 // 最多等待 4 分钟（每 2 秒轮询一次）
+  
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(resolve => setTimeout(resolve, 2000)) // 等待 2 秒
+    
+    const statusResp = await fetch(statusUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+      },
+    })
+
+    if (!statusResp.ok) {
+      console.warn('[AI] 状态查询失败:', statusResp.status)
+      continue
+    }
+
+    const statusData = await statusResp.json()
+    const status = statusData.status || statusData.data?.status
+    
+    console.log('[AI] 视频状态:', status)
+    options.onProgress?.(`生成中... (${i + 1}/${maxAttempts})`)
+
+    if (status === 'completed' || status === 'succeeded') {
+      // 获取视频 URL（兼容不同字段名）
+      const videoUrl = statusData.video_url || 
+                       statusData.remixed_from_video_id || 
+                       statusData.data?.video_url ||
+                       statusData.data?.remixed_from_video_id
+      
+      if (!videoUrl) {
+        throw new AIServiceError('视频生成完成但返回空 URL', 'EMPTY_VIDEO_URL')
+      }
+
+      console.log('[AI] 视频生成完成:', videoUrl)
+      options.onProgress?.('生成完成!')
+      return { url: videoUrl, taskId }
+    }
+
+    if (status === 'failed' || status === 'error') {
+      const errorMsg = statusData.error || statusData.message || '视频生成失败'
+      throw new AIServiceError(`视频生成失败: ${errorMsg}`, 'VIDEO_FAILED')
+    }
+  }
+
+  throw new AIServiceError('视频生成超时（等待超过 4 分钟）', 'VIDEO_TIMEOUT')
 }
 
 // OpenAI 兼容协议（DeepSeek、OpenAI、Moonshot、智谱）

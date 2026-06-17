@@ -75,6 +75,10 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         if parsed.path.startswith('/个人工作台/data/images/'):
             return self.serve_static_image(parsed.path)
 
+        # 静态文件服务：个人工作台/data/videos/
+        if parsed.path.startswith('/个人工作台/data/videos/'):
+            return self.serve_static_video(parsed.path)
+
         # 不是 API → 静态文件服务（看板）
         super().do_GET()
 
@@ -285,6 +289,36 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             log(f'IMAGE  {decoded_path}')
         except Exception as e:
             log(f'ERROR image {decoded_path}: {e}')
+            self.send_error(500)
+
+    def serve_static_video(self, path):
+        """提供视频静态文件服务"""
+        # URL 解码
+        decoded_path = urllib.parse.unquote(path)
+        # 去掉前导 /
+        if decoded_path.startswith('/'):
+            decoded_path = decoded_path[1:]
+        
+        full = safe_path(decoded_path)
+        if not full or not os.path.isfile(full):
+            self.send_error(404)
+            return
+        
+        # 根据扩展名设置 Content-Type
+        ext = os.path.splitext(full)[1].lower()
+        content_type = 'video/mp4' if ext == '.mp4' else 'video/webm' if ext == '.webm' else 'application/octet-stream'
+        
+        try:
+            with open(full, 'rb') as f:
+                data = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', len(data))
+            self.end_headers()
+            self.wfile.write(data)
+            log(f'VIDEO  {decoded_path}')
+        except Exception as e:
+            log(f'ERROR video {decoded_path}: {e}')
             self.send_error(500)
 
     def api_image(self, parsed):

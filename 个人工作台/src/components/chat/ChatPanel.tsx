@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useChatStore, getActiveChat } from '../../store/useChatStore'
 import { useAIConfigStore, PROVIDER_MODELS, getModelName } from '../../store/useAIConfigStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
-import { chat, generateImage, isImageModel, isVideoModel } from '../ai/aiService'
+import { chat, generateImage, generateVideo, isImageModel, isVideoModel } from '../ai/aiService'
 import type { AIMessage, AIProvider, AIConfig } from '../../types'
 import { MessageSquare, Plus, Trash2, Send, Loader2, ChevronDown, Settings } from 'lucide-react'
 import { GlassPanel } from '../glass/GlassPanel'
@@ -21,8 +21,33 @@ const PROVIDER_NAMES: Record<AIProvider, string> = {
   custom: '自定义',
 }
 
-// 渲染消息内容，支持图片显示
+// 渲染消息内容，支持图片和视频显示
 function renderMessageContent(content: string) {
+  // 检测本地视频路径（个人工作台/data/videos/xxx）
+  if (content.startsWith('个人工作台/data/videos/')) {
+    const videoUrl = `http://localhost:8090/${content}`
+    return (
+      <video 
+        src={videoUrl} 
+        controls 
+        className="max-w-full rounded-lg"
+        style={{ maxHeight: '300px' }}
+      />
+    )
+  }
+  
+  // 检测远程视频 URL（.mp4 结尾）
+  if (content.endsWith('.mp4') && (content.startsWith('http://') || content.startsWith('https://'))) {
+    return (
+      <video 
+        src={content} 
+        controls 
+        className="max-w-full rounded-lg"
+        style={{ maxHeight: '300px' }}
+      />
+    )
+  }
+  
   // 检测本地图片路径（个人工作台/data/images/xxx）
   if (content.startsWith('个人工作台/data/images/')) {
     // 本地图片，通过 server.py 提供静态文件服务
@@ -193,9 +218,61 @@ export function ChatPanel() {
         return
       }
 
-      // 视频模型 - 提示不支持
+      // 视频模型 - 使用视频生成接口
       if (isVideoModel(latestConfig.model)) {
-        addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', '视频生成功能暂不支持，请选择文本或图片模型')
+        // 解析时长参数（如 "5s" 或 "10秒"）
+        let duration = 5 // 默认 5 秒
+        const durationMatch = userMessage.match(/(\d+)\s*[s秒]/i)
+        if (durationMatch) {
+          duration = parseInt(durationMatch[1])
+        }
+        
+        // 计算帧数（24fps，帧数需满足 8n+1）
+        const numFrames = Math.floor((duration * 24 - 1) / 8) * 8 + 1
+        
+        // 提取视频描述（去掉时长参数）
+        const prompt = userMessage.replace(/\d+\s*[s秒]/gi, '').trim()
+        
+        setStreamContent('创建视频任务...')
+        
+        try {
+          const result = await generateVideo(fullConfig, {
+            prompt: prompt || userMessage,
+            numFrames,
+            frameRate: 24,
+            onProgress: (status) => setStreamContent(status),
+          })
+          
+          // 下载视频到本地
+          const timestamp = Date.now()
+          const videoName = `video_${timestamp}.mp4`
+          const localPath = `个人工作台/data/videos/${videoName}`
+          
+          try {
+            const saveResp = await fetch('http://localhost:8090/api/save-image', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                url: result.url,
+                path: localPath,
+              }),
+            })
+            const saveData = await saveResp.json()
+            
+            if (saveData.ok) {
+              addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', localPath)
+            } else {
+              addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', result.url)
+            }
+          } catch (e) {
+            addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', result.url)
+          }
+          setStreamContent('')
+        } catch (err: any) {
+          console.error('[Chat] 视频生成失败:', err)
+          addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', `错误: ${err.message || '视频生成失败'}`)
+          setStreamContent('')
+        }
         return
       }
 
