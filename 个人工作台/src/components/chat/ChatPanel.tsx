@@ -23,12 +23,38 @@ const PROVIDER_NAMES: Record<AIProvider, string> = {
 
 // 渲染消息内容，支持图片显示
 function renderMessageContent(content: string) {
+  // 检测本地图片路径（个人工作台/data/images/xxx）
+  if (content.startsWith('个人工作台/data/images/')) {
+    // 本地图片，通过 server.py 提供静态文件服务
+    const imageUrl = `http://localhost:8090/${content}`
+    return (
+      <img 
+        src={imageUrl} 
+        alt="生成的图片" 
+        className="max-w-full rounded-lg"
+        style={{ maxHeight: '300px' }}
+      />
+    )
+  }
+  
+  // 检测远程 URL（http/https）
+  if (content.startsWith('http://') || content.startsWith('https://')) {
+    // 远程图片 URL
+    return (
+      <img 
+        src={content} 
+        alt="生成的图片" 
+        className="max-w-full rounded-lg"
+        style={{ maxHeight: '300px' }}
+      />
+    )
+  }
+  
   // 检测 markdown 图片格式 ![alt](url)
   const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
   const match = imageRegex.exec(content)
   
   if (match) {
-    // 如果是图片，显示图片
     const imageUrl = match[2]
     return (
       <img 
@@ -136,8 +162,34 @@ export function ChatPanel() {
           prompt: userMessage,
           size: '1024x1024',
         })
-        // 添加图片回复
-        addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', `![生成的图片](${result.url})`)
+        
+        // 下载图片到本地
+        const timestamp = Date.now()
+        const imageName = `image_${timestamp}.png`
+        const localPath = `个人工作台/data/images/${imageName}`
+        
+        try {
+          const saveResp = await fetch('http://localhost:8090/api/save-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: result.url,
+              path: localPath,
+            }),
+          })
+          const saveData = await saveResp.json()
+          
+          if (saveData.ok) {
+            // 使用本地路径
+            addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', localPath)
+          } else {
+            // 保存失败，使用远程 URL
+            addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', result.url)
+          }
+        } catch (e) {
+          // 保存失败，使用远程 URL
+          addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', result.url)
+        }
         return
       }
 

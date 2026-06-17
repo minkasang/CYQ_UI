@@ -13,6 +13,7 @@ import re
 import time
 import urllib.parse
 import shutil
+import urllib.request
 
 # 项目根目录（本文件在项目根目录 cyq_UI/ 下）
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -67,8 +68,14 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             return self.api_list(parsed)
         elif parsed.path == '/api/search':
             return self.api_search(parsed)
+        elif parsed.path == '/api/image':
+            return self.api_image(parsed)
 
-        # 不是 API → 静态文件服务
+        # 静态文件服务：个人工作台/data/images/
+        if parsed.path.startswith('/个人工作台/data/images/'):
+            return self.serve_static_image(parsed.path)
+
+        # 不是 API → 静态文件服务（看板）
         super().do_GET()
 
     def do_POST(self):
@@ -79,6 +86,8 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             return self.api_write()
         elif parsed.path == '/api/read-batch':
             return self.api_read_batch()
+        elif parsed.path == '/api/save-image':
+            return self.api_save_image()
 
         self.send_error(404)
 
@@ -204,6 +213,107 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                     results.append({'path': path, 'ok': False, 'error': str(e)})
 
         return self.json_resp(200, {'ok': True, 'files': results})
+
+    def api_save_image(self):
+        """POST /api/save-image — 下载图片并保存到本地"""
+        try:
+            body = self.read_body()
+            data = json.loads(body)
+            url = data.get('url')
+            save_path = data.get('path')
+        except:
+            return self.json_resp(400, {'ok': False, 'error': 'JSON 格式错误'})
+
+        if not url:
+            return self.json_resp(400, {'ok': False, 'error': '缺少 url 参数'})
+        if not save_path:
+            return self.json_resp(400, {'ok': False, 'error': '缺少 path 参数'})
+
+        # 安全检查
+        full = safe_path(save_path)
+        if not full:
+            return self.json_resp(403, {'ok': False, 'error': '非法路径'})
+
+        try:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            
+            # 下载图片
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=30) as response:
+                image_data = response.read()
+            
+            # 保存图片
+            with open(full, 'wb') as f:
+                f.write(image_data)
+            
+            log(f'SAVE_IMAGE  {save_path} ({len(image_data)} bytes)')
+            return self.json_resp(200, {
+                'ok': True,
+                'path': save_path,
+                'size': len(image_data)
+            })
+        except Exception as e:
+            log(f'ERROR save_image {url}: {e}')
+            return self.json_resp(500, {'ok': False, 'error': str(e)})
+
+    def serve_static_image(self, path):
+        """提供图片静态文件服务"""
+        # URL 解码
+        decoded_path = urllib.parse.unquote(path)
+        # 去掉前导 /
+        if decoded_path.startswith('/'):
+            decoded_path = decoded_path[1:]
+        
+        full = safe_path(decoded_path)
+        if not full or not os.path.isfile(full):
+            self.send_error(404)
+            return
+        
+        # 根据扩展名设置 Content-Type
+        ext = os.path.splitext(full)[1].lower()
+        content_type = 'image/png' if ext == '.png' else 'image/jpeg' if ext in ['.jpg', '.jpeg'] else 'image/gif' if ext == '.gif' else 'application/octet-stream'
+        
+        try:
+            with open(full, 'rb') as f:
+                data = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', len(data))
+            self.end_headers()
+            self.wfile.write(data)
+            log(f'IMAGE  {decoded_path}')
+        except Exception as e:
+            log(f'ERROR image {decoded_path}: {e}')
+            self.send_error(500)
+
+    def api_image(self, parsed):
+        """GET /api/image?path=xxx — 返回图片"""
+        qs = urllib.parse.parse_qs(parsed.query)
+        path = qs.get('path', [None])[0]
+        if not path:
+            return self.json_resp(400, {'ok': False, 'error': '缺少 path 参数'})
+
+        full = safe_path(path)
+        if not full or not os.path.isfile(full):
+            return self.json_resp(404, {'ok': False, 'error': f'文件不存在: {path}'})
+
+        # 根据扩展名设置 Content-Type
+        ext = os.path.splitext(full)[1].lower()
+        content_type = 'image/png' if ext == '.png' else 'image/jpeg' if ext in ['.jpg', '.jpeg'] else 'image/gif' if ext == '.gif' else 'application/octet-stream'
+
+        try:
+            with open(full, 'rb') as f:
+                data = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', len(data))
+            self.end_headers()
+            self.wfile.write(data)
+            log(f'IMAGE_API  {path}')
+        except Exception as e:
+            log(f'ERROR image_api {path}: {e}')
+            self.send_error(500)
 
     def api_search(self, parsed):
         """GET /api/search?q=xxx&dir=xxx — 搜索文件内容"""
