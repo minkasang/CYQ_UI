@@ -181,7 +181,7 @@ export function HomePage() {
       <section
         id="chat"
         ref={chatAnim.ref}
-        className={`py-8 transition-all duration-1000 ${
+        className={`py-10 transition-all duration-1000 ${
           chatAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}
       >

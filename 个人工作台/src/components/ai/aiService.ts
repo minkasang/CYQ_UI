@@ -3,12 +3,16 @@
 // 关键：API Key 仅在客户端使用，绝不上传任何服务器
 
 import type { AIConfig, AIMessage } from '../../types'
+import { MODEL_CAPABILITIES } from '../../store/useAIConfigStore'
 
 export interface ChatOptions {
   messages: AIMessage[]
   stream?: boolean
   onChunk?: (text: string) => void
+  onReasoning?: (text: string) => void       // 深度思考内容回调
   signal?: AbortSignal
+  reasoningEffort?: 'low' | 'medium' | 'high'  // 思考深度
+  enableWebSearch?: boolean                  // 联网搜索（仅智谱/Kimi 支持）
 }
 
 export interface ImageOptions {
@@ -53,14 +57,16 @@ export class AIServiceError extends Error {
   }
 }
 
-// 判断是否是图片模型
+// 判断是否是图片模型（capabilities 优先，字符串匹配兜底）
 export function isImageModel(model: string): boolean {
-  return model.includes('image') || model.includes('vision') || model.startsWith('agnes-image')
+  return MODEL_CAPABILITIES[model]?.imageGen === true
+    || model.includes('image') || model.includes('vision') || model.startsWith('agnes-image')
 }
 
-// 判断是否是视频模型
+// 判断是否是视频模型（capabilities 优先，字符串匹配兜底）
 export function isVideoModel(model: string): boolean {
-  return model.includes('video') || model.startsWith('agnes-video')
+  return MODEL_CAPABILITIES[model]?.videoGen === true
+    || model.includes('video') || model.startsWith('agnes-video')
 }
 
 // 统一的 AI 调用入口
@@ -274,12 +280,27 @@ async function callOpenAICompatible(config: AIConfig, options: ChatOptions): Pro
   const url = `${config.baseUrl.replace(/\/$/, '')}/chat/completions`
   console.log('[AI] 调用 API:', { provider: config.provider, baseUrl: config.baseUrl, model: config.model, url })
 
-  const body = {
+  const body: Record<string, unknown> = {
     model: config.model,
     messages: options.messages,
     temperature: config.temperature,
     max_tokens: config.maxTokens,
     stream: options.stream ?? false,
+  }
+  
+  // 深度思考参数
+  if (options.reasoningEffort) {
+    body.reasoning_effort = options.reasoningEffort
+  }
+
+  // 联网搜索（智谱/Kimi）
+  if (options.enableWebSearch && (config.provider === 'zhipu' || config.provider === 'kimi')) {
+    if (config.provider === 'zhipu') {
+      body.tools = [{ type: 'web_search', web_search: { enable: true } }]
+    } else {
+      body.tools = [{ type: 'web_search' }]
+    }
+    body.tool_choice = 'auto'
   }
 
   const response = await fetch(url, {
@@ -306,7 +327,7 @@ async function callOpenAICompatible(config: AIConfig, options: ChatOptions): Pro
 
   // 流式响应
   if (options.stream && options.onChunk) {
-    return handleStream(response, options.onChunk)
+    return handleStream(response, options)
   }
 
   // 非流式响应
@@ -363,7 +384,7 @@ async function callAnthropic(config: AIConfig, options: ChatOptions): Promise<Ch
 }
 
 // 处理 SSE 流式响应
-async function handleStream(response: Response, onChunk: (text: string) => void): Promise<ChatResult> {
+async function handleStream(response: Response, options: ChatOptions): Promise<ChatResult> {
   const reader = response.body?.getReader()
   if (!reader) throw new AIServiceError('无法读取响应流', 'NO_READER')
 
@@ -386,10 +407,14 @@ async function handleStream(response: Response, onChunk: (text: string) => void)
       if (data === '[DONE]') continue
       try {
         const json = JSON.parse(data)
-        const delta = json.choices?.[0]?.delta?.content
-        if (delta) {
-          fullContent += delta
-          onChunk(delta)
+        const delta = json.choices?.[0]?.delta
+        if (delta?.content && options.onChunk) {
+          fullContent += delta.content
+          options.onChunk(delta.content)
+        }
+        // 深度思考内容
+        if (delta?.reasoning_content && options.onReasoning) {
+          options.onReasoning(delta.reasoning_content)
         }
       } catch {
         // 忽略解析错误的行

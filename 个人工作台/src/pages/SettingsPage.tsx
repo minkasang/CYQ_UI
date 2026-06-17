@@ -1,7 +1,7 @@
 // 设置页面
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AlertTriangle, Database, Trash2, Download, Upload, Key } from 'lucide-react'
-import { APIKeyManager } from '../components/chat/APIKeyManager'
+import { APIKeyModal } from '../components/chat/APIKeyModal'
 import { clearAllStorage } from '../utils/storage'
 import { downloadExport, importData, readFileAsText } from '../utils/export'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
@@ -11,17 +11,16 @@ import { useAPIKeysStore } from '../store/useAPIKeysStore'
 export function SettingsPage() {
   const [confirmReset, setConfirmReset] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [apiModalOpen, setApiModalOpen] = useState(false)
   const wallpaper = useWallpaperStore(s => s.current)
   const bgUrl = wallpaper.type === 'url' || wallpaper.type === 'local' ? wallpaper.value : undefined
   const { registerPanel } = useLiquidGlass(bgUrl)
   
-  // 加载 API Keys
   const loadKeys = useAPIKeysStore(s => s.loadFromFile)
   
-  // 加载配置
-  useState(() => {
+  useEffect(() => {
     loadKeys()
-  })
+  }, [loadKeys])
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -86,7 +85,12 @@ export function SettingsPage() {
         <p className="text-xs text-white/60 mb-3">
           配置各 AI 提供商的 API Key，所有 AI 功能共用
         </p>
-        <APIKeyManager />
+        <button
+          onClick={() => setApiModalOpen(true)}
+          className="text-sm px-4 py-2 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-white transition"
+        >
+          管理 API Key
+        </button>
       </div>
 
       {/* 玻璃调参 */}
@@ -160,6 +164,9 @@ export function SettingsPage() {
           {toast}
         </div>
       )}
+
+      {/* APIKeyModal */}
+      <APIKeyModal open={apiModalOpen} onClose={() => setApiModalOpen(false)} />
     </div>
   )
 }

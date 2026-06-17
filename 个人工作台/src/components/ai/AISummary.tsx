@@ -41,8 +41,8 @@ export function AISummary() {
   const setModel = useAIConfigStore(s => s.setModel)
   
   // API Keys
-  const keys = useAPIKeysStore(s => s.keys)
   const hasKey = useAPIKeysStore(s => s.hasKey)
+  const hasAnyKey = useAPIKeysStore(s => s.hasAnyKey)
 
   // 当前提供商是否有 API Key
   const currentProviderHasKey = hasKey(config.provider)
@@ -52,9 +52,6 @@ export function AISummary() {
   
   // 当前模型显示名称
   const currentModelName = getModelName(config.provider, config.model)
-
-  // 检查是否有任何 API Key 配置
-  const hasAnyKey = Object.keys(keys).some(p => hasKey(p as AIProvider))
 
   // 处理总结
   const handleSummarize = async () => {
@@ -77,7 +74,7 @@ export function AISummary() {
     setLoading(true)
 
     try {
-      const apiKey = useAPIKeysStore.getState().getKey(latestConfig.provider) || ''
+      const apiKey = useAPIKeysStore.getState().getActiveKey(latestConfig.provider) || ''
       const fullConfig: AIConfig = {
         ...latestConfig,
         apiKey,

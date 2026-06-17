@@ -47,6 +47,22 @@ export interface AIMessage {
   content: string
 }
 
+// ============== API Key 管理 ==============
+export interface APIKeyEntry {
+  id: string        // 唯一标识
+  label: string     // 用户自定义标签："主Key"、"备用"
+  key: string       // 实际 Key 值
+  createdAt: number // 创建时间
+}
+
+// ============== 模型能力标记 ==============
+export interface ModelCapabilities {
+  reasoning?: boolean   // 深度思考
+  vision?: boolean      // 视觉识别
+  imageGen?: boolean    // 图片生成
+  videoGen?: boolean    // 视频生成
+}
+
 // ============== 壁纸 ==============
 export type WallpaperType = 'url' | 'local' | 'color' | 'gradient' | 'preset'
 

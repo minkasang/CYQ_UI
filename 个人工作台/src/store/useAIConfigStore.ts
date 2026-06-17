@@ -6,29 +6,29 @@ import type { AIConfig, AIProvider } from '../types'
 import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 
 // 各提供商的模型列表（根据官网确认）
-export const PROVIDER_MODELS: Record<AIProvider, { id: string; name: string; desc: string }[]> = {
+export const PROVIDER_MODELS: Record<AIProvider, { id: string; name: string; desc: string; capabilities?: import('../types').ModelCapabilities }[]> = {
   agnes: [
     { id: 'agnes-1.5-flash', name: 'Agnes 1.5 Flash', desc: '文本对话' },
     { id: 'agnes-2.0-flash', name: 'Agnes 2.0 Flash', desc: '文本对话' },
-    { id: 'agnes-image-2.0-flash', name: 'Agnes Image 2.0', desc: '图像生成' },
-    { id: 'agnes-image-2.1-flash', name: 'Agnes Image 2.1', desc: '图像生成' },
-    { id: 'agnes-video-v2.0', name: 'Agnes Video V2.0', desc: '视频生成' },
+    { id: 'agnes-image-2.0-flash', name: 'Agnes Image 2.0', desc: '图像生成', capabilities: { imageGen: true } },
+    { id: 'agnes-image-2.1-flash', name: 'Agnes Image 2.1', desc: '图像生成', capabilities: { imageGen: true } },
+    { id: 'agnes-video-v2.0', name: 'Agnes Video V2.0', desc: '视频生成', capabilities: { videoGen: true } },
   ],
   deepseek: [
     { id: 'deepseek-chat', name: 'DeepSeek Chat', desc: 'V4 Flash 非思考' },
-    { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', desc: '思考模式' },
+    { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', desc: '思考模式', capabilities: { reasoning: true } },
     { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', desc: '专业版' },
     { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: '快速版' },
   ],
   openai: [
-    { id: 'gpt-4o', name: 'GPT-4o', desc: '全能模型' },
+    { id: 'gpt-4o', name: 'GPT-4o', desc: '全能模型', capabilities: { reasoning: true, vision: true } },
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', desc: '轻量快速' },
     { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', desc: '高性能' },
     { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', desc: '经济实惠' },
   ],
   claude: [
     { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', desc: '平衡版' },
-    { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', desc: '最强版' },
+    { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', desc: '最强版', capabilities: { reasoning: true, vision: true } },
     { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', desc: '快速版' },
   ],
   kimi: [
@@ -37,10 +37,15 @@ export const PROVIDER_MODELS: Record<AIProvider, { id: string; name: string; des
     { id: 'moonshot-v1-128k', name: 'Moonshot V1 128K', desc: '长文本' },
   ],
   zhipu: [
+    { id: 'glm-4.7-flash', name: 'GLM-4.7 Flash', desc: '免费版 (200K)', capabilities: { reasoning: true } },
+    { id: 'glm-4.5-flash', name: 'GLM-4.5 Flash', desc: '免费版 (即将下线)', capabilities: { reasoning: true } },
+    { id: 'glm-4.7', name: 'GLM-4.7', desc: '高智能 (200K)', capabilities: { reasoning: true } },
+    { id: 'glm-4.5', name: 'GLM-4.5', desc: '旗舰推理 (即将下线)', capabilities: { reasoning: true } },
+    { id: 'glm-4.5-air', name: 'GLM-4.5 Air', desc: '高性价比', capabilities: { reasoning: true } },
+    { id: 'glm-4-plus', name: 'GLM-4 Plus', desc: '增强版', capabilities: { reasoning: true } },
+    { id: 'glm-4-flash', name: 'GLM-4 Flash', desc: '快速版 (旧)' },
     { id: 'glm-4', name: 'GLM-4', desc: '标准版' },
-    { id: 'glm-4-flash', name: 'GLM-4 Flash', desc: '快速版' },
-    { id: 'glm-4-plus', name: 'GLM-4 Plus', desc: '增强版' },
-    { id: 'glm-4v', name: 'GLM-4V', desc: '视觉版' },
+    { id: 'glm-4v', name: 'GLM-4V', desc: '视觉版', capabilities: { vision: true } },
   ],
   custom: [
     { id: 'custom', name: '自定义模型', desc: '用户自定义' },
@@ -176,4 +181,17 @@ export const getModelName = (provider: AIProvider, modelId: string) => {
   const models = PROVIDER_MODELS[provider]
   const model = models?.find(m => m.id === modelId)
   return model?.name || modelId
+}
+
+// 检查模型是否支持深度思考
+export function isReasoningModel(provider: AIProvider, modelId: string): boolean {
+  return PROVIDER_MODELS[provider]?.find(m => m.id === modelId)?.capabilities?.reasoning ?? false
+}
+
+// 构建 modelId → capabilities 查找表（供 aiService 使用）
+export const MODEL_CAPABILITIES: Record<string, import('../types').ModelCapabilities | undefined> = {}
+for (const models of Object.values(PROVIDER_MODELS)) {
+  for (const m of models) {
+    MODEL_CAPABILITIES[m.id] = m.capabilities
+  }
 }
