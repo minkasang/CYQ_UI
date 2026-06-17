@@ -283,6 +283,23 @@ export function ChatPanel() {
                   </div>
                 </div>
               )}
+              {/* AI 正在回复状态 */}
+              {loading && !streamContent && (
+                <div className="flex justify-start">
+                  <div
+                    className="max-w-[80%] px-3 py-2 rounded-xl text-xs"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: 'rgba(255, 255, 255, 0.7)',
+                    }}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="animate-spin" size={12} />
+                      AI 正在回复...
+                    </span>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -422,15 +439,11 @@ export function ChatPanel() {
               disabled={loading || !input.trim() || !currentProviderHasKey}
               className="px-3 py-2 rounded-lg text-xs text-white flex items-center gap-1.5 disabled:opacity-50"
               style={{
-                background: 'rgba(59, 130, 246, 0.5)',
+                background: loading ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.5)',
                 border: 'none',
               }}
             >
-              {loading ? (
-                <Loader2 className="animate-spin" size={12} />
-              ) : (
-                <Send size={12} />
-              )}
+              <Send size={12} />
               发送
             </button>
           </div>
