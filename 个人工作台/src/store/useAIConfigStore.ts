@@ -112,6 +112,7 @@ export const useAIConfigStore = create<AIConfigState>((set, get) => ({
       baseUrl: preset.baseUrl,
       model: preset.model,
     }
+    console.log('[ai-config] 切换模型:', provider, 'baseUrl:', preset.baseUrl, 'model:', preset.model)
     set({ config: newConfig })
     get().saveToFile()
   },

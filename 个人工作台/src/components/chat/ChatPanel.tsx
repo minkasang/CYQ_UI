@@ -76,6 +76,8 @@ export function ChatPanel() {
     const latestConfig = useAIConfigStore.getState().config
     const latestProviderHasKey = useAPIKeysStore.getState().hasKey(latestConfig.provider)
     
+    console.log('[Chat] 发送消息时配置:', latestConfig.provider, latestConfig.baseUrl, latestConfig.model)
+    
     if (!latestProviderHasKey) return
     if (!activeChatId) {
       const newId = createChat()
