@@ -1,18 +1,30 @@
 // AI 总结主组件
-// 给 AI 的话：一键总结日记或长文本
+// 一键总结日记或长文本，支持模型选择
 
 import { useState } from 'react'
-import { Sparkles, Loader2, AlertCircle } from 'lucide-react'
+import { Sparkles, Loader2, AlertCircle, ChevronDown, Settings } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { useAIConfigStore, selectIsAIConfigured } from '../../store/useAIConfigStore'
+import { useAIConfigStore, AI_PRESETS } from '../../store/useAIConfigStore'
+import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import { useDiaryStore, selectSortedDiaries } from '../../store/useDiaryStore'
 import { summarizeDiary, summarizeText, AIServiceError } from './aiService'
 import { GlassPanel } from '../glass/GlassPanel'
 import { friendlyDate } from '../../utils/date'
+import type { AIProvider, AIConfig } from '../../types'
+
+// AI 提供商显示名称
+const PROVIDER_NAMES: Record<AIProvider, string> = {
+  agnes: 'Agnes AI',
+  deepseek: 'DeepSeek',
+  openai: 'OpenAI',
+  claude: 'Claude',
+  kimi: 'Kimi',
+  zhipu: '智谱',
+  custom: '自定义',
+}
 
 export function AISummary() {
-  const isConfigured = useAIConfigStore(selectIsAIConfigured)
   const diaries = useDiaryStore(selectSortedDiaries)
   const [selectedDiaryId, setSelectedDiaryId] = useState<string>('')
   const [customText, setCustomText] = useState('')
@@ -20,13 +32,40 @@ export function AISummary() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [showModelSelect, setShowModelSelect] = useState(false)
 
+  // AI 配置
   const config = useAIConfigStore(s => s.config)
+  const setProvider = useAIConfigStore(s => s.setProvider)
+  
+  // API Keys
+  const keys = useAPIKeysStore(s => s.keys)
+  const hasKey = useAPIKeysStore(s => s.hasKey)
+  const getKey = useAPIKeysStore(s => s.getKey)
+
+  // 当前提供商是否有 API Key
+  const currentProviderHasKey = hasKey(config.provider)
+  
+  // 构建完整的 AI 配置（包含 API Key）
+  const getFullConfig = (): AIConfig => {
+    const apiKey = getKey(config.provider) || ''
+    return {
+      ...config,
+      apiKey,
+    }
+  }
+
+  // 检查是否有任何 API Key 配置
+  const hasAnyKey = Object.keys(keys).some(p => hasKey(p as AIProvider))
 
   // 处理总结
   const handleSummarize = async () => {
-    if (!isConfigured) {
-      setError('请先在设置中配置 AI 服务')
+    if (!hasAnyKey) {
+      setError('请先在「设置」页面配置 API Key')
+      return
+    }
+    if (!currentProviderHasKey) {
+      setError('当前模型未配置 API Key，请在「设置」页面配置')
       return
     }
 
@@ -35,20 +74,21 @@ export function AISummary() {
     setLoading(true)
 
     try {
+      const fullConfig = getFullConfig()
       let summary = ''
       if (mode === 'diary') {
         const diary = diaries.find(d => d.id === selectedDiaryId)
         if (!diary || !diary.content.trim()) {
           throw new Error('请选择有内容的日记')
         }
-        summary = await summarizeDiary(config, diary.content, (chunk) => {
+        summary = await summarizeDiary(fullConfig, diary.content, (chunk) => {
           setResult(prev => prev + chunk)
         })
       } else {
         if (!customText.trim()) {
           throw new Error('请输入要总结的内容')
         }
-        summary = await summarizeText(config, customText, (chunk) => {
+        summary = await summarizeText(fullConfig, customText, (chunk) => {
           setResult(prev => prev + chunk)
         })
       }
@@ -68,12 +108,13 @@ export function AISummary() {
     }
   }
 
-  if (!isConfigured) {
+  // 如果没有任何 API Key，显示提示
+  if (!hasAnyKey) {
     return (
       <GlassPanel cornerRadius={16} padding="32px">
         <div className="text-center text-white/60">
-          <Sparkles size={32} className="mx-auto mb-3 text-white/30" />
-          <p className="text-sm">请先在「设置」页面配置 AI 服务</p>
+          <Settings size={32} className="mx-auto mb-3 text-white/30" />
+          <p className="text-sm">请先在「设置」页面配置 API Key</p>
         </div>
       </GlassPanel>
     )
@@ -81,6 +122,67 @@ export function AISummary() {
 
   return (
     <div className="space-y-3">
+      {/* 模型选择 */}
+      <div className="flex items-center gap-2 mb-2 relative">
+        <button
+          onClick={() => setShowModelSelect(!showModelSelect)}
+          className="flex items-center gap-1.5 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
+          style={{
+            background: showModelSelect ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <span>{PROVIDER_NAMES[config.provider]}</span>
+          <span className="text-white/40">{AI_PRESETS[config.provider].model}</span>
+          {currentProviderHasKey ? (
+            <span className="text-green-400">✓</span>
+          ) : (
+            <span className="text-red-400">!</span>
+          )}
+          <ChevronDown size={12} />
+        </button>
+        
+        {/* 模型下拉菜单 */}
+        {showModelSelect && (
+          <div
+            className="absolute top-8 left-0 z-10 rounded-lg p-2"
+            style={{
+              background: 'rgba(0, 0, 0, 0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              minWidth: '220px',
+            }}
+          >
+            {(Object.keys(AI_PRESETS) as AIProvider[]).map((provider) => {
+              const providerHasKey = hasKey(provider)
+              return (
+                <button
+                  key={provider}
+                  onClick={() => {
+                    setProvider(provider)
+                    setShowModelSelect(false)
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"
+                  style={{
+                    background: config.provider === provider ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                    color: config.provider === provider ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{PROVIDER_NAMES[provider]}</span>
+                    {providerHasKey ? (
+                      <span className="text-green-400 text-[10px]">已配置</span>
+                    ) : (
+                      <span className="text-red-400/60 text-[10px]">未配置</span>
+                    )}
+                  </div>
+                  <span className="text-white/40">{AI_PRESETS[provider].model}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
       {/* 模式切换 */}
       <div className="flex gap-1.5">
         <button
@@ -150,7 +252,7 @@ export function AISummary() {
       <div className="flex items-center gap-2">
         <button
           onClick={handleSummarize}
-          disabled={loading}
+          disabled={loading || !currentProviderHasKey}
           className="text-sm px-4 py-2 rounded-lg bg-blue-500/40 hover:bg-blue-500/60 text-white disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1.5"
         >
           {loading ? (

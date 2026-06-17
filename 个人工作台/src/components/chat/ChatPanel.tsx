@@ -7,9 +7,8 @@ import { useAIConfigStore, AI_PRESETS } from '../../store/useAIConfigStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import { chat } from '../ai/aiService'
 import type { AIMessage, AIProvider, AIConfig } from '../../types'
-import { MessageSquare, Plus, Trash2, Send, Loader2, Sparkles, ChevronDown, Key, Settings } from 'lucide-react'
+import { MessageSquare, Plus, Trash2, Send, Loader2, ChevronDown, Settings } from 'lucide-react'
 import { GlassPanel } from '../glass/GlassPanel'
-import { APIKeyManager } from './APIKeyManager'
 
 // AI 提供商显示名称
 const PROVIDER_NAMES: Record<AIProvider, string> = {
@@ -48,7 +47,6 @@ export function ChatPanel() {
   const [loading, setLoading] = useState(false)
   const [streamContent, setStreamContent] = useState('')
   const [showModelSelect, setShowModelSelect] = useState(false)
-  const [showAPIManager, setShowAPIManager] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // 加载对话数据和 API Keys
@@ -80,10 +78,7 @@ export function ChatPanel() {
   // 发送消息
   const handleSend = async () => {
     if (!input.trim() || loading) return
-    if (!currentProviderHasKey) {
-      setShowAPIManager(true)
-      return
-    }
+    if (!currentProviderHasKey) return
     if (!activeChatId) {
       const newId = createChat()
       setActiveChat(newId)
@@ -160,38 +155,13 @@ export function ChatPanel() {
     )
   }
 
-  // 显示 API Key 管理器
-  if (showAPIManager) {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-white">API Key 管理</h3>
-          <button
-            onClick={() => setShowAPIManager(false)}
-            className="text-xs text-white/60 hover:text-white"
-          >
-            返回聊天
-          </button>
-        </div>
-        <APIKeyManager />
-      </div>
-    )
-  }
-
   // 如果没有任何 API Key，显示提示
   if (!hasAnyKey) {
     return (
       <GlassPanel cornerRadius={16} padding="32px">
         <div className="text-center text-white/60">
-          <Key size={32} className="mx-auto mb-3 text-white/30" />
-          <p className="text-sm mb-2">请先配置 API Key</p>
-          <button
-            onClick={() => setShowAPIManager(true)}
-            className="px-4 py-2 rounded-lg text-xs text-white"
-            style={{ background: 'rgba(59, 130, 246, 0.5)' }}
-          >
-            配置 API Key
-          </button>
+          <Settings size={32} className="mx-auto mb-3 text-white/30" />
+          <p className="text-sm mb-2">请先在「设置」页面配置 API Key</p>
         </div>
       </GlassPanel>
     )
@@ -201,19 +171,6 @@ export function ChatPanel() {
     <div className="flex gap-4 h-[500px]">
       {/* 左侧对话列表 */}
       <GlassPanel cornerRadius={16} padding="12px" className="w-48 flex flex-col">
-        {/* API Key 管理按钮 */}
-        <button
-          onClick={() => setShowAPIManager(true)}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/80 hover:bg-white/20 mb-2"
-          style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }}
-        >
-          <Key size={14} />
-          <span>API 管理</span>
-        </button>
-
         {/* 新建对话按钮 */}
         <button
           onClick={handleNewChat}
@@ -367,7 +324,7 @@ export function ChatPanel() {
           {/* 当前模型未配置提示 */}
           {!currentProviderHasKey && (
             <div className="text-xs text-red-400/80 mb-2">
-              当前模型未配置 API Key，请点击「API 管理」配置
+              当前模型未配置 API Key，请在「设置」页面配置
             </div>
           )}
           
