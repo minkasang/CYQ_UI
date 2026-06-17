@@ -4,7 +4,6 @@ import { Layout } from './components/layout/Layout'
 import { HomePage } from './pages/HomePage'
 import { TodoPage } from './pages/TodoPage'
 import { DiaryPage } from './pages/DiaryPage'
-import { AIPage } from './pages/AIPage'
 import { WallpaperPage } from './pages/WallpaperPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { DemoPage } from './pages/DemoPage'
@@ -16,7 +15,6 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="todo" element={<TodoPage />} />
         <Route path="diary" element={<DiaryPage />} />
-        <Route path="ai" element={<AIPage />} />
         <Route path="wallpaper" element={<WallpaperPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>

@@ -1,28 +1,17 @@
 // AI 总结主组件
-// 一键总结日记或长文本，支持提供商和模型选择
+// 一键总结日记或长文本
 
 import { useState } from 'react'
-import { Sparkles, Loader2, AlertCircle, ChevronDown, Settings } from 'lucide-react'
+import { Sparkles, Loader2, AlertCircle, Settings } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { useAIConfigStore, PROVIDER_MODELS, getModelName } from '../../store/useAIConfigStore'
+import { useAIConfigStore } from '../../store/useAIConfigStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import { useDiaryStore, selectSortedDiaries } from '../../store/useDiaryStore'
 import { summarizeDiary, summarizeText, AIServiceError } from './aiService'
 import { GlassPanel } from '../glass/GlassPanel'
 import { friendlyDate } from '../../utils/date'
-import type { AIProvider, AIConfig } from '../../types'
-
-// AI 提供商显示名称
-const PROVIDER_NAMES: Record<AIProvider, string> = {
-  agnes: 'Agnes AI',
-  deepseek: 'DeepSeek',
-  openai: 'OpenAI',
-  claude: 'Claude',
-  kimi: 'Kimi',
-  zhipu: '智谱',
-  custom: '自定义',
-}
+import type { AIConfig } from '../../types'
 
 export function AISummary() {
   const diaries = useDiaryStore(selectSortedDiaries)
@@ -32,26 +21,16 @@ export function AISummary() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [showProviderSelect, setShowProviderSelect] = useState(false)
-  const [showModelSelect, setShowModelSelect] = useState(false)
 
   // AI 配置
   const config = useAIConfigStore(s => s.config)
-  const setProvider = useAIConfigStore(s => s.setProvider)
-  const setModel = useAIConfigStore(s => s.setModel)
-  
+
   // API Keys
   const hasKey = useAPIKeysStore(s => s.hasKey)
   const hasAnyKey = useAPIKeysStore(s => s.hasAnyKey)
 
   // 当前提供商是否有 API Key
   const currentProviderHasKey = hasKey(config.provider)
-  
-  // 当前提供商的模型列表
-  const currentModels = PROVIDER_MODELS[config.provider] || []
-  
-  // 当前模型显示名称
-  const currentModelName = getModelName(config.provider, config.model)
 
   // 处理总结
   const handleSummarize = async () => {
@@ -127,112 +106,6 @@ export function AISummary() {
 
   return (
     <div className="space-y-3">
-      {/* 提供商 + 模型选择 */}
-      <div className="flex items-center gap-2 mb-2 relative">
-        {/* 提供商选择 */}
-        <button
-          onClick={() => setShowProviderSelect(!showProviderSelect)}
-          className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
-          style={{
-            background: showProviderSelect ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }}
-        >
-          <span>{PROVIDER_NAMES[config.provider]}</span>
-          {currentProviderHasKey ? (
-            <span className="text-green-400">✓</span>
-          ) : (
-            <span className="text-red-400">!</span>
-          )}
-          <ChevronDown size={12} />
-        </button>
-        
-        {/* 提供商下拉菜单 */}
-        {showProviderSelect && (
-          <div
-            className="absolute top-8 left-0 z-10 rounded-lg p-2"
-            style={{
-              background: 'rgba(0, 0, 0, 0.9)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              minWidth: '180px',
-            }}
-          >
-            {(Object.keys(PROVIDER_NAMES) as AIProvider[]).map((provider) => {
-              const providerHasKey = hasKey(provider)
-              return (
-                <button
-                  key={provider}
-                  onClick={() => {
-                    setProvider(provider)
-                    setShowProviderSelect(false)
-                  }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"
-                  style={{
-                    background: config.provider === provider ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                    color: config.provider === provider ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{PROVIDER_NAMES[provider]}</span>
-                    {providerHasKey ? (
-                      <span className="text-green-400 text-[10px]">已配置</span>
-                    ) : (
-                      <span className="text-red-400/60 text-[10px]">未配置</span>
-                    )}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
-        
-        {/* 模型选择 */}
-        <button
-          onClick={() => setShowModelSelect(!showModelSelect)}
-          className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
-          style={{
-            background: showModelSelect ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }}
-        >
-          <span>{currentModelName}</span>
-          <ChevronDown size={12} />
-        </button>
-        
-        {/* 模型下拉菜单 */}
-        {showModelSelect && (
-          <div
-            className="absolute top-8 z-10 rounded-lg p-2"
-            style={{
-              background: 'rgba(0, 0, 0, 0.9)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              minWidth: '200px',
-              left: '180px',
-            }}
-          >
-            {currentModels.map((model) => (
-              <button
-                key={model.id}
-                onClick={() => {
-                  setModel(model.id)
-                  setShowModelSelect(false)
-                }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"
-                style={{
-                  background: config.model === model.id ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                  color: config.model === model.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                }}
-              >
-                <div>
-                  <span>{model.name}</span>
-                  <span className="text-white/40 ml-2">{model.desc}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* 模式切换 */}
       <div className="flex gap-1.5">
         <button

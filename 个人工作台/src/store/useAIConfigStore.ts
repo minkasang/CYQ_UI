@@ -85,20 +85,18 @@ export const AI_PRESETS: Record<AIProvider, { baseUrl: string; defaultModel: str
 }
 
 interface AIConfigState {
-  config: AIConfig
+  config: Omit<AIConfig, 'apiKey'>  // apiKey 由 useAPIKeysStore 管理
   loaded: boolean
-  setConfig: (config: Partial<AIConfig>) => void
+  setConfig: (config: Partial<Omit<AIConfig, 'apiKey'>>) => void
   setProvider: (provider: AIProvider) => void
   setModel: (model: string) => void
-  setApiKey: (key: string) => void
   resetConfig: () => void
   loadFromFile: () => Promise<void>
   saveToFile: () => Promise<void>
 }
 
-const DEFAULT_CONFIG: AIConfig = {
+const DEFAULT_CONFIG: Omit<AIConfig, 'apiKey'> = {
   provider: 'deepseek',
-  apiKey: '',
   baseUrl: AI_PRESETS.deepseek.baseUrl,
   model: AI_PRESETS.deepseek.defaultModel,
   temperature: 0.7,
@@ -154,21 +152,15 @@ export const useAIConfigStore = create<AIConfigState>((set, get) => ({
     get().saveToFile()
   },
 
-  setApiKey: (key) => {
-    const newConfig = { ...get().config, apiKey: key }
-    set({ config: newConfig })
-    get().saveToFile()
-  },
-
   resetConfig: () => {
     set({ config: DEFAULT_CONFIG })
     get().saveToFile()
   },
 }))
 
-// 判断是否已配置（可以调用 AI）
+// 判断是否已配置 baseUrl 和 model（apiKey 由 useAPIKeysStore 管理，不在此检查）
 export const selectIsAIConfigured = (state: AIConfigState): boolean => {
-  return !!state.config.apiKey && !!state.config.baseUrl && !!state.config.model
+  return !!state.config.baseUrl && !!state.config.model
 }
 
 // 获取当前提供商的模型列表

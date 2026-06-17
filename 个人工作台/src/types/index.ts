@@ -117,7 +117,7 @@ export interface GlassConfig {
 // ============== 设置 ==============
 export interface AppSettings {
   glass: GlassConfig
-  ai: AIConfig
+  ai: Omit<AIConfig, 'apiKey'>  // apiKey 由 useAPIKeysStore 单独管理
   theme: 'light' | 'dark' | 'auto'
   language: 'zh-CN' | 'en-US'
 }

@@ -30,7 +30,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   language: 'zh-CN',
   ai: {
     provider: 'deepseek',
-    apiKey: '',
     baseUrl: 'https://api.deepseek.com/v1',
     model: 'deepseek-chat',
     temperature: 0.7,

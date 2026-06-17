@@ -6,7 +6,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useChatStore, getActiveChat } from '../../store/useChatStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
-import { PROVIDER_MODELS, isReasoningModel, AI_PRESETS } from '../../store/useAIConfigStore'
+import { PROVIDER_MODELS, getModelName, isReasoningModel, AI_PRESETS } from '../../store/useAIConfigStore'
 import { chat, generateImage, generateVideo, isImageModel, isVideoModel } from '../ai/aiService'
 import { GlassPanel } from '../glass/GlassPanel'
 import { ChatSidebar } from './ChatSidebar'
@@ -14,6 +14,12 @@ import { ChatMessages } from './ChatMessages'
 import { ChatInput } from './ChatInput'
 import { APIKeyModal } from './APIKeyModal'
 import type { AIProvider, AIConfig, APIKeyEntry } from '../../types'
+
+// 厂商显示名（仅 system prompt 用）
+const PROVIDER_NAMES_FOR_SYSTEM: Record<AIProvider, string> = {
+  agnes: 'Sapiens AI', deepseek: 'DeepSeek', openai: 'OpenAI', claude: 'Anthropic',
+  kimi: 'Moonshot', zhipu: '智谱AI', custom: '自定义厂商',
+}
 
 export function ChatPanel() {
   // ========== Store ==========
@@ -183,8 +189,9 @@ export function ChatPanel() {
 
       // 文本模型（含 reasoning）
       const currentChat = getActiveChat(useChatStore.getState())
+      const modelDisplayName = getModelName(provider, model)
       const messages = [
-        { role: 'system' as const, content: '你是智能助手。简洁直接回答，不要开场白，不要重复自我介绍。使用中文。' },
+        { role: 'system' as const, content: `你是 ${modelDisplayName}，由 ${AI_PRESETS[provider]?.baseUrl ? PROVIDER_NAMES_FOR_SYSTEM[provider] : provider} 提供。不要在每条回复中自我介绍。使用中文。` },
         ...(currentChat?.messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })) || []),
         { role: 'user' as const, content: text },
       ]

@@ -8,7 +8,6 @@ import { TodoList } from '../components/todo/TodoList'
 import { DiaryEditor } from '../components/diary/DiaryEditor'
 import { DiaryList } from '../components/diary/DiaryList'
 import { AISummary } from '../components/ai/AISummary'
-import { APIConfig } from '../components/ai/APIConfig'
 import { ChatPanel } from '../components/chat/ChatPanel'
 import { WallpaperManager } from '../components/wallpaper/WallpaperManager'
 import { useTodoStore, selectTodoStats } from '../store/useTodoStore'
@@ -163,17 +162,8 @@ export function HomePage() {
         }`}
       >
         <SectionTitle title="AI 总结" subtitle="用 AI 整理你的日记与想法" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-              <AISummary />
-            </div>
-          </div>
-          <div>
-            <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-              <APIConfig />
-            </div>
-          </div>
+        <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+          <AISummary />
         </div>
       </section>
 
