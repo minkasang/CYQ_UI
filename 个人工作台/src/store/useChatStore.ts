@@ -1,8 +1,10 @@
 // 聊天 Store
 // 使用文件存储实现数据持久化，支持多对话管理
+// 每个对话独立保存模型配置（provider + model）
 
 import { create } from 'zustand'
 import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
+import type { AIProvider } from '../types'
 
 // 消息类型
 export interface Message {
@@ -19,6 +21,8 @@ export interface Chat {
   messages: Message[]
   createdAt: number
   updatedAt: number
+  provider?: AIProvider  // 该对话的模型提供商
+  model?: string         // 该对话的模型名称
 }
 
 interface ChatState {
@@ -31,7 +35,7 @@ interface ChatState {
   loadChats: () => Promise<void>
   
   // 创建新对话
-  createChat: () => string
+  createChat: (provider?: AIProvider, model?: string) => string
   
   // 删除对话
   deleteChat: (id: string) => void
@@ -47,6 +51,9 @@ interface ChatState {
   
   // 清空对话消息
   clearMessages: (id: string) => void
+  
+  // 更新对话的模型配置
+  updateChatModel: (chatId: string, provider: AIProvider, model: string) => void
 }
 
 // 生成简单唯一 ID
@@ -81,7 +88,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   // 创建新对话
-  createChat: () => {
+  createChat: (provider?: AIProvider, model?: string) => {
     const id = genId()
     const chat: Chat = {
       id,
@@ -89,6 +96,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      provider,  // 继承当前全局配置
+      model,     // 继承当前全局配置
     }
     const newChats = [chat, ...get().chats]
     set({ chats: newChats, activeChatId: id })
@@ -151,6 +160,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
   clearMessages: (id) => {
     const newChats = get().chats.map(c =>
       c.id === id ? { ...c, messages: [], updatedAt: Date.now() } : c
+    )
+    set({ chats: newChats })
+    saveToFile(FILE_KEYS.CHATS, { chats: newChats, activeChatId: get().activeChatId })
+  },
+
+  // 更新对话的模型配置
+  updateChatModel: (chatId, provider, model) => {
+    console.log(`[ChatStore] ${new Date().toISOString()} updateChatModel:`, { chatId, provider, model })
+    const newChats = get().chats.map(c =>
+      c.id === chatId ? { ...c, provider, model, updatedAt: Date.now() } : c
     )
     set({ chats: newChats })
     saveToFile(FILE_KEYS.CHATS, { chats: newChats, activeChatId: get().activeChatId })

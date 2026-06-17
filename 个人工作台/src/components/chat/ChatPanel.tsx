@@ -114,6 +114,7 @@ export function ChatPanel() {
   const deleteChat = useChatStore(s => s.deleteChat)
   const setActiveChat = useChatStore(s => s.setActiveChat)
   const addMessage = useChatStore(s => s.addMessage)
+  const updateChatModel = useChatStore(s => s.updateChatModel)
   const loaded = useChatStore(s => s.loaded)
 
   // Local state
@@ -132,6 +133,19 @@ export function ChatPanel() {
     loadChats()
     loadKeys()
   }, [loadChats, loadKeys])
+
+  // 切换对话时同步模型配置到全局 store
+  useEffect(() => {
+    if (!activeChatId) return
+    const activeChat = chats.find(c => c.id === activeChatId)
+    console.log('[ChatPanel] 切换对话:', activeChatId, '对话配置:', activeChat?.provider, activeChat?.model)
+    if (activeChat?.provider && activeChat?.model) {
+      // 对话有独立配置，同步到全局
+      console.log('[ChatPanel] → 同步全局配置:', activeChat.provider, activeChat.model)
+      setProvider(activeChat.provider)
+      setModel(activeChat.model)
+    }
+  }, [activeChatId]) // 仅在切换对话时触发
 
   // 获取当前对话
   const activeChat = getActiveChat(useChatStore.getState())
@@ -176,7 +190,13 @@ export function ChatPanel() {
     const latestConfig = useAIConfigStore.getState().config
     const latestProviderHasKey = useAPIKeysStore.getState().hasKey(latestConfig.provider)
     
-    console.log('[Chat] 发送消息时配置:', latestConfig.provider, latestConfig.baseUrl, latestConfig.model)
+    console.log(`[ChatPanel] ${new Date().toISOString()} handleSend:`, {
+      provider: latestConfig.provider,
+      baseUrl: latestConfig.baseUrl,
+      model: latestConfig.model,
+      hasKey: latestProviderHasKey,
+      activeChatId,
+    })
     
     if (!latestProviderHasKey) return
     if (!activeChatId) {
@@ -304,10 +324,12 @@ export function ChatPanel() {
 
       // 文本模型 - 使用对话接口
       const currentChat = getActiveChat(useChatStore.getState())
+      const modelDisplayName = getModelName(latestConfig.provider, latestConfig.model)
+      const providerDisplayName = PROVIDER_NAMES[latestConfig.provider]
       const messages: AIMessage[] = [
         {
           role: 'system',
-          content: '你是一个智能助手，帮助用户解答问题、提供建议。回复要简洁、有用，使用中文。',
+          content: `你是 ${modelDisplayName}，由 ${providerDisplayName} 提供。你的身份永远是 ${modelDisplayName}，不要自称其他模型。你是一个智能助手，帮助用户解答问题、提供建议。回复要简洁、有用，使用中文。`,
         },
         ...(currentChat?.messages.map(m => ({
           role: m.role as 'user' | 'assistant',
@@ -336,9 +358,9 @@ export function ChatPanel() {
     }
   }
 
-  // 新建对话
+  // 新建对话，继承当前全局配置
   const handleNewChat = () => {
-    const id = createChat()
+    const id = createChat(config.provider, config.model)
     setActiveChat(id)
   }
 
@@ -549,7 +571,15 @@ export function ChatPanel() {
                     <button
                       key={provider}
                       onClick={() => {
+                        console.log(`[ChatPanel] ${new Date().toISOString()} 用户点击提供商: ${provider}, 当前对话: ${activeChatId}`)
                         setProvider(provider)
+                        // 更新当前对话的独立配置
+                        if (activeChatId) {
+                          const defaultModel = PROVIDER_MODELS[provider]?.[0]?.id || ''
+                          setModel(defaultModel)
+                          updateChatModel(activeChatId, provider, defaultModel)
+                          console.log(`[ChatPanel] → 更新对话模型: chat=${activeChatId} provider=${provider} model=${defaultModel}`)
+                        }
                         setShowProviderSelect(false)
                       }}
                       className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"
@@ -600,7 +630,12 @@ export function ChatPanel() {
                   <button
                     key={model.id}
                     onClick={() => {
+                      console.log(`[ChatPanel] ${new Date().toISOString()} 用户点击模型: ${model.id}, 当前对话: ${activeChatId}`)
                       setModel(model.id)
+                      // 更新当前对话的独立配置
+                      if (activeChatId) {
+                        updateChatModel(activeChatId, config.provider, model.id)
+                      }
                       setShowModelSelect(false)
                     }}
                     className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"

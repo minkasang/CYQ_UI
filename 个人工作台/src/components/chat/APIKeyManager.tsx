@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { Key, Eye, EyeOff, Trash2, Check } from 'lucide-react'
-import { useAPIKeysStore, AI_PRESETS } from '../../store/useAPIKeysStore'
+import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import type { AIProvider } from '../../types'
 import { GlassPanel } from '../glass/GlassPanel'
 

@@ -272,6 +272,7 @@ export async function generateVideo(config: AIConfig, options: VideoOptions): Pr
 // OpenAI 兼容协议（DeepSeek、OpenAI、Moonshot、智谱）
 async function callOpenAICompatible(config: AIConfig, options: ChatOptions): Promise<ChatResult> {
   const url = `${config.baseUrl.replace(/\/$/, '')}/chat/completions`
+  console.log('[AI] 调用 API:', { provider: config.provider, baseUrl: config.baseUrl, model: config.model, url })
 
   const body = {
     model: config.model,

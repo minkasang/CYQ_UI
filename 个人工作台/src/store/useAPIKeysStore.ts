@@ -23,6 +23,9 @@ interface APIKeysState {
   // 加载配置
   loadFromFile: () => Promise<void>
   
+  // 保存到文件
+  saveToFile: () => Promise<void>
+  
   // 设置某个提供商的 Key
   setKey: (provider: AIProvider, key: string) => void
   
