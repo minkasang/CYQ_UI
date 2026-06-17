@@ -1,0 +1,19 @@
+# 数据文件（本地存储）
+个人工作台/data/*.json
+个人工作台/data/*.bak
+个人工作台/data/images/
+个人工作台/data/videos/
+
+# 看板数据
+看板/data/
+
+# 日志文件
+server.log
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
