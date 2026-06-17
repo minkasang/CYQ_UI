@@ -62,7 +62,7 @@ export const AI_PRESETS: Record<AIProvider, { baseUrl: string; defaultModel: str
     defaultModel: 'gpt-4o-mini',
   },
   claude: {
-    baseUrl: 'https://api.anthropic.com/v1',
+    baseUrl: 'https://api.anthropic.com',
     defaultModel: 'claude-3-5-sonnet-20241022',
   },
   kimi: {

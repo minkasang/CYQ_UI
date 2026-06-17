@@ -186,7 +186,7 @@ async function callOpenAICompatible(config: AIConfig, options: ChatOptions): Pro
 
 // Anthropic Claude 协议
 async function callAnthropic(config: AIConfig, options: ChatOptions): Promise<ChatResult> {
-  const url = `${config.baseUrl.replace(/\/$/, '')}/messages`
+  const url = `${config.baseUrl.replace(/\/$/, '')}/v1/messages`
 
   // 转换消息格式（Anthropic 不支持 system role 在 messages 中）
   const systemMsg = options.messages.find(m => m.role === 'system')
