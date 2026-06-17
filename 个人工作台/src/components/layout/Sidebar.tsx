@@ -4,13 +4,14 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, CheckSquare, BookText, Sparkles, Settings as SettingsIcon, Image as ImageIcon } from 'lucide-react'
+import { Home, CheckSquare, BookText, Sparkles, Settings as SettingsIcon, Image as ImageIcon, MessageSquare } from 'lucide-react'
 
 const SECTIONS = [
   { id: 'welcome', label: '首页', icon: Home },
   { id: 'todo', label: '待办', icon: CheckSquare },
   { id: 'diary', label: '日记', icon: BookText },
   { id: 'ai', label: 'AI 总结', icon: Sparkles },
+  { id: 'chat', label: 'AI 聊天', icon: MessageSquare },
   { id: 'wallpaper', label: '壁纸', icon: ImageIcon },
 ]
 

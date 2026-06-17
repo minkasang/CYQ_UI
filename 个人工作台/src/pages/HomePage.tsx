@@ -9,6 +9,7 @@ import { DiaryEditor } from '../components/diary/DiaryEditor'
 import { DiaryList } from '../components/diary/DiaryList'
 import { AISummary } from '../components/ai/AISummary'
 import { APIConfig } from '../components/ai/APIConfig'
+import { ChatPanel } from '../components/chat/ChatPanel'
 import { WallpaperManager } from '../components/wallpaper/WallpaperManager'
 import { useTodoStore, selectTodoStats } from '../store/useTodoStore'
 import { useDiaryStore, selectSortedDiaries } from '../store/useDiaryStore'
@@ -68,6 +69,7 @@ export function HomePage() {
   const todoAnim = useScrollAnimation(0.2)
   const diaryAnim = useScrollAnimation(0.2)
   const aiAnim = useScrollAnimation(0.2)
+  const chatAnim = useScrollAnimation(0.2)
   const wallpaperAnim = useScrollAnimation(0.2)
 
   const scrollTo = (id: string) => {
@@ -175,7 +177,21 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ===== 第 5 屏：壁纸设置区 ===== */}
+      {/* ===== 第 5 屏：AI 聊天区 ===== */}
+      <section
+        id="chat"
+        ref={chatAnim.ref}
+        className={`py-8 transition-all duration-1000 ${
+          chatAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      >
+        <SectionTitle title="AI 聊天" subtitle="与 AI 进行多轮对话" />
+        <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+          <ChatPanel />
+        </div>
+      </section>
+
+      {/* ===== 第 6 屏：壁纸设置区 ===== */}
       <section
         id="wallpaper"
         ref={wallpaperAnim.ref}

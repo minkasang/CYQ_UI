@@ -13,6 +13,7 @@ export const FILE_KEYS = {
   WALLPAPER: `${DATA_DIR}/wallpaper.json`,
   SETTINGS: `${DATA_DIR}/settings.json`,
   GLASS_PARAMS: `${DATA_DIR}/glass_params.json`,
+  CHATS: `${DATA_DIR}/chats.json`,
 } as const
 
 // 从文件读取数据
