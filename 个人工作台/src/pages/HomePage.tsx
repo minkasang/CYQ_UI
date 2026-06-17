@@ -13,6 +13,8 @@ import { WallpaperManager } from '../components/wallpaper/WallpaperManager'
 import { useTodoStore, selectTodoStats } from '../store/useTodoStore'
 import { useDiaryStore, selectSortedDiaries } from '../store/useDiaryStore'
 import { useWallpaperStore } from '../store/useWallpaperStore'
+import { useSettingsStore } from '../store/useSettingsStore'
+import { useAIConfigStore } from '../store/useAIConfigStore'
 import { friendlyDate, getToday } from '../utils/date'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
 
@@ -42,6 +44,9 @@ export function HomePage() {
   const diaries = useDiaryStore(selectSortedDiaries)
   const loadTodos = useTodoStore(s => s.loadTodos)
   const loadDiaries = useDiaryStore(s => s.loadDiaries)
+  const loadWallpaper = useWallpaperStore(s => s.loadFromFile)
+  const loadSettings = useSettingsStore(s => s.loadFromFile)
+  const loadAIConfig = useAIConfigStore(s => s.loadFromFile)
   const today = getToday()
   const todayDiary = diaries.find(d => d.date === today)
   const wallpaper = useWallpaperStore(s => s.current)
@@ -49,11 +54,14 @@ export function HomePage() {
 
   const { registerPanel } = useLiquidGlass(bgUrl)
 
-  // 加载待办和日记数据
+  // 加载所有配置数据
   useEffect(() => {
     loadTodos()
     loadDiaries()
-  }, [loadTodos, loadDiaries])
+    loadWallpaper()
+    loadSettings()
+    loadAIConfig()
+  }, [loadTodos, loadDiaries, loadWallpaper, loadSettings, loadAIConfig])
 
   // 各个 section 的滚动动画
   const welcomeAnim = useScrollAnimation(0.3)

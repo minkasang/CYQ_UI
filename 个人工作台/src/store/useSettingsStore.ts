@@ -1,9 +1,9 @@
 // 全局设置 Store
-// 给 AI 的话：包含玻璃参数、主题等全局配置
+// 给 AI 的话：包含玻璃参数、主题等全局配置，存配置文件
 
 import { create } from 'zustand'
 import type { GlassConfig, AppSettings } from '../types'
-import { saveToStorage, STORAGE_KEYS } from '../utils/storage'
+import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 
 const DEFAULT_GLASS: GlassConfig = {
   refraction: 0.69,
@@ -40,30 +40,40 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 interface SettingsState {
   settings: AppSettings
+  loaded: boolean
   setGlass: (patch: Partial<GlassConfig>) => void
   resetGlass: () => void
   setTheme: (theme: AppSettings['theme']) => void
   setLanguage: (lang: AppSettings['language']) => void
   resetAll: () => void
+  loadFromFile: () => Promise<void>
+  saveToFile: () => Promise<void>
 }
 
-// 安全加载设置
-function loadSettings(): AppSettings {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS)
-    if (!raw) return DEFAULT_SETTINGS
+export const useSettingsStore = create<SettingsState>((set, get) => ({
+  settings: DEFAULT_SETTINGS,
+  loaded: false,
+
+  // 从配置文件加载设置
+  loadFromFile: async () => {
+    const saved = await loadFromFile<AppSettings | {}>(FILE_KEYS.SETTINGS, DEFAULT_SETTINGS)
     
-    const saved = JSON.parse(raw)
+    // 处理空对象
+    if (!saved || !('glass' in saved)) {
+      console.log('[settings] 配置文件为空，使用默认设置')
+      set({ settings: DEFAULT_SETTINGS, loaded: true })
+      return
+    }
     
     // 检查是否是旧格式（包含 mode 字段）
     if (saved.glass && 'mode' in saved.glass) {
-      // 旧格式，直接使用默认值
       console.log('[settings] 检测到旧格式设置，使用默认玻璃参数')
-      return DEFAULT_SETTINGS
+      set({ settings: DEFAULT_SETTINGS, loaded: true })
+      return
     }
     
     // 合并保存的设置和默认设置
-    return {
+    const merged: AppSettings = {
       ...DEFAULT_SETTINGS,
       ...saved,
       glass: {
@@ -71,42 +81,45 @@ function loadSettings(): AppSettings {
         ...(saved.glass || {}),
       },
     }
-  } catch (err) {
-    console.error('[settings] 加载设置失败:', err)
-    return DEFAULT_SETTINGS
-  }
-}
+    
+    set({ settings: merged, loaded: true })
+    console.log('[settings] 从文件加载完成')
+  },
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
-  settings: loadSettings(),
+  // 保存到配置文件
+  saveToFile: async () => {
+    const { settings } = get()
+    await saveToFile(FILE_KEYS.SETTINGS, settings)
+    console.log('[settings] 已保存到文件')
+  },
 
   setGlass: (patch) => {
     const newGlass = { ...get().settings.glass, ...patch }
     const newSettings = { ...get().settings, glass: newGlass }
     set({ settings: newSettings })
-    saveToStorage(STORAGE_KEYS.SETTINGS, newSettings)
+    get().saveToFile()
   },
 
   resetGlass: () => {
     const newSettings = { ...get().settings, glass: DEFAULT_GLASS }
     set({ settings: newSettings })
-    saveToStorage(STORAGE_KEYS.SETTINGS, newSettings)
+    get().saveToFile()
   },
 
   setTheme: (theme) => {
     const newSettings = { ...get().settings, theme }
     set({ settings: newSettings })
-    saveToStorage(STORAGE_KEYS.SETTINGS, newSettings)
+    get().saveToFile()
   },
 
   setLanguage: (language) => {
     const newSettings = { ...get().settings, language }
     set({ settings: newSettings })
-    saveToStorage(STORAGE_KEYS.SETTINGS, newSettings)
+    get().saveToFile()
   },
 
   resetAll: () => {
     set({ settings: DEFAULT_SETTINGS })
-    saveToStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
+    get().saveToFile()
   },
 }))

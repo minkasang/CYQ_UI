@@ -23,6 +23,7 @@ const PRESET_COLORS = [
 export function WallpaperManager() {
   const current = useWallpaperStore(s => s.current)
   const history = useWallpaperStore(s => s.history)
+  const presets = useWallpaperStore(s => s.presets)
   const setCurrent = useWallpaperStore(s => s.setCurrent)
   const addCustom = useWallpaperStore(s => s.addCustom)
   const removeFromHistory = useWallpaperStore(s => s.removeFromHistory)
@@ -198,6 +199,32 @@ export function WallpaperManager() {
             </button>
           </div>
         )}
+      </GlassPanel>
+
+      {/* 本地预设壁纸 */}
+      <GlassPanel cornerRadius={16} padding="16px">
+        <div className="text-xs text-white/50 mb-2">本地壁纸（加载快）</div>
+        <div className="grid grid-cols-4 gap-2">
+          {presets.map(w => {
+            const isCurrent = current.value === w.value
+            return (
+              <button
+                key={w.id}
+                onClick={() => setCurrent(w)}
+                className={`w-full aspect-video rounded-lg border-2 transition overflow-hidden ${
+                  isCurrent ? 'border-blue-400' : 'border-white/10 hover:border-white/30'
+                }`}
+              >
+                <img src={w.value} alt={w.name} className="w-full h-full object-cover" />
+                {isCurrent && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <Check size={16} className="text-white" />
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
       </GlassPanel>
 
       {/* 当前壁纸 */}

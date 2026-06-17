@@ -1,9 +1,9 @@
 // AI 配置 Store
-// 给 AI 的话：API Key 仅存 localStorage，不上传任何服务器
+// 给 AI 的话：API Key 存配置文件，不上传任何服务器
 
 import { create } from 'zustand'
 import type { AIConfig, AIProvider } from '../types'
-import { loadFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage'
+import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 
 // 各 AI 服务的默认配置
 export const AI_PRESETS: Record<AIProvider, Omit<AIConfig, 'apiKey'>> = {
@@ -53,10 +53,13 @@ export const AI_PRESETS: Record<AIProvider, Omit<AIConfig, 'apiKey'>> = {
 
 interface AIConfigState {
   config: AIConfig
+  loaded: boolean
   setConfig: (config: Partial<AIConfig>) => void
   setProvider: (provider: AIProvider) => void
   setApiKey: (key: string) => void
   resetConfig: () => void
+  loadFromFile: () => Promise<void>
+  saveToFile: () => Promise<void>
 }
 
 const DEFAULT_CONFIG: AIConfig = {
@@ -69,12 +72,29 @@ const DEFAULT_CONFIG: AIConfig = {
 }
 
 export const useAIConfigStore = create<AIConfigState>((set, get) => ({
-  config: loadFromStorage<AIConfig>(STORAGE_KEYS.AI_CONFIG, DEFAULT_CONFIG),
+  config: DEFAULT_CONFIG,
+  loaded: false,
+
+  // 从配置文件加载
+  loadFromFile: async () => {
+    const saved = await loadFromFile<AIConfig | {}>(FILE_KEYS.AI_CONFIG, DEFAULT_CONFIG)
+    // 处理空对象
+    const config = saved && 'provider' in saved ? saved as AIConfig : DEFAULT_CONFIG
+    set({ config, loaded: true })
+    console.log('[ai-config] 从文件加载完成')
+  },
+
+  // 保存到配置文件
+  saveToFile: async () => {
+    const { config } = get()
+    await saveToFile(FILE_KEYS.AI_CONFIG, config)
+    console.log('[ai-config] 已保存到文件')
+  },
 
   setConfig: (patch) => {
     const newConfig = { ...get().config, ...patch }
     set({ config: newConfig })
-    saveToStorage(STORAGE_KEYS.AI_CONFIG, newConfig)
+    get().saveToFile()
   },
 
   setProvider: (provider) => {
@@ -86,18 +106,18 @@ export const useAIConfigStore = create<AIConfigState>((set, get) => ({
       model: preset.model,
     }
     set({ config: newConfig })
-    saveToStorage(STORAGE_KEYS.AI_CONFIG, newConfig)
+    get().saveToFile()
   },
 
   setApiKey: (key) => {
     const newConfig = { ...get().config, apiKey: key }
     set({ config: newConfig })
-    saveToStorage(STORAGE_KEYS.AI_CONFIG, newConfig)
+    get().saveToFile()
   },
 
   resetConfig: () => {
     set({ config: DEFAULT_CONFIG })
-    saveToStorage(STORAGE_KEYS.AI_CONFIG, DEFAULT_CONFIG)
+    get().saveToFile()
   },
 }))
 
