@@ -10,6 +10,7 @@ export const FILE_KEYS = {
   TODOS: `${DATA_DIR}/todos.json`,
   DIARIES: `${DATA_DIR}/diaries.json`,
   AI_CONFIG: `${DATA_DIR}/ai_config.json`,
+  API_KEYS: `${DATA_DIR}/api_keys.json`,
   WALLPAPER: `${DATA_DIR}/wallpaper.json`,
   SETTINGS: `${DATA_DIR}/settings.json`,
   GLASS_PARAMS: `${DATA_DIR}/glass_params.json`,
