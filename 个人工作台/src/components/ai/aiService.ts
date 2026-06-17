@@ -11,6 +11,12 @@ export interface ChatOptions {
   signal?: AbortSignal
 }
 
+export interface ImageOptions {
+  prompt: string
+  size?: string
+  n?: number
+}
+
 export interface ChatResult {
   content: string
   usage?: {
@@ -18,6 +24,10 @@ export interface ChatResult {
     completionTokens: number
     totalTokens: number
   }
+}
+
+export interface ImageResult {
+  url: string
 }
 
 // 通用错误类型
@@ -28,8 +38,18 @@ export class AIServiceError extends Error {
   }
 }
 
+// 判断是否是图片模型
+export function isImageModel(model: string): boolean {
+  return model.includes('image') || model.includes('vision') || model.startsWith('agnes-image')
+}
+
+// 判断是否是视频模型
+export function isVideoModel(model: string): boolean {
+  return model.includes('video') || model.startsWith('agnes-video')
+}
+
 // 统一的 AI 调用入口
-// 给 AI 的话：根据 provider 分发到不同适配器
+// 给 AI 的话：根据 provider 和 model 类型分发到不同适配器
 export async function chat(config: AIConfig, options: ChatOptions): Promise<ChatResult> {
   if (!config.apiKey) {
     throw new AIServiceError('未配置 API Key，请先在设置中配置', 'NO_API_KEY')
@@ -41,12 +61,76 @@ export async function chat(config: AIConfig, options: ChatOptions): Promise<Chat
     throw new AIServiceError('未选择模型', 'NO_MODEL')
   }
 
+  // 图片模型使用图片生成接口
+  if (isImageModel(config.model)) {
+    throw new AIServiceError('图片模型不支持对话，请使用 generateImage 函数', 'WRONG_MODEL_TYPE')
+  }
+
+  // 视频模型使用视频生成接口
+  if (isVideoModel(config.model)) {
+    throw new AIServiceError('视频模型不支持对话，请使用 generateVideo 函数', 'WRONG_MODEL_TYPE')
+  }
+
   // 统一走 OpenAI 兼容接口（DeepSeek、Moonshot、智谱 GLM 等都兼容）
   if (config.provider !== 'claude') {
     return callOpenAICompatible(config, options)
   } else {
     return callAnthropic(config, options)
   }
+}
+
+// 图片生成
+export async function generateImage(config: AIConfig, options: ImageOptions): Promise<ImageResult> {
+  if (!config.apiKey) {
+    throw new AIServiceError('未配置 API Key，请先在设置中配置', 'NO_API_KEY')
+  }
+  if (!config.baseUrl) {
+    throw new AIServiceError('未配置 API 地址', 'NO_BASE_URL')
+  }
+  if (!isImageModel(config.model)) {
+    throw new AIServiceError('当前模型不支持图片生成，请选择图片模型', 'WRONG_MODEL_TYPE')
+  }
+
+  const url = `${config.baseUrl.replace(/\/$/, '')}/images/generations`
+
+  const body = {
+    model: config.model,
+    prompt: options.prompt,
+    size: options.size || '1024x1024',
+    n: options.n || 1,
+  }
+
+  console.log('[AI] 图片生成请求:', url, body)
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`,
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    const errText = await response.text()
+    let errMsg = `HTTP ${response.status}`
+    try {
+      const errJson = JSON.parse(errText)
+      errMsg = errJson.error?.message || errJson.message || errJson.detail || errText
+    } catch {
+      errMsg = errText || errMsg
+    }
+    throw new AIServiceError(`图片生成失败: ${errMsg}`, `HTTP_${response.status}`)
+  }
+
+  const data = await response.json()
+  const imageUrl = data.data?.[0]?.url || data.data?.[0]?.b64_json
+  
+  if (!imageUrl) {
+    throw new AIServiceError('图片生成返回空结果', 'EMPTY_RESULT')
+  }
+
+  return { url: imageUrl }
 }
 
 // OpenAI 兼容协议（DeepSeek、OpenAI、Moonshot、智谱）

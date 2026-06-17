@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useChatStore, getActiveChat } from '../../store/useChatStore'
 import { useAIConfigStore, PROVIDER_MODELS, getModelName } from '../../store/useAIConfigStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
-import { chat } from '../ai/aiService'
+import { chat, generateImage, isImageModel, isVideoModel } from '../ai/aiService'
 import type { AIMessage, AIProvider, AIConfig } from '../../types'
 import { MessageSquare, Plus, Trash2, Send, Loader2, ChevronDown, Settings } from 'lucide-react'
 import { GlassPanel } from '../glass/GlassPanel'
@@ -101,7 +101,30 @@ export function ChatPanel() {
     addMessage(activeChatId || useChatStore.getState().activeChatId!, 'user', userMessage)
 
     try {
-      // 构建消息历史
+      const apiKey = useAPIKeysStore.getState().getKey(latestConfig.provider) || ''
+      const fullConfig: AIConfig = {
+        ...latestConfig,
+        apiKey,
+      }
+
+      // 图片模型 - 使用图片生成接口
+      if (isImageModel(latestConfig.model)) {
+        const result = await generateImage(fullConfig, {
+          prompt: userMessage,
+          size: '1024x1024',
+        })
+        // 添加图片回复
+        addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', `![生成的图片](${result.url})`)
+        return
+      }
+
+      // 视频模型 - 提示不支持
+      if (isVideoModel(latestConfig.model)) {
+        addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', '视频生成功能暂不支持，请选择文本或图片模型')
+        return
+      }
+
+      // 文本模型 - 使用对话接口
       const currentChat = getActiveChat(useChatStore.getState())
       const messages: AIMessage[] = [
         {
@@ -115,12 +138,7 @@ export function ChatPanel() {
         { role: 'user', content: userMessage },
       ]
 
-      // 调用 AI（流式）- 使用最新配置
-      const apiKey = useAPIKeysStore.getState().getKey(latestConfig.provider) || ''
-      const fullConfig: AIConfig = {
-        ...latestConfig,
-        apiKey,
-      }
+      // 调用 AI（流式）
       const result = await chat(fullConfig, {
         messages,
         stream: true,

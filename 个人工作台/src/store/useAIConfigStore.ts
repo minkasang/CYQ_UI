@@ -54,7 +54,7 @@ export const AI_PRESETS: Record<AIProvider, { baseUrl: string; defaultModel: str
     defaultModel: 'agnes-2.0-flash',
   },
   deepseek: {
-    baseUrl: 'https://api.deepseek.com/v1',
+    baseUrl: 'https://api.deepseek.com',
     defaultModel: 'deepseek-chat',
   },
   openai: {
