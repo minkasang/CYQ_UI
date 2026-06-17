@@ -5,20 +5,20 @@ import { create } from 'zustand'
 import type { AIConfig, AIProvider } from '../types'
 import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 
-// 各提供商的模型列表
+// 各提供商的模型列表（根据官网确认）
 export const PROVIDER_MODELS: Record<AIProvider, { id: string; name: string; desc: string }[]> = {
   agnes: [
-    { id: 'agnes-1.5', name: 'Agnes 1.5', desc: '基础模型' },
-    { id: 'agnes-2.0-flash', name: 'Agnes 2.0 Flash', desc: '快速响应' },
-    { id: 'agnes-2.0-pro', name: 'Agnes 2.0 Pro', desc: '高级推理' },
-    { id: 'agnes-2.0-vision', name: 'Agnes 2.0 Vision', desc: '图像理解' },
-    { id: 'agnes-2.0-video', name: 'Agnes 2.0 Video', desc: '视频分析' },
+    { id: 'agnes-1.5-flash', name: 'Agnes 1.5 Flash', desc: '文本对话' },
+    { id: 'agnes-2.0-flash', name: 'Agnes 2.0 Flash', desc: '文本对话' },
+    { id: 'agnes-image-2.0-flash', name: 'Agnes Image 2.0', desc: '图像生成' },
+    { id: 'agnes-image-2.1-flash', name: 'Agnes Image 2.1', desc: '图像生成' },
+    { id: 'agnes-video-v2.0', name: 'Agnes Video V2.0', desc: '视频生成' },
   ],
   deepseek: [
-    { id: 'deepseek-chat', name: 'DeepSeek V3', desc: '通用对话' },
-    { id: 'deepseek-reasoner', name: 'DeepSeek R1', desc: '深度推理' },
-    { id: 'deepseek-v4', name: 'DeepSeek V4', desc: '最新版本' },
-    { id: 'deepseek-pro', name: 'DeepSeek Pro', desc: '专业版' },
+    { id: 'deepseek-chat', name: 'DeepSeek Chat', desc: 'V4 Flash 非思考' },
+    { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', desc: '思考模式' },
+    { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', desc: '专业版' },
+    { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: '快速版' },
   ],
   openai: [
     { id: 'gpt-4o', name: 'GPT-4o', desc: '全能模型' },
