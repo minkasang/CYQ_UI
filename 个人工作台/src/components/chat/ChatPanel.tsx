@@ -21,6 +21,29 @@ const PROVIDER_NAMES: Record<AIProvider, string> = {
   custom: '自定义',
 }
 
+// 渲染消息内容，支持图片显示
+function renderMessageContent(content: string) {
+  // 检测 markdown 图片格式 ![alt](url)
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g
+  const match = imageRegex.exec(content)
+  
+  if (match) {
+    // 如果是图片，显示图片
+    const imageUrl = match[2]
+    return (
+      <img 
+        src={imageUrl} 
+        alt={match[1] || '生成的图片'} 
+        className="max-w-full rounded-lg"
+        style={{ maxHeight: '300px' }}
+      />
+    )
+  }
+  
+  // 否则显示文本
+  return content
+}
+
 export function ChatPanel() {
   // AI 配置
   const config = useAIConfigStore(s => s.config)
@@ -265,7 +288,8 @@ export function ChatPanel() {
                       color: '#ffffff',
                     }}
                   >
-                    {msg.content}
+                    {/* 渲染消息内容，支持图片 */}
+                    {renderMessageContent(msg.content)}
                   </div>
                 </div>
               ))}
