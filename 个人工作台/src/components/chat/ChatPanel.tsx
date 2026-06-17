@@ -47,7 +47,7 @@ export function ChatPanel() {
   const [loading, setLoading] = useState(false)
   const [streamContent, setStreamContent] = useState('')
   const [showModelSelect, setShowModelSelect] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   // 加载对话数据和 API Keys
   useEffect(() => {
@@ -70,9 +70,12 @@ export function ChatPanel() {
     }
   }
 
-  // 滚动到底部
+  // 滚动到底部（只滚动消息列表容器，不影响整个页面）
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
   }, [activeChat?.messages, streamContent])
 
   // 发送消息
@@ -214,7 +217,7 @@ export function ChatPanel() {
       {/* 右侧聊天区域 */}
       <GlassPanel cornerRadius={16} padding="0" className="flex-1 flex flex-col overflow-hidden">
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {!activeChat || activeChat.messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-white/50">
               <MessageSquare size={32} className="mb-3 opacity-30" />
@@ -253,7 +256,6 @@ export function ChatPanel() {
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </>
           )}
         </div>
