@@ -23,7 +23,8 @@ export interface VideoOptions {
   height?: number
   numFrames?: number
   frameRate?: number
-  onProgress?: (status: string) => void
+  onProgress?: (progress: number, status: string) => void
+  signal?: AbortSignal
 }
 
 export interface ChatResult {
@@ -173,7 +174,7 @@ export async function generateVideo(config: AIConfig, options: VideoOptions): Pr
   }
 
   console.log('[AI] 创建视频任务:', createUrl, createBody)
-  options.onProgress?.('创建视频任务...')
+  options.onProgress?.(0, '创建视频任务...')
 
   const createResp = await fetch(createUrl, {
     method: 'POST',
@@ -204,13 +205,18 @@ export async function generateVideo(config: AIConfig, options: VideoOptions): Pr
   }
 
   console.log('[AI] 视频任务已创建:', taskId)
-  options.onProgress?.(`任务已创建，等待生成...`)
+  options.onProgress?.(0, '任务已创建，等待处理...')
 
   // Step 2: 轮询任务状态
   const statusUrl = `${baseUrl}/videos/${taskId}`
-  const maxAttempts = 120 // 最多等待 4 分钟（每 2 秒轮询一次）
+  const maxAttempts = 240 // 最多等待 8 分钟（每 2 秒轮询一次）
   
   for (let i = 0; i < maxAttempts; i++) {
+    // 检查是否被取消
+    if (options.signal?.aborted) {
+      throw new AIServiceError('用户取消了视频生成', 'CANCELLED')
+    }
+    
     await new Promise(resolve => setTimeout(resolve, 2000)) // 等待 2 秒
     
     const statusResp = await fetch(statusUrl, {
@@ -227,9 +233,16 @@ export async function generateVideo(config: AIConfig, options: VideoOptions): Pr
 
     const statusData = await statusResp.json()
     const status = statusData.status || statusData.data?.status
+    const progress = statusData.progress || statusData.data?.progress || 0
     
-    console.log('[AI] 视频状态:', status)
-    options.onProgress?.(`生成中... (${i + 1}/${maxAttempts})`)
+    console.log('[AI] 视频状态:', status, '进度:', progress)
+    
+    // 使用 API 返回的真实进度
+    if (status === 'queued') {
+      options.onProgress?.(0, '排队等待...')
+    } else if (status === 'in_progress' || status === 'processing') {
+      options.onProgress?.(progress, `生成中... ${progress}%`)
+    }
 
     if (status === 'completed' || status === 'succeeded') {
       // 获取视频 URL（兼容不同字段名）
@@ -243,7 +256,7 @@ export async function generateVideo(config: AIConfig, options: VideoOptions): Pr
       }
 
       console.log('[AI] 视频生成完成:', videoUrl)
-      options.onProgress?.('生成完成!')
+      options.onProgress?.(100, '生成完成!')
       return { url: videoUrl, taskId }
     }
 
@@ -253,7 +266,7 @@ export async function generateVideo(config: AIConfig, options: VideoOptions): Pr
     }
   }
 
-  throw new AIServiceError('视频生成超时（等待超过 4 分钟）', 'VIDEO_TIMEOUT')
+  throw new AIServiceError('视频生成超时（等待超过 8 分钟）', 'VIDEO_TIMEOUT')
 }
 
 // OpenAI 兼容协议（DeepSeek、OpenAI、Moonshot、智谱）

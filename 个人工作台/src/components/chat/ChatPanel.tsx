@@ -120,9 +120,12 @@ export function ChatPanel() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [streamContent, setStreamContent] = useState('')
+  const [progress, setProgress] = useState(0) // 进度百分比
+  const [progressStatus, setProgressStatus] = useState('') // 进度状态文字
   const [showProviderSelect, setShowProviderSelect] = useState(false)
   const [showModelSelect, setShowModelSelect] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null) // 取消控制器
 
   // 加载对话数据和 API Keys
   useEffect(() => {
@@ -150,9 +153,24 @@ export function ChatPanel() {
     }
   }, [activeChat?.messages, streamContent])
 
+  // 取消当前操作
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setLoading(false)
+    setStreamContent('')
+    setProgress(0)
+    setProgressStatus('')
+  }
+
   // 发送消息
   const handleSend = async () => {
     if (!input.trim() || loading) return
+    
+    // 创建取消控制器
+    abortControllerRef.current = new AbortController()
     
     // 从 store 获取最新配置（避免闭包问题）
     const latestConfig = useAIConfigStore.getState().config
@@ -169,6 +187,8 @@ export function ChatPanel() {
     const userMessage = input.trim()
     setInput('')
     setLoading(true)
+    setProgress(0)
+    setProgressStatus('')
     setStreamContent('')
 
     // 添加用户消息
@@ -233,14 +253,18 @@ export function ChatPanel() {
         // 提取视频描述（去掉时长参数）
         const prompt = userMessage.replace(/\d+\s*[s秒]/gi, '').trim()
         
-        setStreamContent('创建视频任务...')
+        setProgressStatus('创建视频任务...')
         
         try {
           const result = await generateVideo(fullConfig, {
             prompt: prompt || userMessage,
             numFrames,
             frameRate: 24,
-            onProgress: (status) => setStreamContent(status),
+            onProgress: (prog, status) => {
+              setProgress(prog)
+              setProgressStatus(status)
+            },
+            signal: abortControllerRef.current?.signal,
           })
           
           // 下载视频到本地
@@ -267,11 +291,13 @@ export function ChatPanel() {
           } catch (e) {
             addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', result.url)
           }
-          setStreamContent('')
+          setProgress(0)
+          setProgressStatus('')
         } catch (err: any) {
           console.error('[Chat] 视频生成失败:', err)
           addMessage(activeChatId || useChatStore.getState().activeChatId!, 'assistant', `错误: ${err.message || '视频生成失败'}`)
-          setStreamContent('')
+          setProgress(0)
+          setProgressStatus('')
         }
         return
       }
@@ -436,8 +462,36 @@ export function ChatPanel() {
                   </div>
                 </div>
               )}
-              {/* AI 正在回复状态 */}
-              {loading && !streamContent && (
+              {/* 进度条显示（图片/视频生成） */}
+              {loading && progressStatus && (
+                <div className="flex justify-start">
+                  <div
+                    className="max-w-[80%] px-3 py-2 rounded-xl text-xs"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                    }}
+                  >
+                    <div className="flex flex-col gap-2">
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="animate-spin" size={12} />
+                        {progressStatus}
+                      </span>
+                      {/* 进度条 */}
+                      {progress > 0 && (
+                        <div className="w-full h-2 rounded-full bg-white/20">
+                          <div 
+                            className="h-full rounded-full bg-blue-500/60 transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* AI 正在回复状态（文本对话） */}
+              {loading && !streamContent && !progressStatus && (
                 <div className="flex justify-start">
                   <div
                     className="max-w-[80%] px-3 py-2 rounded-xl text-xs"
@@ -587,6 +641,20 @@ export function ChatPanel() {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
             />
+            {/* 取消按钮 */}
+            {loading && (
+              <button
+                onClick={handleCancel}
+                className="px-3 py-2 rounded-lg text-xs text-white flex items-center gap-1.5"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.5)',
+                  border: 'none',
+                }}
+              >
+                取消
+              </button>
+            )}
+            {/* 发送按钮 */}
             <button
               onClick={handleSend}
               disabled={loading || !input.trim() || !currentProviderHasKey}
