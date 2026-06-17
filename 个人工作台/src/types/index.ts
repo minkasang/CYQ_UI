@@ -31,7 +31,7 @@ export interface Diary {
 }
 
 // ============== AI 配置 ==============
-export type AIProvider = 'deepseek' | 'openai' | 'claude' | 'kimi' | 'zhipu' | 'custom'
+export type AIProvider = 'agnes' | 'deepseek' | 'openai' | 'claude' | 'kimi' | 'zhipu' | 'custom'
 
 export interface AIConfig {
   provider: AIProvider

@@ -7,6 +7,13 @@ import { loadFromFile, saveToFile, FILE_KEYS } from '../utils/fileStorage'
 
 // 各 AI 服务的默认配置
 export const AI_PRESETS: Record<AIProvider, Omit<AIConfig, 'apiKey'>> = {
+  agnes: {
+    provider: 'agnes',
+    baseUrl: 'https://apihub.agnes-ai.com/v1',
+    model: 'agnes-2.0-flash',
+    temperature: 0.7,
+    maxTokens: 2000,
+  },
   deepseek: {
     provider: 'deepseek',
     baseUrl: 'https://api.deepseek.com/v1',

@@ -9,6 +9,7 @@ import { GlassPanel } from '../glass/GlassPanel'
 import { chat } from './aiService'
 
 const PROVIDER_LABELS: Record<AIProvider, { name: string; url: string; desc: string }> = {
+  agnes: { name: 'Agnes AI', url: 'https://platform.agnes-ai.com', desc: '免费，全模态' },
   deepseek: { name: 'DeepSeek', url: 'https://platform.deepseek.com/api_keys', desc: '国产，便宜好用' },
   openai: { name: 'OpenAI', url: 'https://platform.openai.com/api-keys', desc: 'GPT 系列' },
   claude: { name: 'Claude', url: 'https://console.anthropic.com/', desc: 'Anthropic' },
