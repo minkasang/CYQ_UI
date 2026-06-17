@@ -1,128 +1,118 @@
 {
-  "version": "2.0",
+  "version": "2.1",
   "lastUpdated": "2026-06-17",
   "description": "项目共享任务清单 - 聚焦个人工作台（React + Vite + TS + Python）",
 
   "aiTasks": [
     {
       "id": 1,
-      "name": "AI聊天系统：多对话+多模型切换+流式响应+图片/视频生成",
+      "name": "AI聊天系统架构重构：组件拆分、单源真值、请求ID绑定、多Key管理、深度思考、联网搜索、Markdown渲染、参数面板、编辑/重发/导出",
       "category": "个人工作台",
       "status": "已完成",
       "priority": "高",
       "estimatedWork": "大",
-      "detailFile": null,
-      "lastUpdate": "2026-06-15 ChatPanel 已嵌入首页，功能可用"
+      "detailFile": ".trae/documents/AI聊天系统重构计划.md",
+      "lastUpdate": "2026-06-17 全部完成，ts 0错误，已commit"
     },
     {
       "id": 2,
+      "name": "System prompt修复：模型切换后AI身份串号，改为每次发送时注入正确的模型名+厂商名",
+      "category": "个人工作台",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "小",
+      "lastUpdate": "2026-06-17 已修复"
+    },
+    {
+      "id": 3,
+      "name": "智谱模型列表更新：从官方docs.bigmodel.cn同步glm-4.7-flash/glm-4.5-flash等",
+      "category": "个人工作台",
+      "status": "已完成",
+      "priority": "中",
+      "estimatedWork": "小",
+      "lastUpdate": "2026-06-17 对标准官方文档完成"
+    },
+    {
+      "id": 4,
+      "name": "Skill触发条件修正：test-discipline改主动触发、phased-execution改3文件门槛",
+      "category": "框架维护",
+      "status": "已完成",
+      "priority": "高",
+      "estimatedWork": "小",
+      "lastUpdate": "2026-06-17"
+    },
+    {
+      "id": 5,
       "name": "个人工作台 v0.2：警醒墙（弹窗+列表+定时提醒）",
       "category": "个人工作台",
       "status": "待开始",
       "priority": "中",
       "estimatedWork": "中",
-      "detailFile": null,
       "lastUpdate": null
     },
     {
-      "id": 3,
+      "id": 6,
       "name": "个人工作台 v0.2：灵感记录（轻量级便签）",
       "category": "个人工作台",
       "status": "待开始",
       "priority": "中",
       "estimatedWork": "中",
-      "detailFile": null,
       "lastUpdate": null
     },
     {
-      "id": 4,
+      "id": 7,
       "name": "个人工作台 v0.2：文件连接（本地文件夹索引）",
       "category": "个人工作台",
       "status": "待开始",
       "priority": "中",
       "estimatedWork": "中",
-      "detailFile": null,
       "lastUpdate": null
     },
     {
-      "id": 5,
+      "id": 8,
       "name": "个人工作台 v0.2：时间线视图",
       "category": "个人工作台",
       "status": "待开始",
       "priority": "中",
       "estimatedWork": "中",
-      "detailFile": null,
       "lastUpdate": null
     },
     {
-      "id": 6,
-      "name": "看板系统：文件浏览器面板（浏览项目文件+实时读取Markdown）",
+      "id": 9,
+      "name": "看板系统：文件浏览器面板",
       "category": "看板系统",
       "status": "进行中",
       "priority": "高",
       "estimatedWork": "中",
-      "detailFile": null,
       "lastUpdate": "2026-06-14"
-    },
-    {
-      "id": 7,
-      "name": "看板系统：项目导航面板（关键文件快速跳转）",
-      "category": "看板系统",
-      "status": "待开始",
-      "priority": "中",
-      "estimatedWork": "小",
-      "detailFile": null,
-      "lastUpdate": "2026-06-14"
-    },
-    {
-      "id": 8,
-      "name": "看板系统：优化待办清单交互（AI自动读取/写入任务进度）",
-      "category": "看板系统",
-      "status": "待开始",
-      "priority": "高",
-      "estimatedWork": "中",
-      "detailFile": null,
-      "lastUpdate": "2026-06-14"
-    },
-    {
-      "id": 9,
-      "name": "看板系统：玻璃边缘渲染质量优化",
-      "category": "看板系统",
-      "status": "待开始",
-      "priority": "中",
-      "estimatedWork": "小",
-      "detailFile": null,
-      "lastUpdate": "2026-06-14 特定壁纸下边缘有瑕疵"
     },
     {
       "id": 10,
-      "name": "看板系统：任务追踪可视化功能",
+      "name": "看板系统：项目导航面板",
       "category": "看板系统",
       "status": "待开始",
       "priority": "中",
-      "estimatedWork": "中",
-      "detailFile": null,
-      "lastUpdate": "2026-06-14 需求待确认"
+      "estimatedWork": "小",
+      "lastUpdate": "2026-06-14"
     },
     {
       "id": 11,
+      "name": "补写测试脚本：useAPIKeysStore多Key、模型切换链路、AI Service推理",
+      "category": "框架维护",
+      "status": "待开始",
+      "priority": "高",
+      "estimatedWork": "中",
+      "note": "按test-discipline skill要求，本session大量代码变更未写单元测试，后续AI需补",
+      "lastUpdate": "2026-06-17"
+    },
+    {
+      "id": 12,
       "name": "定期检查规范文档交叉引用一致性",
       "category": "框架维护",
       "status": "需定期执行",
       "priority": "低",
       "estimatedWork": "小",
-      "detailFile": null,
       "lastUpdate": "2026-06-06"
-    },
-    {
-      "id": 12,
-      "name": "每轮对话结束前同步任务状态",
-      "category": "框架维护",
-      "status": "持续",
-      "priority": "高",
-      "estimatedWork": null,
-      "detailFile": null,
-      "lastUpdate": null
     }
   ],
 
@@ -143,11 +133,5 @@
     }
   ],
 
-  "decisions": [
-    {
-      "question": "个人工作台 v0.2 先做哪个功能？",
-      "status": "待确认",
-      "conclusion": null
-    }
-  ]
+  "decisions": []
 }
