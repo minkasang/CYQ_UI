@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useChatStore, getActiveChat } from '../../store/useChatStore'
-import { useAIConfigStore, AI_PRESETS } from '../../store/useAIConfigStore'
+import { useAIConfigStore, PROVIDER_MODELS, getModelName } from '../../store/useAIConfigStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import { chat } from '../ai/aiService'
 import type { AIMessage, AIProvider, AIConfig } from '../../types'
@@ -25,6 +25,7 @@ export function ChatPanel() {
   // AI 配置
   const config = useAIConfigStore(s => s.config)
   const setProvider = useAIConfigStore(s => s.setProvider)
+  const setModel = useAIConfigStore(s => s.setModel)
   
   // API Keys
   const keys = useAPIKeysStore(s => s.keys)
@@ -45,6 +46,7 @@ export function ChatPanel() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [streamContent, setStreamContent] = useState('')
+  const [showProviderSelect, setShowProviderSelect] = useState(false)
   const [showModelSelect, setShowModelSelect] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -59,6 +61,12 @@ export function ChatPanel() {
 
   // 当前提供商是否有 API Key
   const currentProviderHasKey = hasKey(config.provider)
+  
+  // 当前提供商的模型列表
+  const currentModels = PROVIDER_MODELS[config.provider] || []
+  
+  // 当前模型显示名称
+  const currentModelName = getModelName(config.provider, config.model)
 
   // 滚动到底部（只滚动消息列表容器，不影响整个页面）
   useEffect(() => {
@@ -165,7 +173,7 @@ export function ChatPanel() {
       <GlassPanel cornerRadius={16} padding="32px">
         <div className="text-center text-white/60">
           <Settings size={32} className="mx-auto mb-3 text-white/30" />
-          <p className="text-sm mb-2">请先在「设置」页面配置 API Key</p>
+          <p className="text-sm">请先在「设置」页面配置 API Key</p>
         </div>
       </GlassPanel>
     )
@@ -263,18 +271,18 @@ export function ChatPanel() {
 
         {/* 输入区域 */}
         <div className="px-4 py-3 border-t border-white/5 relative">
-          {/* 模型选择 */}
+          {/* 提供商 + 模型选择 */}
           <div className="flex items-center gap-2 mb-2">
+            {/* 提供商选择 */}
             <button
-              onClick={() => setShowModelSelect(!showModelSelect)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
+              onClick={() => setShowProviderSelect(!showProviderSelect)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
               style={{
-                background: showModelSelect ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                background: showProviderSelect ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
               }}
             >
               <span>{PROVIDER_NAMES[config.provider]}</span>
-              <span className="text-white/40">{AI_PRESETS[config.provider].model}</span>
               {currentProviderHasKey ? (
                 <span className="text-green-400">✓</span>
               ) : (
@@ -283,24 +291,24 @@ export function ChatPanel() {
               <ChevronDown size={12} />
             </button>
             
-            {/* 模型下拉菜单 */}
-            {showModelSelect && (
+            {/* 提供商下拉菜单 */}
+            {showProviderSelect && (
               <div
                 className="absolute bottom-16 left-4 z-10 rounded-lg p-2"
                 style={{
                   background: 'rgba(0, 0, 0, 0.9)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
-                  minWidth: '220px',
+                  minWidth: '180px',
                 }}
               >
-                {(Object.keys(AI_PRESETS) as AIProvider[]).map((provider) => {
+                {(Object.keys(PROVIDER_NAMES) as AIProvider[]).map((provider) => {
                   const providerHasKey = hasKey(provider)
                   return (
                     <button
                       key={provider}
                       onClick={() => {
                         setProvider(provider)
-                        setShowModelSelect(false)
+                        setShowProviderSelect(false)
                       }}
                       className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"
                       style={{
@@ -316,10 +324,55 @@ export function ChatPanel() {
                           <span className="text-red-400/60 text-[10px]">未配置</span>
                         )}
                       </div>
-                      <span className="text-white/40">{AI_PRESETS[provider].model}</span>
                     </button>
                   )
                 })}
+              </div>
+            )}
+            
+            {/* 模型选择 */}
+            <button
+              onClick={() => setShowModelSelect(!showModelSelect)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
+              style={{
+                background: showModelSelect ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <span>{currentModelName}</span>
+              <ChevronDown size={12} />
+            </button>
+            
+            {/* 模型下拉菜单 */}
+            {showModelSelect && (
+              <div
+                className="absolute bottom-16 z-10 rounded-lg p-2"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.9)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  minWidth: '200px',
+                  left: '180px',
+                }}
+              >
+                {currentModels.map((model) => (
+                  <button
+                    key={model.id}
+                    onClick={() => {
+                      setModel(model.id)
+                      setShowModelSelect(false)
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left"
+                    style={{
+                      background: config.model === model.id ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                      color: config.model === model.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                    }}
+                  >
+                    <div>
+                      <span>{model.name}</span>
+                      <span className="text-white/40 ml-2">{model.desc}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -327,7 +380,7 @@ export function ChatPanel() {
           {/* 当前模型未配置提示 */}
           {!currentProviderHasKey && (
             <div className="text-xs text-red-400/80 mb-2">
-              当前模型未配置 API Key，请在「设置」页面配置
+              当前提供商未配置 API Key，请在「设置」页面配置
             </div>
           )}
           
