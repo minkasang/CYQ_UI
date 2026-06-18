@@ -2,13 +2,13 @@
 // 给 AI 的话：简化版玻璃效果（不依赖 liquid-glass-react），作为 fallback
 // 使用纯 CSS backdrop-filter 实现，兼容性更好
 
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, ReactNode, MouseEventHandler } from 'react'
 
 interface GlassPanelProps {
   children: ReactNode
   className?: string
   style?: CSSProperties
-  onClick?: () => void
+  onClick?: MouseEventHandler<HTMLDivElement>
   cornerRadius?: number
   blurAmount?: number
   padding?: string

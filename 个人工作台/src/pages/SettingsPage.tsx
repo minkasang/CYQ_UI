@@ -1,7 +1,10 @@
 // 设置页面
 import { useState, useEffect } from 'react'
-import { AlertTriangle, Database, Trash2, Download, Upload, Key } from 'lucide-react'
+import { AlertTriangle, Database, Trash2, Download, Upload, Key, Clock } from 'lucide-react'
 import { APIKeyModal } from '../components/chat/APIKeyModal'
+import { DiarySettingsPanel } from '../components/diary/DiarySettingsPanel'
+import { BackupManager } from '../components/diary/BackupManager'
+import { OperationLogViewer } from '../components/common/OperationLogViewer'
 import { clearAllStorage } from '../utils/storage'
 import { downloadExport, importData, readFileAsText } from '../utils/export'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
@@ -93,6 +96,22 @@ export function SettingsPage() {
         </button>
       </div>
 
+      {/* 日记设置 */}
+      <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
+        <DiarySettingsPanel />
+      </div>
+
+      {/* 日记备份 */}
+      <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
+        <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+          <Database size={16} /> 日记备份
+        </h3>
+        <p className="text-xs text-white/60 mb-3">
+          定期备份日记数据，防止数据丢失。最多保留 7 个备份。
+        </p>
+        <BackupManager />
+      </div>
+
       {/* 玻璃调参 */}
       <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
         <h3 className="text-base font-semibold text-white mb-3">🎛 玻璃效果</h3>
@@ -137,6 +156,17 @@ export function SettingsPage() {
             )}
           </button>
         </div>
+      </div>
+
+      {/* 操作日志 */}
+      <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
+        <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+          <Clock size={16} /> 操作日志
+        </h3>
+        <p className="text-xs text-white/60 mb-3">
+          记录关键操作，便于问题排查
+        </p>
+        <OperationLogViewer />
       </div>
 
       {/* 关于 */}

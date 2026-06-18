@@ -5,6 +5,36 @@
 export type TodoCategory = 'work' | 'life' | 'study' | 'other'
 export type TodoPriority = 'high' | 'medium' | 'low'
 
+// 子任务
+export interface SubTask {
+  id: string
+  title: string
+  completed: boolean
+}
+
+// 时间追踪记录
+export interface TimeEntry {
+  id: string
+  startTime: number  // 时间戳
+  endTime?: number   // 时间戳，未结束则为 undefined
+  duration: number   // 分钟
+}
+
+// 重复任务配置
+export interface RepeatConfig {
+  type: 'daily' | 'weekly' | 'monthly' | 'custom'
+  interval: number   // 间隔（如每 2 周）
+  endDate?: string   // 结束日期 YYYY-MM-DD
+  daysOfWeek?: number[]  // 周几（1-7，用于 weekly）
+}
+
+// 提醒配置
+export interface ReminderConfig {
+  enabled: boolean
+  time: string       // HH:mm 格式，如 "09:00"
+  advanceDays: number // 提前几天提醒，0 表示当天
+}
+
 export interface Todo {
   id: string
   title: string
@@ -15,17 +45,72 @@ export interface Todo {
   createdAt: number
   completedAt?: number
   dueDate?: string  // YYYY-MM-DD 格式
+
+  // 新增字段
+  tags: string[]           // 标签 ID 列表
+  subtasks: SubTask[]      // 子任务
+  projectId?: string       // 所属项目
+  repeat?: RepeatConfig    // 重复任务配置
+  reminder?: ReminderConfig // 提醒配置
+  dependsOn: string[]      // 依赖的任务 ID
+  timeSpent: number        // 总耗时（分钟）
+  timeEntries: TimeEntry[] // 时间追踪记录
+  archived: boolean        // 是否归档
+  order: number            // 排序权重
+}
+
+// ============== 项目 ==============
+export interface Project {
+  id: string
+  name: string
+  color: string    // 颜色值 #RRGGBB
+  order: number    // 排序权重
+  createdAt: number
+}
+
+// ============== 标签 ==============
+export interface Tag {
+  id: string
+  name: string
+  color: string    // 颜色值 #RRGGBB
+  createdAt: number
 }
 
 // ============== 日记 ==============
+
+// 情绪类型
+export type EmotionType = 'happy' | 'calm' | 'anxious' | 'sad' | 'angry' | 'neutral' | 'excited'
+
+// AI 分析的情绪数据
+export interface EmotionData {
+  type: EmotionType       // 情绪类型
+  intensity: number       // 情绪强度 1-5
+  keywords: string[]      // 情绪关键词
+  analyzedAt: number      // 分析时间
+}
+
+// 日记设置（AI 功能开关）
+export interface DiarySettings {
+  enableAIAssist: boolean        // AI 写作辅助
+  enableEmotionAnalysis: boolean // 情绪分析
+  enableAIFeedback: boolean      // 即时反馈
+  enableDiaryChat: boolean       // 日记对话
+  enableStats: boolean           // 数据统计
+  autoAnalyze: boolean           // 保存时自动分析情绪
+}
+
 export interface Diary {
   id: string
   title: string
   content: string  // Markdown 格式
   date: string     // YYYY-MM-DD 格式
-  mood?: string    // 表情符号
+  mood?: string    // 用户选择的情绪 emoji
   weather?: string
   tags?: string[]
+  // 新增字段
+  emotionData?: EmotionData  // AI 分析的情绪数据
+  aiFeedback?: string        // AI 反馈
+  wordCount: number          // 字数统计
   createdAt: number
   updatedAt: number
 }
@@ -120,6 +205,7 @@ export interface AppSettings {
   ai: Omit<AIConfig, 'apiKey'>  // apiKey 由 useAPIKeysStore 单独管理
   theme: 'light' | 'dark' | 'auto'
   language: 'zh-CN' | 'en-US'
+  diary: DiarySettings  // 日记设置
 }
 
 // ============== 导出/导入 ==============

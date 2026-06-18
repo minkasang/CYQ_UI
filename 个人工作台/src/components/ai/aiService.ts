@@ -4,6 +4,15 @@
 
 import type { AIConfig, AIMessage } from '../../types'
 import { MODEL_CAPABILITIES } from '../../store/useAIConfigStore'
+import { retryWithBackoff, isRetryableError, type RetryOptions } from '../../utils/retry'
+
+// 默认重试配置
+const DEFAULT_RETRY_OPTIONS: RetryOptions = {
+  maxRetries: 3,
+  baseDelay: 1000,
+  maxDelay: 10000,
+  shouldRetry: isRetryableError,
+}
 
 export interface ChatOptions {
   messages: AIMessage[]
@@ -471,6 +480,187 @@ export async function generateDiary(config: AIConfig, thoughts: string, onChunk?
     {
       role: 'user',
       content: `请基于以下零散想法，帮我写一篇结构清晰的日记：\n\n${thoughts}\n\n请按以下结构输出：\n## 今日要点\n## 感悟\n## 明日计划`,
+    },
+  ]
+
+  const result = await chat(config, { messages, stream: !!onChunk, onChunk })
+  return result.content
+}
+
+// ============= 日记 AI 辅助功能 =============
+
+// 润色文本（带重试）
+export async function polishText(config: AIConfig, text: string, onChunk?: (text: string) => void): Promise<string> {
+  const messages: AIMessage[] = [
+    {
+      role: 'system',
+      content: '你是一个专业的文字润色助手。请优化用户输入的文字，使其更加流畅、优美，但保持原意不变。只输出润色后的文字，不要解释。',
+    },
+    {
+      role: 'user',
+      content: `请润色以下文字：\n\n${text}`,
+    },
+  ]
+
+  const result = await retryWithBackoff(
+    () => chat(config, { messages, stream: !!onChunk, onChunk }),
+    DEFAULT_RETRY_OPTIONS
+  )
+
+  if (!result.success) {
+    throw result.error || new AIServiceError('润色失败，请稍后重试', 'POLISH_FAILED')
+  }
+
+  return result.data!.content
+}
+
+// 续写文本（带重试）
+export async function continueText(config: AIConfig, text: string, onChunk?: (text: string) => void): Promise<string> {
+  const messages: AIMessage[] = [
+    {
+      role: 'system',
+      content: '你是一个贴心的写作助手。请根据用户已有的文字，自然地续写后续内容。风格要与原文保持一致。只输出续写的部分，不要重复原文。',
+    },
+    {
+      role: 'user',
+      content: `请续写以下文字：\n\n${text}`,
+    },
+  ]
+
+  const result = await retryWithBackoff(
+    () => chat(config, { messages, stream: !!onChunk, onChunk }),
+    DEFAULT_RETRY_OPTIONS
+  )
+
+  if (!result.success) {
+    throw result.error || new AIServiceError('续写失败，请稍后重试', 'CONTINUE_FAILED')
+  }
+
+  return result.data!.content
+}
+
+// 改写文本（带重试）
+export async function rewriteText(config: AIConfig, text: string, style: string, onChunk?: (text: string) => void): Promise<string> {
+  const messages: AIMessage[] = [
+    {
+      role: 'system',
+      content: `你是一个专业的文字改写助手。请将用户的文字改写为${style}风格，保持核心内容不变。只输出改写后的文字，不要解释。`,
+    },
+    {
+      role: 'user',
+      content: `请将以下文字改写为${style}风格：\n\n${text}`,
+    },
+  ]
+
+  const result = await retryWithBackoff(
+    () => chat(config, { messages, stream: !!onChunk, onChunk }),
+    DEFAULT_RETRY_OPTIONS
+  )
+
+  if (!result.success) {
+    throw result.error || new AIServiceError('改写失败，请稍后重试', 'REWRITE_FAILED')
+  }
+
+  return result.data!.content
+}
+
+// 情绪分析（带重试，失败时返回默认值）
+export async function analyzeEmotion(config: AIConfig, text: string): Promise<{ type: string; intensity: number; keywords: string[] }> {
+  const messages: AIMessage[] = [
+    {
+      role: 'system',
+      content: `你是一个情绪分析助手。请分析用户文字中的情绪，返回 JSON 格式：
+{
+  "type": "happy|calm|anxious|sad|angry|neutral|excited",
+  "intensity": 1-5的数字,
+  "keywords": ["关键词1", "关键词2"]
+}
+只返回 JSON，不要其他内容。`,
+    },
+    {
+      role: 'user',
+      content: `请分析以下文字的情绪：\n\n${text}`,
+    },
+  ]
+
+  const result = await retryWithBackoff(
+    () => chat(config, { messages }),
+    DEFAULT_RETRY_OPTIONS
+  )
+
+  // 情绪分析失败时返回默认值（降级策略）
+  if (!result.success) {
+    console.warn('[AI] 情绪分析失败，使用默认值:', result.error?.message)
+    return { type: 'neutral', intensity: 2, keywords: [] }
+  }
+
+  try {
+    return JSON.parse(result.data!.content)
+  } catch {
+    // 解析失败时返回默认值
+    return { type: 'neutral', intensity: 2, keywords: [] }
+  }
+}
+
+// 生成即时反馈（带重试）
+export async function generateFeedback(config: AIConfig, text: string, onChunk?: (text: string) => void): Promise<string> {
+  const messages: AIMessage[] = [
+    {
+      role: 'system',
+      content: '你是一个温暖贴心的日记伙伴。用户刚刚写完一篇日记，请给出简短温暖的回应（不超过100字）。可以表达理解、鼓励或共情，让用户感到被陪伴。不要说教，要真诚。',
+    },
+    {
+      role: 'user',
+      content: `我刚写完今天的日记：\n\n${text}\n\n希望能得到你的回应。`,
+    },
+  ]
+
+  const result = await retryWithBackoff(
+    () => chat(config, { messages, stream: !!onChunk, onChunk }),
+    DEFAULT_RETRY_OPTIONS
+  )
+
+  if (!result.success) {
+    throw result.error || new AIServiceError('生成反馈失败，请稍后重试', 'FEEDBACK_FAILED')
+  }
+
+  return result.data!.content
+}
+
+// 生成情绪报告
+export async function generateEmotionReport(
+  config: AIConfig,
+  diaries: Array<{ date: string; content: string; emotionType?: string; intensity?: number }>,
+  period: 'week' | 'month',
+  onChunk?: (text: string) => void
+): Promise<string> {
+  const periodLabel = period === 'week' ? '本周' : '本月'
+
+  // 汇总情绪数据
+  const emotionSummary = diaries
+    .filter(d => d.emotionType)
+    .map(d => `- ${d.date}: ${d.emotionType} (强度 ${d.intensity || '-'}/5)`)
+    .join('\n')
+
+  const messages: AIMessage[] = [
+    {
+      role: 'system',
+      content: `你是一个专业的心理健康顾问。请根据用户的日记情绪数据，生成一份${periodLabel}情绪报告。
+
+报告要求：
+1. 分析情绪变化趋势
+2. 识别主要情绪模式
+3. 给出温暖的建议和鼓励
+4. 使用 Markdown 格式
+5. 长度适中，不超过 500 字`,
+    },
+    {
+      role: 'user',
+      content: `请根据以下${periodLabel}的日记情绪数据，生成情绪报告：
+
+${emotionSummary || '暂无情绪数据'}
+
+请分析这些情绪变化，给出你的见解和建议。`,
     },
   ]
 

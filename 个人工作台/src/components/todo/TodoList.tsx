@@ -1,16 +1,38 @@
 // 待办列表
-// 给 AI 的话：展示过滤后的待办项，支持切换过滤条件
+// 给 AI 的话：展示过滤后的待办项，支持切换过滤条件、拖拽排序和视图切换
 
+import { useEffect, useState } from 'react'
+import { LayoutList, LayoutGrid } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { useTodoStore, selectFilteredTodos, selectTodoStats } from '../../store/useTodoStore'
-import { TodoItem } from './TodoItem'
+import { useProjectStore } from '../../store/useProjectStore'
+import { useTagStore } from '../../store/useTagStore'
 import { TodoInput } from './TodoInput'
+import { DraggableTodoItem } from './DraggableTodoItem'
+import { TodoKanban } from './TodoKanban'
+import { ProjectSidebar } from './ProjectSidebar'
 
-type FilterType = 'all' | 'today' | 'pending' | 'completed'
+type FilterType = 'all' | 'today' | 'pending' | 'completed' | 'archived'
+type ViewMode = 'list' | 'kanban'
 
 const FILTERS: { value: FilterType; label: string }[] = [
   { value: 'today', label: '今天' },
   { value: 'pending', label: '待完成' },
   { value: 'completed', label: '已完成' },
+  { value: 'archived', label: '归档' },
   { value: 'all', label: '全部' },
 ]
 
@@ -18,63 +40,161 @@ export function TodoList() {
   const todos = useTodoStore(selectFilteredTodos)
   const filter = useTodoStore(s => s.filter)
   const setFilter = useTodoStore(s => s.setFilter)
+  const projectFilter = useTodoStore(s => s.projectFilter)
+  const setProjectFilter = useTodoStore(s => s.setProjectFilter)
   const stats = useTodoStore(selectTodoStats)
   const clearCompleted = useTodoStore(s => s.clearCompleted)
+  const reorderTodos = useTodoStore(s => s.reorderTodos)
+
+  const loadProjects = useProjectStore(s => s.loadProjects)
+  const loadTags = useTagStore(s => s.loadTags)
+
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+
+  // 拖拽传感器
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 需要移动 8px 才开始拖拽，避免误触
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  // 初始化加载项目和标签
+  useEffect(() => {
+    loadProjects()
+    loadTags()
+  }, [loadProjects, loadTags])
+
+  // 拖拽结束处理
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      const oldIndex = todos.findIndex(t => t.id === active.id)
+      const newIndex = todos.findIndex(t => t.id === over.id)
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderTodos(oldIndex, newIndex)
+      }
+    }
+  }
 
   const completedCount = todos.filter(t => t.completed).length
 
-  return (
-    <div className="space-y-3">
-      {/* 统计信息 */}
-      <div className="grid grid-cols-3 gap-2 text-center">
-        <StatCard label="今日待办" value={stats.today} color="text-blue-300" />
-        <StatCard label="已完成" value={stats.completed} color="text-green-300" />
-        <StatCard label="总待办" value={stats.total} color="text-white/80" />
-      </div>
+  // 看板视图
+  if (viewMode === 'kanban') {
+    return (
+      <div className="space-y-3">
+        {/* 视图切换 */}
+        <div className="flex items-center justify-between">
+          <div className="grid grid-cols-4 gap-2 text-center flex-1">
+            <StatCard label="今日待办" value={stats.today} color="text-blue-300" />
+            <StatCard label="已完成" value={stats.completed} color="text-green-300" />
+            <StatCard label="归档" value={stats.archived} color="text-white/50" />
+            <StatCard label="总待办" value={stats.total} color="text-white/80" />
+          </div>
+          <button
+            onClick={() => setViewMode('list')}
+            className="ml-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition"
+            title="切换到列表视图"
+          >
+            <LayoutList size={18} />
+          </button>
+        </div>
 
-      {/* 过滤栏 */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {FILTERS.map(f => (
+        {/* 看板 */}
+        <div className="h-[calc(100vh-300px)] min-h-[400px]">
+          <TodoKanban />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex gap-4">
+      {/* 项目侧边栏 */}
+      <ProjectSidebar
+        selectedProjectId={projectFilter}
+        onSelectProject={setProjectFilter}
+      />
+
+      {/* 主内容区 */}
+      <div className="flex-1 space-y-3">
+        {/* 统计信息 */}
+        <div className="flex items-center justify-between">
+          <div className="grid grid-cols-4 gap-2 text-center flex-1">
+            <StatCard label="今日待办" value={stats.today} color="text-blue-300" />
+            <StatCard label="已完成" value={stats.completed} color="text-green-300" />
+            <StatCard label="归档" value={stats.archived} color="text-white/50" />
+            <StatCard label="总待办" value={stats.total} color="text-white/80" />
+          </div>
           <button
-            key={f.value}
-            onClick={() => setFilter(f.value)}
-            className={`text-xs px-3 py-1 rounded-full transition ${
-              filter === f.value
-                ? 'bg-white/15 text-white border border-white/20'
-                : 'bg-white/5 text-white/60 hover:bg-white/10 border border-transparent'
-            }`}
+            onClick={() => setViewMode('kanban')}
+            className="ml-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition"
+            title="切换到看板视图"
           >
-            {f.label}
+            <LayoutGrid size={18} />
           </button>
-        ))}
-        {completedCount > 0 && (
-          <button
-            onClick={clearCompleted}
-            className="ml-auto text-xs px-3 py-1 rounded-full bg-red-500/15 text-red-200 hover:bg-red-500/25 transition"
+        </div>
+
+        {/* 过滤栏 */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {FILTERS.map(f => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={`text-xs px-3 py-1 rounded-full transition ${
+                filter === f.value
+                  ? 'bg-white/15 text-white border border-white/20'
+                  : 'bg-white/5 text-white/60 hover:bg-white/10 border border-transparent'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+          {completedCount > 0 && filter !== 'archived' && (
+            <button
+              onClick={clearCompleted}
+              className="ml-auto text-xs px-3 py-1 rounded-full bg-red-500/15 text-red-200 hover:bg-red-500/25 transition"
+            >
+              清理已完成
+            </button>
+          )}
+        </div>
+
+        {/* 输入框 */}
+        {filter !== 'archived' && <TodoInput />}
+
+        {/* 待办列表 */}
+        {todos.length === 0 ? (
+          <div className="text-center py-12 text-white/40 text-sm">
+            {filter === 'today' && '📝 今天还没有待办'}
+            {filter === 'pending' && '✨ 所有待办都已完成'}
+            {filter === 'completed' && '还没有完成过待办'}
+            {filter === 'archived' && '📦 还没有归档的任务'}
+            {filter === 'all' && '📋 还没有添加待办，点击上方按钮开始'}
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            清理已完成
-          </button>
+            <SortableContext
+              items={todos.map(t => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-1">
+                {todos.map(todo => (
+                  <DraggableTodoItem key={todo.id} todo={todo} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
-
-      {/* 输入框 */}
-      <TodoInput />
-
-      {/* 待办列表 */}
-      {todos.length === 0 ? (
-        <div className="text-center py-12 text-white/40 text-sm">
-          {filter === 'today' && '📝 今天还没有待办'}
-          {filter === 'pending' && '✨ 所有待办都已完成'}
-          {filter === 'completed' && '还没有完成过待办'}
-          {filter === 'all' && '📋 还没有添加待办，点击上方按钮开始'}
-        </div>
-      ) : (
-        <div className="space-y-1">
-          {todos.map(todo => (
-            <TodoItem key={todo.id} todo={todo} />
-          ))}
-        </div>
-      )}
     </div>
   )
 }

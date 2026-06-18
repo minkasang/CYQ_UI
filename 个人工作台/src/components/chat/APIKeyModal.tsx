@@ -5,6 +5,7 @@ import { useState, useRef } from 'react'
 import { X, Key, Check, Trash2, Eye, EyeOff, Plus, Download, Upload, Loader2 } from 'lucide-react'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import { AI_PRESETS } from '../../store/useAIConfigStore'
+import { GlassPanel } from '../glass/GlassPanel'
 import type { AIProvider, APIKeyEntry } from '../../types'
 
 // 提供商信息
@@ -137,13 +138,20 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
+      {/* 背景遮罩 */}
       <div
-        className="rounded-2xl p-6 max-w-lg w-full max-h-[80vh] flex flex-col"
-        style={{ background: 'rgba(18, 18, 40, 0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* 弹窗内容 */}
+      <GlassPanel
+        cornerRadius={16}
+        padding="24px"
+        className="relative max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {/* 标题栏 */}
@@ -359,7 +367,7 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
           className="hidden"
           onChange={handleImportFile}
         />
-      </div>
+      </GlassPanel>
     </div>
   )
 }

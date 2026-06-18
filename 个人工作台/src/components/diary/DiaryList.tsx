@@ -1,22 +1,35 @@
 // 日记列表
-// 给 AI 的话：按日期分组展示所有日记
+// 给 AI 的话：按日期分组展示所有日记，支持标签筛选
 
 import { useDiaryStore, selectSortedDiaries } from '../../store/useDiaryStore'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Trash2, BookOpen } from 'lucide-react'
 import { relativeTime } from '../../utils/date'
 
-export function DiaryList() {
-  const diaries = useDiaryStore(selectSortedDiaries)
+interface DiaryListProps {
+  filterTag?: string | null
+}
+
+export function DiaryList({ filterTag }: DiaryListProps) {
+  const allDiaries = useDiaryStore(selectSortedDiaries)
   const currentId = useDiaryStore(s => s.currentId)
   const setCurrent = useDiaryStore(s => s.setCurrent)
   const createDiary = useDiaryStore(s => s.createDiary)
   const deleteDiary = useDiaryStore(s => s.deleteDiary)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
+  // 过滤标签
+  const diaries = useMemo(() => {
+    if (!filterTag) return allDiaries
+    return allDiaries.filter(d => d.tags?.includes(filterTag))
+  }, [allDiaries, filterTag])
+
   const handleCreate = () => {
     const diary = createDiary()
-    setCurrent(diary.id)
+    if (diary) {
+      setCurrent(diary.id)
+    }
+    // 如果返回 null，说明获取锁失败，操作被忽略
   }
 
   const handleDelete = (id: string) => {
@@ -43,7 +56,7 @@ export function DiaryList() {
       {/* 列表 */}
       {diaries.length === 0 ? (
         <div className="text-center py-12 text-white/40 text-sm">
-          📔 还没有日记，开始记录你的思考和感悟
+          {filterTag ? `没有标签为"${filterTag}"的日记` : '📔 还没有日记，开始记录你的思考和感悟'}
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -68,8 +81,28 @@ export function DiaryList() {
                     <span>·</span>
                     <span>{relativeTime(diary.updatedAt)}</span>
                     <span>·</span>
-                    <span>{diary.content.length} 字</span>
+                    <span>{diary.wordCount} 字</span>
                   </div>
+                  {/* 标签预览 */}
+                  {diary.tags && diary.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {diary.tags.slice(0, 2).map(tag => (
+                        <span
+                          key={tag}
+                          className={`px-1.5 py-0.5 rounded text-[10px] ${
+                            tag === filterTag
+                              ? 'bg-blue-500/30 text-blue-200'
+                              : 'bg-white/10 text-white/50'
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {diary.tags.length > 2 && (
+                        <span className="text-[10px] text-white/30">+{diary.tags.length - 2}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={(e) => {

@@ -2,8 +2,9 @@
 // 给 AI 的话：实时调节液态玻璃的所有参数，参考 liquid-glass.ts 中的 DEFAULTS
 
 import { useSettingsStore } from '../../store/useSettingsStore'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, X } from 'lucide-react'
 import type { LiquidGlass } from '../../lib/liquid-glass'
+import { GlassPanel } from './GlassPanel'
 
 interface GlassControlPanelProps {
   onClose?: () => void
@@ -41,33 +42,43 @@ export function GlassControlPanel({ onClose }: GlassControlPanelProps) {
 
   return (
     <div
-      className="fixed top-20 right-4 w-80 max-h-[calc(100vh-120px)] overflow-auto rounded-2xl p-5 z-50"
-      style={{
-        background: 'rgba(30, 30, 40, 0.85)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-white">🎛 液态玻璃调参</h3>
-        <div className="flex gap-2">
-          <button
-            onClick={handleReset}
-            className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white/80"
-            title="重置为默认"
-          >
-            <RotateCcw size={12} className="inline mr-1" />重置
-          </button>
-          {onClose && (
+      {/* 背景遮罩 */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* 弹窗内容 */}
+      <GlassPanel
+        cornerRadius={16}
+        padding="20px"
+        className="relative w-80 max-h-[calc(100vh-120px)] overflow-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 标题栏 */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-semibold text-white">🎛 液态玻璃调参</h3>
+          <div className="flex gap-2">
             <button
-              onClick={onClose}
+              onClick={handleReset}
               className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white/80"
+              title="重置为默认"
             >
-              ✕
+              <RotateCcw size={12} className="inline mr-1" />重置
             </button>
-          )}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-xs px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white/80"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
       {/* 核心光学参数 */}
       <div className="mb-4">
@@ -123,6 +134,7 @@ export function GlassControlPanel({ onClose }: GlassControlPanelProps) {
       <p className="text-xs text-white/50 mt-4 leading-relaxed">
         💡 提示：拖动滑块实时预览效果，参数自动保存。
       </p>
+      </GlassPanel>
     </div>
   )
 }

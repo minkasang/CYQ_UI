@@ -15,6 +15,9 @@ export const FILE_KEYS = {
   SETTINGS: `${DATA_DIR}/settings.json`,
   GLASS_PARAMS: `${DATA_DIR}/glass_params.json`,
   CHATS: `${DATA_DIR}/chats.json`,
+  PROJECTS: `${DATA_DIR}/projects.json`,
+  TAGS: `${DATA_DIR}/tags.json`,
+  ACHIEVEMENTS: `${DATA_DIR}/achievements.json`,
 } as const
 
 // 从文件读取数据
