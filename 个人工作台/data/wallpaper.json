@@ -1,1 +1,53 @@
-{}
+{
+  "current": {
+    "id": "1781701315250-6oy0tbr",
+    "type": "url",
+    "value": "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=1920&q=80",
+    "name": "大峡谷",
+    "createdAt": 1781701315250
+  },
+  "history": [
+    {
+      "id": "1781701315250-6oy0tbr",
+      "type": "url",
+      "value": "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=1920&q=80",
+      "name": "大峡谷",
+      "createdAt": 1781701315250
+    },
+    {
+      "id": "aurora-default",
+      "type": "url",
+      "value": "/wallpapers/aurora-default.jpg",
+      "name": "极光默认",
+      "createdAt": 1781701310661
+    },
+    {
+      "id": "aurora-default",
+      "type": "url",
+      "value": "/wallpapers/aurora-default.jpg",
+      "name": "极光默认",
+      "createdAt": 1781701182589
+    },
+    {
+      "id": "aurora-default",
+      "type": "url",
+      "value": "/wallpapers/aurora-default.jpg",
+      "name": "极光默认",
+      "createdAt": 1781680511341
+    },
+    {
+      "id": "aurora-default",
+      "type": "url",
+      "value": "/wallpapers/aurora-default.jpg",
+      "name": "极光默认",
+      "createdAt": 1781680511341
+    },
+    {
+      "id": "aurora-default",
+      "type": "url",
+      "value": "/wallpapers/aurora-default.jpg",
+      "name": "极光默认",
+      "createdAt": 1781679527855
+    }
+  ]
+}
