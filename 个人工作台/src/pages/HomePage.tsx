@@ -15,6 +15,7 @@ import { useDiaryStore, selectSortedDiaries } from '../store/useDiaryStore'
 import { useWallpaperStore } from '../store/useWallpaperStore'
 import { useSettingsStore } from '../store/useSettingsStore'
 import { useAIConfigStore } from '../store/useAIConfigStore'
+import { useThemeStore } from '../store/useThemeStore'
 import { friendlyDate, getToday } from '../utils/date'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
 
@@ -47,6 +48,7 @@ export function HomePage() {
   const loadWallpaper = useWallpaperStore(s => s.loadFromFile)
   const loadSettings = useSettingsStore(s => s.loadFromFile)
   const loadAIConfig = useAIConfigStore(s => s.loadFromFile)
+  const loadThemeConfig = useThemeStore(s => s.loadFromFile)
   const today = getToday()
   const todayDiary = diaries.find(d => d.date === today)
   const wallpaper = useWallpaperStore(s => s.current)
@@ -61,7 +63,8 @@ export function HomePage() {
     loadWallpaper()
     loadSettings()
     loadAIConfig()
-  }, [loadTodos, loadDiaries, loadWallpaper, loadSettings, loadAIConfig])
+    loadThemeConfig()
+  }, [loadTodos, loadDiaries, loadWallpaper, loadSettings, loadAIConfig, loadThemeConfig])
 
   // 各个 section 的滚动动画
   const welcomeAnim = useScrollAnimation(0.3)

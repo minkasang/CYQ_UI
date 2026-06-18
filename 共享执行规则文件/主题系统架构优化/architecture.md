@@ -676,3 +676,634 @@ class ThemeAPICompat {
 9. **可移植性**：通过主题包结构实现
 
 下一步将进入阶段三：原型实现。
+
+---
+
+## 十、扩展架构设计（方案2）
+
+> **设计目标**：实现主题系统的完整扩展，支持全局参数、热拔插、预览/回滚、版本管理、依赖管理等高级功能。
+
+### 10.1 扩展架构总览
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      应用层（Application）                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │  ThemePanel  │  │  ThemePicker │  │  ThemePreview│ ...  │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    状态管理层（State Layer）                   │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              useThemeStore（Zustand）                  │  │
+│  │  - activeThemeId / activeVariantId                    │  │
+│  │  - globalConfig（全局参数）                             │  │
+│  │  - themeHistory（切换历史，用于回滚）                    │  │
+│  │  - previewTheme（预览状态）                             │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    扩展管理层（Extended Manager）              │
+│  ┌────────────────┐  ┌────────────────┐  ┌──────────────┐  │
+│  │  ThemeLoader   │  │ ThemeVersion   │  │ ThemeDepend  │  │
+│  │  （热拔插）     │  │  （版本管理）   │  │ （依赖管理） │  │
+│  └────────────────┘  └────────────────┘  └──────────────┘  │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              ThemeManager（核心管理器）                 │  │
+│  │  - 主题注册/注销/切换                                   │  │
+│  │  - 预览/回滚                                           │  │
+│  │  - 配置合并（全局→主题→变体→用户）                       │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   主题抽象层（Theme Abstraction）              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              ThemeEngine（主题引擎接口）                │  │
+│  │  - init(config): Promise<void>                        │  │
+│  │  - render(element, config): void                      │  │
+│  │  - update(config): void                               │  │
+│  │  - destroy(): void                                    │  │
+│  │  - getCapabilities(): ThemeCapabilities               │  │
+│  └──────────────────────────────────────────────────────┐  │
+│  │              GlobalThemeConfig（全局配置）              │  │
+│  │  - 全局参数定义                                         │  │
+│  │  - 参数继承链                                           │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   主题实现层（Theme Engines）                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ LiquidGlass  │  │   FlatTheme  │  │ FrostedGlass │ ...  │
+│  │   Engine     │  │    Engine    │  │    Engine    │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    持久化层（Persistence Layer）               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ LocalStorage │  │ FileStorage  │  │ CloudSync    │      │
+│  │  （本地存储） │  │ （文件存储）  │  │ （云端同步） │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 10.2 全局参数系统设计
+
+#### 10.2.1 GlobalThemeConfig 接口
+
+```typescript
+/**
+ * 全局主题配置
+ * 所有主题共享的参数，优先级最低
+ */
+interface GlobalThemeConfig {
+  // ========== 基础全局参数 ==========
+  id: 'global'                     // 固定为 'global'
+  name: string                      // 显示名称
+  
+  // ========== 全局视觉参数 ==========
+  colors?: Partial<ColorScheme>     // 全局颜色（可被主题覆盖）
+  typography?: Partial<TypographyScheme>  // 全局字体
+  spacing?: Partial<SpacingScheme>  // 全局间距
+  shadows?: Partial<ShadowScheme>   // 全局阴影
+  borders?: Partial<BorderScheme>   // 全局边框
+  
+  // ========== 全局行为参数 ==========
+  transitionDuration?: number       // 主题切换过渡时间（毫秒）
+  enablePreview?: boolean           // 是否启用预览功能
+  enableRollback?: boolean          // 是否启用回滚功能
+  maxHistoryDepth?: number          // 最大历史记录深度（用于回滚）
+  
+  // ========== 全局性能参数 ==========
+  enableLazyLoad?: boolean          // 是否启用懒加载
+  cacheStrategy?: 'memory' | 'localStorage' | 'none'  // 缓存策略
+}
+
+/**
+ * 参数继承链
+ * 优先级从低到高：全局 → 主题默认 → 变体 → 用户自定义
+ */
+interface ConfigInheritanceChain {
+  global: GlobalThemeConfig         // 全局配置（优先级最低）
+  theme: ThemeConfig                // 主题默认配置
+  variant?: ThemeVariant            // 变体配置（可选）
+  user?: Partial<ThemeConfig>       // 用户自定义配置（优先级最高）
+}
+
+/**
+ * 合并配置
+ * 按优先级合并配置，高优先级覆盖低优先级
+ */
+function mergeConfig(chain: ConfigInheritanceChain): ThemeConfig {
+  // 1. 从全局配置开始
+  let merged = { ...chain.global }
+  
+  // 2. 合合主题默认配置
+  merged = deepMerge(merged, chain.theme)
+  
+  // 3. 合合变体配置（如果有）
+  if (chain.variant) {
+    merged = deepMerge(merged, chain.variant.config)
+  }
+  
+  // 4. 合合用户自定义配置（如果有）
+  if (chain.user) {
+    merged = deepMerge(merged, chain.user)
+  }
+  
+  return merged as ThemeConfig
+}
+```
+
+#### 10.2.2 全局参数存储
+
+```typescript
+/**
+ * 全局参数存储
+ * 使用 Zustand 管理，持久化到 localStorage
+ */
+interface GlobalConfigState {
+  globalConfig: GlobalThemeConfig
+  
+  // 操作
+  updateGlobalConfig: (config: Partial<GlobalThemeConfig>) => void
+  resetGlobalConfig: () => void
+  
+  // 选择器
+  getGlobalConfig: () => GlobalThemeConfig
+}
+```
+
+### 10.3 主题预览/回滚机制设计
+
+#### 10.3.1 预览机制
+
+```typescript
+/**
+ * 主题预览状态
+ */
+interface ThemePreviewState {
+  previewThemeId: string | null     // 正在预览的主题ID
+  previewVariantId: string | null   // 正在预览的变体ID
+  previewConfig: ThemeConfig | null // 预览配置
+  isPreviewActive: boolean          // 预览是否激活
+}
+
+/**
+ * 主题预览管理器
+ */
+interface ThemePreviewManager {
+  /**
+   * 开始预览主题
+   * 不实际切换，只渲染预览效果
+   */
+  startPreview(themeId: string, variantId?: string): Promise<void>
+  
+  /**
+   * 结束预览
+   * 恢复到当前激活的主题
+   */
+  endPreview(): void
+  
+  /**
+   * 应用预览
+   * 将预览的主题正式激活
+   */
+  applyPreview(): Promise<void>
+  
+  /**
+   * 获取预览状态
+   */
+  getPreviewState(): ThemePreviewState
+}
+```
+
+#### 10.3.2 回滚机制
+
+```typescript
+/**
+ * 主题切换历史记录
+ */
+interface ThemeHistoryEntry {
+  themeId: string                   // 主题ID
+  variantId: string | null          // 变体ID
+  config: ThemeConfig               // 配置
+  timestamp: number                 // 切换时间
+  userConfig?: Partial<ThemeConfig> // 用户自定义配置
+}
+
+/**
+ * 主题回滚管理器
+ */
+interface ThemeRollbackManager {
+  /**
+   * 记录切换历史
+   */
+  recordSwitch(entry: ThemeHistoryEntry): void
+  
+  /**
+   * 回滚到上一个主题
+   */
+  rollback(): Promise<void>
+  
+  /**
+   * 回滚到指定历史记录
+   */
+  rollbackTo(index: number): Promise<void>
+  
+  /**
+   * 获取历史记录列表
+   */
+  getHistory(): ThemeHistoryEntry[]
+  
+  /**
+   * 清除历史记录
+   */
+  clearHistory(): void
+  
+  /**
+   * 获取可回滚深度
+   */
+  getRollbackDepth(): number
+}
+```
+
+### 10.4 主题包版本管理设计
+
+#### 10.4.1 版本信息
+
+```typescript
+/**
+ * 主题包版本信息
+ */
+interface ThemeVersion {
+  major: number                     // 主版本号
+  minor: number                     // 次版本号
+  patch: number                     // 补丁版本号
+  prerelease?: string               // 预发布标签（如 'alpha', 'beta'）
+  build?: string                    // 构建号
+}
+
+/**
+ * 版本兼容性信息
+ */
+interface VersionCompatibility {
+  minVersion: ThemeVersion          // 最小兼容版本
+  maxVersion?: ThemeVersion         // 最大兼容版本（可选）
+  deprecated: boolean               // 是否已废弃
+  migrationGuide?: string           // 迁移指南URL
+}
+```
+
+#### 10.4.2 版本管理器
+
+```typescript
+/**
+ * 主题版本管理器
+ */
+interface ThemeVersionManager {
+  /**
+   * 解析版本字符串
+   */
+  parseVersion(versionStr: string): ThemeVersion
+  
+  /**
+   * 比较版本
+   * @returns -1: v1 < v2, 0: v1 == v2, 1: v1 > v2
+   */
+  compareVersions(v1: ThemeVersion, v2: ThemeVersion): number
+  
+  /**
+   * 检查兼容性
+   */
+  checkCompatibility(theme: ThemePackage, targetVersion: ThemeVersion): boolean
+  
+  /**
+   * 获取升级路径
+   */
+  getUpgradePath(fromVersion: ThemeVersion, toVersion: ThemeVersion): ThemeVersion[]
+  
+  /**
+   * 执行版本升级
+   */
+  upgradeTheme(themeId: string, toVersion: ThemeVersion): Promise<void>
+  
+  /**
+   * 执行版本降级
+   */
+  downgradeTheme(themeId: string, toVersion: ThemeVersion): Promise<void>
+}
+```
+
+### 10.5 主题依赖管理设计
+
+#### 10.5.1 依赖声明
+
+```typescript
+/**
+ * 主题依赖声明
+ */
+interface ThemeDependency {
+  themeId: string                   // 依赖的主题ID
+  versionRange?: string             // 版本范围（如 '>=1.0.0 <2.0.0'）
+  optional?: boolean                // 是否可选依赖
+  description?: string              // 依赖描述
+}
+
+/**
+ * 主题包扩展（包含依赖）
+ */
+interface ThemePackageExtended extends ThemePackage {
+  // ========== 依赖声明 ==========
+  dependencies?: ThemeDependency[]  // 依赖的其他主题
+  
+  // ========== 扩展点 ==========
+  extends?: string                  // 继承的基础主题ID
+}
+```
+
+#### 10.5.2 依赖管理器
+
+```typescript
+/**
+ * 主题依赖管理器
+ */
+interface ThemeDependencyManager {
+  /**
+   * 解析依赖关系
+   */
+  resolveDependencies(theme: ThemePackageExtended): Promise<ThemePackage[]>
+  
+  /**
+   * 检查依赖是否满足
+   */
+  checkDependencies(theme: ThemePackageExtended): boolean
+  
+  /**
+   * 获取依赖图
+   */
+  getDependencyGraph(): Map<string, string[]>
+  
+  /**
+   * 检测循环依赖
+   */
+  detectCircularDependency(themeId: string): boolean
+  
+  /**
+   * 加载依赖主题
+   */
+  loadDependencies(theme: ThemePackageExtended): Promise<void>
+  
+  /**
+   * 卸载依赖主题
+   */
+  unloadDependencies(theme: ThemePackageExtended): void
+}
+```
+
+### 10.6 主题热拔插设计
+
+#### 10.6.1 ThemeLoader
+
+```typescript
+/**
+ * 主题加载器
+ * 支持动态加载/卸载主题包
+ */
+interface ThemeLoader {
+  /**
+   * 加载主题包
+   * @param source 主题包来源（URL、本地路径、或已注册的主题包）
+   */
+  loadTheme(source: string | ThemePackage): Promise<ThemePackage>
+  
+  /**
+   * 卸载主题包
+   */
+  unloadTheme(themeId: string): void
+  
+  /**
+   * 热更新主题包
+   * 不销毁引擎，只更新配置和资源
+   */
+  hotReload(themeId: string, newPackage: ThemePackage): Promise<void>
+  
+  /**
+   * 预加载主题包
+   * 在后台加载，不立即激活
+   */
+  preloadTheme(source: string): Promise<void>
+  
+  /**
+   * 获取已加载主题列表
+   */
+  getLoadedThemes(): string[]
+  
+  /**
+   * 检查主题是否已加载
+   */
+  isLoaded(themeId: string): boolean
+}
+```
+
+#### 10.6.2 生命周期钩子
+
+```typescript
+/**
+ * 主题生命周期钩子（扩展）
+ */
+interface ThemeLifecycleHooks {
+  // ========== 加载阶段 ==========
+  beforeLoad?: (themeId: string) => Promise<void>    // 加载前
+  afterLoad?: (theme: ThemePackage) => Promise<void> // 加载后
+  
+  // ========== 激活阶段 ==========
+  beforeActivate?: (themeId: string) => Promise<void>   // 激活前
+  afterActivate?: (theme: ThemePackage) => Promise<void> // 激活后
+  
+  // ========== 卸载阶段 ==========
+  beforeUnload?: (themeId: string) => Promise<void>  // 卸载前
+  afterUnload?: (themeId: string) => Promise<void>   // 卸载后
+  
+  // ========== 热更新阶段 ==========
+  beforeHotReload?: (themeId: string) => Promise<void>  // 热更新前
+  afterHotReload?: (theme: ThemePackage) => Promise<void> // 热更新后
+}
+```
+
+### 10.7 状态管理设计（useThemeStore）
+
+```typescript
+/**
+ * 主题状态管理（Zustand）
+ */
+interface ThemeState {
+  // ========== 基础状态 ==========
+  activeThemeId: string | null          // 当前激活的主题ID
+  activeVariantId: string | null        // 当前激活的变体ID
+  registeredThemes: Map<string, ThemePackage>  // 已注册的主题
+  
+  // ========== 扩展状态 ==========
+  globalConfig: GlobalThemeConfig        // 全局配置
+  themeHistory: ThemeHistoryEntry[]      // 切换历史
+  previewState: ThemePreviewState        // 预览状态
+  userOverrides: Map<string, Partial<ThemeConfig>>  // 用户自定义配置
+  
+  // ========== 基础操作 ==========
+  registerTheme: (theme: ThemePackage) => void
+  unregisterTheme: (themeId: string) => void
+  switchTheme: (themeId: string, variantId?: string) => Promise<void>
+  
+  // ========== 扩展操作 ==========
+  updateGlobalConfig: (config: Partial<GlobalThemeConfig>) => void
+  updateUserOverride: (themeId: string, config: Partial<ThemeConfig>) => void
+  startPreview: (themeId: string, variantId?: string) => Promise<void>
+  endPreview: () => void
+  applyPreview: () => Promise<void>
+  rollback: () => Promise<void>
+  rollbackTo: (index: number) => Promise<void>
+  
+  // ========== 选择器 ==========
+  getActiveTheme: () => ThemePackage | null
+  getThemeList: () => ThemePackage[]
+  getMergedConfig: (themeId: string) => ThemeConfig  // 获取合并后的配置
+  getHistory: () => ThemeHistoryEntry[]
+  canRollback: () => boolean
+}
+```
+
+### 10.8 持久化策略设计
+
+```typescript
+/**
+ * 持久化策略接口
+ */
+interface PersistenceStrategy {
+  /**
+   * 保存配置
+   */
+  save(key: string, data: any): Promise<void>
+  
+  /**
+   * 加载配置
+   */
+  load(key: string): Promise<any | null>
+  
+  /**
+   * 删除配置
+   */
+  delete(key: string): Promise<void>
+  
+  /**
+   * 检查是否存在
+   */
+  exists(key: string): boolean
+}
+
+/**
+ * 本地存储策略
+ */
+class LocalStorageStrategy implements PersistenceStrategy {
+  save(key: string, data: any): Promise<void> {
+    localStorage.setItem(key, JSON.stringify(data))
+    return Promise.resolve()
+  }
+  
+  load(key: string): Promise<any | null> {
+    const data = localStorage.getItem(key)
+    return Promise.resolve(data ? JSON.parse(data) : null)
+  }
+  
+  // ...
+}
+
+/**
+ * 文件存储策略（通过后端API）
+ */
+class FileStorageStrategy implements PersistenceStrategy {
+  // 使用 server.py 的文件存储API
+  // ...
+}
+
+/**
+ * 云端同步策略（预留接口）
+ */
+class CloudSyncStrategy implements PersistenceStrategy {
+  // 预留接口，后续实现
+  // ...
+}
+```
+
+### 10.9 扩展架构健康检查
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| 模块职责清晰 | ✅ | Loader/Version/Depend/Preview/Rollback 各司其职 |
+| 接口稳定 | ✅ | 扩展接口不影响核心接口 |
+| 依赖方向正确 | ✅ | 扩展层 → 核心层 → 抽象层 |
+| 错误有处理 | ✅ | 每个扩展模块都有错误处理 |
+| 可测试 | ✅ | 每个扩展模块可独立测试 |
+| 无过度设计 | ✅ | 只为已确认需求设计 |
+| 副作用隔离 | ✅ | 预览状态与激活状态分离 |
+| 向后兼容 | ✅ | 扩展不影响现有功能 |
+
+### 10.10 扩展实现优先级
+
+| 优先级 | 功能 | 原因 |
+|--------|------|------|
+| P0 | GlobalThemeConfig | 基础功能，其他功能依赖它 |
+| P0 | useThemeStore | 状态管理核心 |
+| P0 | ThemeLoader | 热拔插基础 |
+| P1 | 预览/回滚 | 用户体验提升 |
+| P2 | 版本管理 | 多主题协作需要 |
+| P2 | 依赖管理 | 复杂主题需要 |
+| P3 | 云端同步 | 跨设备需要，可延后 |
+
+---
+
+## 十一、总结
+
+本架构设计（方案2）在原有基础上扩展了：
+
+1. **全局参数系统**：支持参数继承链（全局→主题→变体→用户）
+2. **主题预览/回滚**：切换前可预览，切换后可回滚
+3. **主题包版本管理**：支持版本升级/降级/兼容检查
+4. **主题依赖管理**：支持主题依赖其他主题
+5. **主题热拔插**：动态加载/卸载主题包
+6. **持久化策略**：支持本地存储，预留云端同步接口
+
+下一步将进入阶段六：扩展设计实现。
+
+---
+
+## 十二、实施状态
+
+### 已实现
+
+| 模块 | 文件 | 状态 |
+|------|------|------|
+| 主题接口定义 | `src/types/theme.ts` | ✅ |
+| 液态玻璃引擎 | `src/themes/engines/LiquidGlassEngine.ts` | ✅ |
+| 扁平化主题引擎 | `src/themes/engines/FlatThemeEngine.ts` | ✅ |
+| 主题管理器 | `src/themes/ThemeManager.ts` | ✅ |
+| 主题加载器（热拔插） | `src/themes/ThemeLoader.ts` | ✅ |
+| 主题状态管理 | `src/store/useThemeStore.ts` | ✅ |
+| 迁移指南 | `migration_guide.md` | ✅ |
+
+### 测试覆盖（28个用例全部通过）
+
+| 测试分类 | 用例数 |
+|----------|--------|
+| 数据一致性 | 6 |
+| 边界与极限 | 9 |
+| 恢复能力 | 10 |
+| 用户预期管理 | 2 |
+| 可维护性 | 1 |
+
+### 待迁移
+
+新架构尚未接入页面，现有功能通过旧 `useLiquidGlass` 保持不变。迁移步骤见 [migration_guide.md](./migration_guide.md)。

@@ -2,10 +2,11 @@
 // 给 AI 的话：显示日期、玻璃调参按钮、导出/导入快捷入口
 
 import { useState } from 'react'
-import { Sliders, Download, Upload, Menu } from 'lucide-react'
+import { Sliders, Download, Upload, Menu, Droplets, Square } from 'lucide-react'
 import { GlassControlPanel } from '../glass/GlassControlPanel'
 import { downloadExport, readFileAsText, importData } from '../../utils/export'
 import { friendlyDate } from '../../utils/date'
+import { useThemeStore } from '../../store/useThemeStore'
 
 interface TopBarProps {
   onToggleSidebar?: () => void
@@ -14,6 +15,8 @@ interface TopBarProps {
 export function TopBar({ onToggleSidebar }: TopBarProps) {
   const [showGlassPanel, setShowGlassPanel] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const activeThemeId = useThemeStore(s => s.activeThemeId)
+  const switchTheme = useThemeStore(s => s.switchTheme)
 
   // 显示提示消息
   const showToast = (msg: string) => {
@@ -83,6 +86,28 @@ export function TopBar({ onToggleSidebar }: TopBarProps) {
 
         {/* 右侧：操作按钮 */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => switchTheme('liquid-glass')}
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition ${
+              activeThemeId === 'liquid-glass'
+                ? 'bg-blue-500/30 text-white'
+                : 'bg-white/5 text-white/50 hover:bg-white/10'
+            }`}
+            title="液态玻璃主题"
+          >
+            <Droplets size={13} />
+          </button>
+          <button
+            onClick={() => switchTheme('flat')}
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition ${
+              activeThemeId === 'flat'
+                ? 'bg-purple-500/30 text-white'
+                : 'bg-white/5 text-white/50 hover:bg-white/10'
+            }`}
+            title="扁平主题"
+          >
+            <Square size={13} />
+          </button>
           <ToolbarButton icon={Download} label="导出" onClick={handleExport} />
           <ToolbarButton icon={Upload} label="导入" onClick={handleImport} />
           <ToolbarButton

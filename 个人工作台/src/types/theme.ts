@@ -202,7 +202,176 @@ export interface ThemePackage {
   }
 }
 
-// ========== 主题错误类型 ==========
+// ========== 全局主题配置 ==========
+/**
+ * 全局主题配置
+ * 所有主题共享的参数，优先级最低
+ */
+export interface GlobalThemeConfig {
+  // ========== 基础全局参数 ==========
+  id: 'global'                     // 固定为 'global'
+  name: string                      // 显示名称
+
+  // ========== 全局视觉参数 ==========
+  colors?: Partial<ColorScheme>     // 全局颜色（可被主题覆盖）
+  typography?: Partial<TypographyScheme>  // 全局字体
+  spacing?: Partial<SpacingScheme>  // 全局间距
+  shadows?: Partial<ShadowScheme>   // 全局阴影
+  borders?: Partial<BorderScheme>   // 全局边框
+
+  // ========== 全局行为参数 ==========
+  transitionDuration?: number       // 主题切换过渡时间（毫秒）
+  enablePreview?: boolean           // 是否启用预览功能
+  enableRollback?: boolean          // 是否启用回滚功能
+  maxHistoryDepth?: number          // 最大历史记录深度（用于回滚）
+
+  // ========== 全局性能参数 ==========
+  enableLazyLoad?: boolean          // 是否启用懒加载
+  cacheStrategy?: 'memory' | 'localStorage' | 'none'  // 缓存策略
+}
+
+// ========== 默认全局配置 ==========
+export const DEFAULT_GLOBAL_CONFIG: GlobalThemeConfig = {
+  id: 'global',
+  name: '全局配置',
+  transitionDuration: 300,
+  enablePreview: true,
+  enableRollback: true,
+  maxHistoryDepth: 10,
+  enableLazyLoad: true,
+  cacheStrategy: 'localStorage'
+}
+
+// ========== 参数继承链 ==========
+/**
+ * 参数继承链
+ * 优先级从低到高：全局 → 主题默认 → 变体 → 用户自定义
+ */
+export interface ConfigInheritanceChain {
+  global: GlobalThemeConfig         // 全局配置（优先级最低）
+  theme: ThemeConfig                // 主题默认配置
+  variant?: ThemeVariant            // 变体配置（可选）
+  user?: Partial<ThemeConfig>       // 用户自定义配置（优先级最高）
+}
+
+// ========== 主题预览状态 ==========
+/**
+ * 主题预览状态
+ */
+export interface ThemePreviewState {
+  previewThemeId: string | null     // 正在预览的主题ID
+  previewVariantId: string | null   // 正在预览的变体ID
+  previewConfig: ThemeConfig | null // 预览配置
+  isPreviewActive: boolean          // 预览是否激活
+}
+
+// ========== 主题切换历史记录 ==========
+/**
+ * 主题切换历史记录
+ */
+export interface ThemeHistoryEntry {
+  themeId: string                   // 主题ID
+  variantId: string | null          // 变体ID
+  config: ThemeConfig               // 配置
+  timestamp: number                 // 切换时间
+  userConfig?: Partial<ThemeConfig> // 用户自定义配置
+}
+
+// ========== 主题包版本信息 ==========
+/**
+ * 主题包版本信息
+ */
+export interface ThemeVersion {
+  major: number                     // 主版本号
+  minor: number                     // 次版本号
+  patch: number                     // 补丁版本号
+  prerelease?: string               // 预发布标签（如 'alpha', 'beta'）
+  build?: string                    // 构建号
+}
+
+/**
+ * 版本兼容性信息
+ */
+export interface VersionCompatibility {
+  minVersion: ThemeVersion          // 最小兼容版本
+  maxVersion?: ThemeVersion         // 最大兼容版本（可选）
+  deprecated: boolean               // 是否已废弃
+  migrationGuide?: string           // 迁移指南URL
+}
+
+// ========== 主题依赖声明 ==========
+/**
+ * 主题依赖声明
+ */
+export interface ThemeDependency {
+  themeId: string                   // 依赖的主题ID
+  versionRange?: string             // 版本范围（如 '>=1.0.0 <2.0.0'）
+  optional?: boolean                // 是否可选依赖
+  description?: string              // 依赖描述
+}
+
+/**
+ * 主题包扩展（包含依赖）
+ */
+export interface ThemePackageExtended extends ThemePackage {
+  // ========== 依赖声明 ==========
+  dependencies?: ThemeDependency[]  // 依赖的其他主题
+
+  // ========== 扩展点 ==========
+  extends?: string                  // 继承的基础主题ID
+
+  // ========== 版本信息 ==========
+  versionInfo?: ThemeVersion        // 版本信息
+  compatibility?: VersionCompatibility  // 兼容性信息
+}
+
+// ========== 主题生命周期钩子（扩展） ==========
+/**
+ * 主题生命周期钩子（扩展）
+ */
+export interface ThemeLifecycleHooks {
+  // ========== 加载阶段 ==========
+  beforeLoad?: (themeId: string) => Promise<void>    // 加载前
+  afterLoad?: (theme: ThemePackage) => Promise<void> // 加载后
+
+  // ========== 激活阶段 ==========
+  beforeActivate?: (themeId: string) => Promise<void>   // 激活前
+  afterActivate?: (theme: ThemePackage) => Promise<void> // 激活后
+
+  // ========== 卸载阶段 ==========
+  beforeUnload?: (themeId: string) => Promise<void>  // 卸载前
+  afterUnload?: (themeId: string) => Promise<void>   // 卸载后
+
+  // ========== 热更新阶段 ==========
+  beforeHotReload?: (themeId: string) => Promise<void>  // 热更新前
+  afterHotReload?: (theme: ThemePackage) => Promise<void> // 热更新后
+}
+
+// ========== 持久化策略接口 ==========
+/**
+ * 持久化策略接口
+ */
+export interface PersistenceStrategy {
+  /**
+   * 保存配置
+   */
+  save(key: string, data: any): Promise<void>
+
+  /**
+   * 加载配置
+   */
+  load(key: string): Promise<any | null>
+
+  /**
+   * 删除配置
+   */
+  delete(key: string): Promise<void>
+
+  /**
+   * 检查是否存在
+   */
+  exists(key: string): boolean
+}
 /**
  * 主题错误基类
  * 遵循业务异常与技术异常分离原则
@@ -243,5 +412,30 @@ export class ThemeRegisterError extends ThemeError {
 export class ThemeEngineError extends ThemeError {
   constructor(engineName: string, reason: string) {
     super(`主题引擎错误: ${engineName}, 原因: ${reason}`, 'THEME_ENGINE_ERROR')
+  }
+}
+
+// ========== 扩展错误类型 ==========
+export class ThemeVersionError extends ThemeError {
+  constructor(themeId: string, reason: string) {
+    super(`主题版本错误: ${themeId}, 原因: ${reason}`, 'THEME_VERSION_ERROR')
+  }
+}
+
+export class ThemeDependencyError extends ThemeError {
+  constructor(themeId: string, reason: string) {
+    super(`主题依赖错误: ${themeId}, 原因: ${reason}`, 'THEME_DEPENDENCY_ERROR')
+  }
+}
+
+export class ThemePreviewError extends ThemeError {
+  constructor(themeId: string, reason: string) {
+    super(`主题预览错误: ${themeId}, 原因: ${reason}`, 'THEME_PREVIEW_ERROR')
+  }
+}
+
+export class ThemeRollbackError extends ThemeError {
+  constructor(reason: string) {
+    super(`主题回滚错误: 原因: ${reason}`, 'THEME_ROLLBACK_ERROR')
   }
 }
