@@ -7,18 +7,23 @@ import { DiaryPage } from './pages/DiaryPage'
 import { WallpaperPage } from './pages/WallpaperPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { DemoPage } from './pages/DemoPage'
+import { ThemeDemoPage } from './pages/ThemeDemoPage'
+import { ThemeProvider } from './components/layout/ThemeProvider'
 
 export function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="todo" element={<TodoPage />} />
-        <Route path="diary" element={<DiaryPage />} />
-        <Route path="wallpaper" element={<WallpaperPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Route>
-      <Route path="/demo" element={<DemoPage />} />
-    </Routes>
+    <ThemeProvider>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="todo" element={<TodoPage />} />
+          <Route path="diary" element={<DiaryPage />} />
+          <Route path="wallpaper" element={<WallpaperPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+        <Route path="/demo" element={<DemoPage />} />
+        <Route path="/theme-demo" element={<ThemeDemoPage />} />
+      </Routes>
+    </ThemeProvider>
   )
 }

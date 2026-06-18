@@ -126,3 +126,16 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   margin: 1em 0;
 }
+
+/* 扁平化主题面板样式（FlatTheme） */
+.flat-panel {
+  background: rgba(22, 33, 62, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+.flat-panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(22, 33, 62, 0.95);
+}
