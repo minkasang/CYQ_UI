@@ -1,30 +1,30 @@
-// 整体布局
-// 给 AI 的话：Sidebar + TopBar + 内容区三段式
+// 整体布局 — 壳选择器
+// 根据 useLayoutRegistry.activeId 动态选择布局壳组件
+// 壳只负责页面骨架，内容通过 <Outlet /> 渲染
 
-import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Sidebar } from './Sidebar'
-import { TopBar } from './TopBar'
-import { GlobalBackground } from './GlobalBackground'
-import { StorageWarning } from '../common/StorageWarning'
-import { ErrorBoundary } from '../common/ErrorBoundary'
+import { useLayoutRegistry } from '../../store/useLayoutRegistry'
+import { DefaultLayout } from '../../layouts/DefaultLayout'
+import { MacOSLayout } from '../../layouts/MacOSLayout'
+import { FullWidthLayout } from '../../layouts/FullWidthLayout'
+import { TopNavLayout } from '../../layouts/TopNavLayout'
+
+// 壳组件映射表
+import type { ReactNode } from 'react'
+type ShellComponent = (props: { children: ReactNode }) => ReactNode
+const SHELL_MAP: Record<string, ShellComponent> = {
+  default: DefaultLayout,
+  macos: MacOSLayout,
+  fullwidth: FullWidthLayout,
+  topnav: TopNavLayout,
+  // macos: 后续步骤添加
+  // fullwidth: 后续步骤添加
+  // topnav: 后续步骤添加
+}
 
 export function Layout() {
-  const [collapsed, setCollapsed] = useState(false)
+  const activeId = useLayoutRegistry(s => s.activeId)
+  const Shell = SHELL_MAP[activeId] || DefaultLayout
 
-  return (
-    <div className="h-screen w-screen overflow-hidden flex">
-      <GlobalBackground />
-      <StorageWarning />
-      <Sidebar collapsed={collapsed} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar onToggleSidebar={() => setCollapsed(!collapsed)} />
-        <main className="flex-1 overflow-auto p-6">
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
-        </main>
-      </div>
-    </div>
-  )
+  return <Shell><Outlet /></Shell>
 }

@@ -9,6 +9,7 @@ import { APIKeyModal } from '../../../components/chat/APIKeyModal'
 import { DiarySettingsPanel } from '../../../components/diary/DiarySettingsPanel'
 import { BackupManager } from '../../../components/diary/BackupManager'
 import { OperationLogViewer } from '../../../components/common/OperationLogViewer'
+import { LayoutManager } from '../../../components/layout/LayoutManager'
 import { clearAllStorage } from '../../../utils/storage'
 import { downloadExport, importData, readFileAsText } from '../../../utils/export'
 import { AlertTriangle, Database, Trash2, Download, Upload, Key, Clock } from 'lucide-react'
@@ -157,6 +158,11 @@ export function SettingsPage() {
             重置所有设置
           </button>
         </div>
+      </div>
+
+      {/* 布局切换 */}
+      <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
+        <LayoutManager />
       </div>
 
       {/* AI 配置 */}
