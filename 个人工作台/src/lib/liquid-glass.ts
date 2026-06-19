@@ -577,6 +577,7 @@ export class LiquidGlass {
   _onResize: () => void;
   _vwMeter: HTMLDivElement;
   _bgSizeCache: { w: number; h: number } | null = null;
+  _lastDpr: number = 0;
 
   constructor(bgUrl: string) {
     this.bgUrl = bgUrl;
@@ -596,12 +597,23 @@ export class LiquidGlass {
     this.bgImage = await loadImage(this.bgUrl);
     this._resizeBg();
     window.addEventListener('resize', this._onResize);
+    // visualViewport: 监听从缩放触发的 DPR 变化
+    window.visualViewport?.addEventListener('resize', this._onResize);
   }
 
   _resizeBg() {
     if (!this.bgImage) return;
     const w = this._vwMeter.offsetWidth || window.innerWidth;
     const viewH = window.innerHeight;
+
+    // 检测 DPR 变化（Ctrl+缩放），强制清缓存重绘
+    const dpr = window.devicePixelRatio || 1;
+    if (this._lastDpr !== dpr) {
+      this._lastDpr = dpr;
+      this._bgSizeCache = null;
+      for (const panel of this.panels) panel._lastRender = undefined;
+    }
+
     const h = viewH * 2;
     if (this._bgSizeCache && this._bgSizeCache.w === w && this._bgSizeCache.h === viewH) return;
     this._bgSizeCache = { w, h: viewH };
@@ -711,6 +723,7 @@ export class LiquidGlass {
   destroy() {
     cancelAnimationFrame(this._raf);
     window.removeEventListener('resize', this._onResize);
+    window.visualViewport?.removeEventListener('resize', this._onResize);
     for (const panel of this.panels) {
       if (panel.canvas.parentNode) panel.canvas.parentNode.removeChild(panel.canvas);
     }
