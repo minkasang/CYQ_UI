@@ -2,16 +2,14 @@
 // inline 模式：设置页内嵌；弹窗模式：TopBar 触发
 
 import { useSettingsStore } from '../../store/useSettingsStore'
+import { getGlobalLG } from '../../hooks/useLiquidGlass'
 import { RotateCcw, X } from 'lucide-react'
-import type { LiquidGlass } from '../../lib/liquid-glass'
 import { GlassPanel } from './GlassPanel'
 
 interface Props {
   onClose?: () => void
   inline?: boolean
 }
-
-function getLG(): LiquidGlass | undefined { return (window as any).__lg }
 
 export function GlassControlPanel({ onClose, inline }: Props) {
   const glass = useSettingsStore(s => s.settings.glass)
@@ -20,11 +18,11 @@ export function GlassControlPanel({ onClose, inline }: Props) {
 
   const updateParam = (key: string, value: number) => {
     setGlass({ [key]: value } as any)
-    getLG()?.updateConfig({ [key]: value } as any)
+    getGlobalLG()?.updateConfig({ [key]: value } as any)
   }
   const handleReset = () => {
     resetGlass()
-    getLG()?.updateConfig(useSettingsStore.getState().settings.glass)
+    getGlobalLG()?.updateConfig(useSettingsStore.getState().settings.glass)
   }
 
   // 内嵌模式 — 设置页直接显示

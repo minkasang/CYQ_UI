@@ -12,6 +12,11 @@ import { useThemeStore } from '../store/useThemeStore'
 let globalLG: LiquidGlass | null = null
 let globalBgUrl: string | undefined = undefined
 
+/** 获取全局 LiquidGlass 实例（供 GlassControlPanel 等外部使用） */
+export function getGlobalLG(): LiquidGlass | null {
+  return globalLG
+}
+
 /**
  * 创建/管理一个 LiquidGlass 实例（全局单例）
  * - bgUrl 改变 → 重新加载图片、保留所有 panel、强制重渲染
