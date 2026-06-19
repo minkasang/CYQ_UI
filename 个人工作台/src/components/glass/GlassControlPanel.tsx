@@ -109,12 +109,21 @@ function SliderSection({ title, children }: { title: string; children: React.Rea
 function ParamSlider({ label, value, min, max, step, onChange }: {
   label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void
 }) {
-  const d = step < 1 ? 2 : 0
   return (
     <div>
       <div className="flex items-center justify-between mb-0.5">
         <span className="text-[11px] text-white/70">{label}</span>
-        <span className="text-[10px] text-white/40 font-mono">{value.toFixed(d)}</span>
+        <input
+          type="number"
+          min={min} max={max} step={step}
+          value={value}
+          onChange={e => {
+            const v = parseFloat(e.target.value)
+            if (!isNaN(v)) onChange(Math.min(max, Math.max(min, v)))
+          }}
+          className="w-[60px] text-right text-[10px] text-white/60 font-mono bg-white/5 border border-white/10 rounded px-1.5 py-px outline-none focus:border-[#0A84FF] transition-colors"
+          style={{ fontFamily: 'inherit' }}
+        />
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(Number(e.target.value))}
