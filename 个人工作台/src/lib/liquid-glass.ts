@@ -605,20 +605,22 @@ export class LiquidGlass {
     if (!this.bgImage) return;
     const w = this._vwMeter.offsetWidth || window.innerWidth;
     const viewH = window.innerHeight;
-
-    // 检测 DPR 变化（Ctrl+缩放），强制清缓存重绘
     const dpr = window.devicePixelRatio || 1;
+
+    // 检测 DPR 变化，强制清缓存
     if (this._lastDpr !== dpr) {
       this._lastDpr = dpr;
       this._bgSizeCache = null;
       for (const panel of this.panels) panel._lastRender = undefined;
     }
 
-    const h = viewH * 2;
     if (this._bgSizeCache && this._bgSizeCache.w === w && this._bgSizeCache.h === viewH) return;
     this._bgSizeCache = { w, h: viewH };
-    this.bgCanvas.width = w;
-    this.bgCanvas.height = h;
+
+    const dprW = Math.round(w * dpr);
+    const dprH = Math.round(viewH * dpr);
+    this.bgCanvas.width = dprW;
+    this.bgCanvas.height = dprH * 2;
     const img = this.bgImage;
     const imgRatio = img.width / img.height;
     const screenRatio = w / viewH;
@@ -634,8 +636,8 @@ export class LiquidGlass {
       sx = 0;
       sy = (img.height - sh) / 2;
     }
-    this.bgCtx.drawImage(img, sx, sy, sw, sh, 0, 0, w, viewH);
-    this.bgCtx.drawImage(img, sx, sy, sw, sh, 0, viewH, w, viewH);
+    this.bgCtx.drawImage(img, sx, sy, sw, sh, 0, 0, dprW, dprH);
+    this.bgCtx.drawImage(img, sx, sy, sw, sh, 0, dprH, dprW, dprH);
   }
 
   addPanel(el: HTMLElement, overrides: LiquidGlassConfig = {}) {
