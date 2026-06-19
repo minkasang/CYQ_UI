@@ -20,6 +20,10 @@ export function GlassControlPanel({ onClose, inline }: Props) {
     const saved = parseFloat(document.documentElement.style.getPropertyValue('--overlay-opacity') || '0.2')
     return isNaN(saved) ? 0.2 : saved
   })
+  const [textBrightness, setTextBrightness] = useState(() => {
+    const saved = parseFloat(localStorage.getItem('pw-text-brightness') || '1')
+    return isNaN(saved) ? 1 : saved
+  })
 
   const updateParam = (key: string, value: number) => {
     setGlass({ [key]: value } as any)
@@ -50,6 +54,11 @@ export function GlassControlPanel({ onClose, inline }: Props) {
             document.documentElement.style.setProperty('--overlay-opacity', String(v))
             localStorage.setItem('pw-overlay-opacity', String(v))
           }} />
+          <ParamSlider label="文字亮度" value={textBrightness} min={0.4} max={1} step={0.01} onChange={v => {
+            setTextBrightness(v)
+            document.documentElement.style.setProperty('--text-brightness', String(v))
+            localStorage.setItem('pw-text-brightness', String(v))
+          }} />
         </div>
       </div>
     )
@@ -76,6 +85,11 @@ export function GlassControlPanel({ onClose, inline }: Props) {
             setOverlayVal(v)
             document.documentElement.style.setProperty('--overlay-opacity', String(v))
             localStorage.setItem('pw-overlay-opacity', String(v))
+          }} />
+          <ParamSlider label="文字亮度" value={textBrightness} min={0.4} max={1} step={0.01} onChange={v => {
+            setTextBrightness(v)
+            document.documentElement.style.setProperty('--text-brightness', String(v))
+            localStorage.setItem('pw-text-brightness', String(v))
           }} />
         </div>
         <p className="text-xs text-white/50 mt-4">💡 拖动滑块实时预览，参数自动保存。</p>

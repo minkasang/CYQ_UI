@@ -9,10 +9,10 @@ export function GlobalBackground() {
 
   // 初始化暗化遮罩值（从 localStorage 恢复）
   useEffect(() => {
-    const saved = localStorage.getItem('pw-overlay-opacity')
-    if (saved) {
-      document.documentElement.style.setProperty('--overlay-opacity', saved)
-    }
+    const overlay = localStorage.getItem('pw-overlay-opacity')
+    if (overlay) document.documentElement.style.setProperty('--overlay-opacity', overlay)
+    const brightness = localStorage.getItem('pw-text-brightness')
+    if (brightness) document.documentElement.style.setProperty('--text-brightness', brightness)
   }, [])
 
   // 根据壁纸类型生成 CSS 背景
