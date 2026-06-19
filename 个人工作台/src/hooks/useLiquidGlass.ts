@@ -76,6 +76,9 @@ export function useLiquidGlass(bgUrl: string | undefined) {
           globalLG!.addPanel(el)
         }
       })
+      // 重新应用保存的玻璃参数（用户可能在设置页调过）
+      const savedGlass = useSettingsStore.getState().settings.glass
+      globalLG.updateConfig(savedGlass)
       return
     }
 
