@@ -3,6 +3,7 @@
 
 import { useSettingsStore } from '../../store/useSettingsStore'
 import { getGlobalLG } from '../../hooks/useLiquidGlass'
+import { useState } from 'react'
 import { RotateCcw, X } from 'lucide-react'
 import { GlassPanel } from './GlassPanel'
 
@@ -15,6 +16,10 @@ export function GlassControlPanel({ onClose, inline }: Props) {
   const glass = useSettingsStore(s => s.settings.glass)
   const setGlass = useSettingsStore(s => s.setGlass)
   const resetGlass = useSettingsStore(s => s.resetGlass)
+  const [overlayVal, setOverlayVal] = useState(() => {
+    const saved = parseFloat(document.documentElement.style.getPropertyValue('--overlay-opacity') || '0.2')
+    return isNaN(saved) ? 0.2 : saved
+  })
 
   const updateParam = (key: string, value: number) => {
     setGlass({ [key]: value } as any)
@@ -38,6 +43,14 @@ export function GlassControlPanel({ onClose, inline }: Props) {
           </button>
         </div>
         <SliderGroups glass={glass} updateParam={updateParam} />
+        <div className="mt-3">
+          <h4 className="text-[10px] text-white/40 mb-1.5 uppercase tracking-wider">显示</h4>
+          <ParamSlider label="暗化强度" value={overlayVal} min={0} max={0.5} step={0.01} onChange={v => {
+            setOverlayVal(v)
+            document.documentElement.style.setProperty('--overlay-opacity', String(v))
+            localStorage.setItem('pw-overlay-opacity', String(v))
+          }} />
+        </div>
       </div>
     )
   }
@@ -57,6 +70,14 @@ export function GlassControlPanel({ onClose, inline }: Props) {
           </div>
         </div>
         <SliderGroups glass={glass} updateParam={updateParam} />
+        <div className="mt-3">
+          <h4 className="text-[10px] text-white/40 mb-1.5 uppercase tracking-wider">显示</h4>
+          <ParamSlider label="暗化强度" value={overlayVal} min={0} max={0.5} step={0.01} onChange={v => {
+            setOverlayVal(v)
+            document.documentElement.style.setProperty('--overlay-opacity', String(v))
+            localStorage.setItem('pw-overlay-opacity', String(v))
+          }} />
+        </div>
         <p className="text-xs text-white/50 mt-4">💡 拖动滑块实时预览，参数自动保存。</p>
       </GlassPanel>
     </div>

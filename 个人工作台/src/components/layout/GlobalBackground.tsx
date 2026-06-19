@@ -1,10 +1,19 @@
 // 全局背景
-// 给 AI 的话：渲染当前壁纸（图片/渐变/纯色）
+// 给 AI 的话：渲染当前壁纸（图片/渐变/纯色），含可调节暗化遮罩
 
+import { useEffect } from 'react'
 import { useWallpaperStore } from '../../store/useWallpaperStore'
 
 export function GlobalBackground() {
   const current = useWallpaperStore(s => s.current)
+
+  // 初始化暗化遮罩值（从 localStorage 恢复）
+  useEffect(() => {
+    const saved = localStorage.getItem('pw-overlay-opacity')
+    if (saved) {
+      document.documentElement.style.setProperty('--overlay-opacity', saved)
+    }
+  }, [])
 
   // 根据壁纸类型生成 CSS 背景
   const getBackground = (): string => {
@@ -28,11 +37,12 @@ export function GlobalBackground() {
         className="fixed inset-0 -z-10"
         style={{ background: getBackground() }}
       />
-      {/* 暗化遮罩（提升文字可读性，Apple 风格） */}
+      {/* 暗化遮罩（提升文字可读性，可调节） */}
       <div
         className="fixed inset-0 -z-10"
+        id="global-dark-overlay"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%)',
+          background: 'radial-gradient(ellipse at center, rgba(0,0,0,var(--overlay-opacity, 0.2)) 0%, rgba(0,0,0,calc(var(--overlay-opacity, 0.2) + 0.3)) 100%)',
         }}
       />
     </>
