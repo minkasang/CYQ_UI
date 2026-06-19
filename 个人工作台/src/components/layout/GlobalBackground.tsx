@@ -28,11 +28,11 @@ export function GlobalBackground() {
         className="fixed inset-0 -z-10"
         style={{ background: getBackground() }}
       />
-      {/* 暗化遮罩（提升文字可读性） */}
+      {/* 暗化遮罩（提升文字可读性，Apple 风格） */}
       <div
         className="fixed inset-0 -z-10"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)',
+          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%)',
         }}
       />
     </>
