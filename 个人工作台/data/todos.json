@@ -25,7 +25,14 @@
     "subtasks": [],
     "dependsOn": [],
     "timeSpent": 0,
-    "timeEntries": [],
+    "timeEntries": [
+      {
+        "id": "1781874660243-n9chml8",
+        "startTime": 1781874660243,
+        "duration": 0,
+        "endTime": 1781874662009
+      }
+    ],
     "archived": false,
     "order": 1
   }

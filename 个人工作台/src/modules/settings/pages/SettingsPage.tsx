@@ -10,6 +10,7 @@ import { DiarySettingsPanel } from '../../../components/diary/DiarySettingsPanel
 import { BackupManager } from '../../../components/diary/BackupManager'
 import { OperationLogViewer } from '../../../components/common/OperationLogViewer'
 import { LayoutManager } from '../../../components/layout/LayoutManager'
+import { GlassControlPanel } from '../../../components/glass/GlassControlPanel'
 import { clearAllStorage } from '../../../utils/storage'
 import { downloadExport, importData, readFileAsText } from '../../../utils/export'
 import { AlertTriangle, Database, Trash2, Download, Upload, Key, Clock } from 'lucide-react'
@@ -200,9 +201,7 @@ export function SettingsPage() {
       {/* 玻璃调参 */}
       <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
         <h3 className="text-base font-semibold text-white mb-3">🎛 玻璃效果</h3>
-        <p className="text-xs text-white/60 mb-3">
-          点击顶部「玻璃调参」按钮可实时调节参数
-        </p>
+        <GlassControlPanel />
       </div>
 
       {/* 数据管理 */}
