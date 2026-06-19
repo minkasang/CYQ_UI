@@ -1,12 +1,12 @@
 // 壁纸 Store
-// 给 AI 的话：当前壁纸 + 历史记录，双持久化（localStorage + JSON 文件）
+// 持久化：Zustand persist → localStorage（主），subscribe → JSON 文件（备份）
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Wallpaper, WallpaperType } from '../types'
 import { saveToFile, FILE_KEYS } from '../utils/fileStorage'
 
-// 本地壁纸列表
+// 预设本地壁纸
 const LOCAL_WALLPAPERS: Wallpaper[] = [
   { id: 'aurora-default', type: 'url', value: '/wallpapers/aurora-default.jpg', name: '极光默认', createdAt: Date.now() },
   { id: 'purple-blue-fluid', type: 'url', value: '/wallpapers/purple-blue-fluid.jpg', name: '紫蓝流体', createdAt: Date.now() },
@@ -27,13 +27,11 @@ interface WallpaperState {
   current: Wallpaper
   history: Wallpaper[]
   presets: Wallpaper[]
-  loaded: boolean
   setCurrent: (wallpaper: Wallpaper) => void
   addToHistory: (wallpaper: Wallpaper) => void
   removeFromHistory: (id: string) => void
   addCustom: (type: WallpaperType, value: string, name?: string) => void
-  loadFromFile: () => Promise<void>
-  saveToFile: () => Promise<void>
+  loadFromFile: () => Promise<void>  // 保留兼容（persist 接管后为空操作）
 }
 
 function genId(): string {
@@ -46,31 +44,21 @@ export const useWallpaperStore = create<WallpaperState>()(
       current: DEFAULT_WALLPAPER,
       history: [DEFAULT_WALLPAPER],
       presets: LOCAL_WALLPAPERS,
-      loaded: false,
 
-      loadFromFile: async () => {
-        // 纯文件备份：仅供导出/导入使用，不覆盖 persist 的状态
-        // persist 中间件已自动处理 localStorage 持久化
-      },
-
-      saveToFile: async () => {
-        const { current, history } = get()
-        await saveToFile(FILE_KEYS.WALLPAPER, { current, history })
-      },
+      // persist 已接管持久化，此方法保留仅为兼容旧调用方
+      loadFromFile: async () => {},
 
       setCurrent: (wallpaper) => {
         set({ current: wallpaper })
-        get().addToHistory(wallpaper)
       },
 
       addToHistory: (wallpaper) => {
         const history = get().history
         const exists = history.some(w => w.value === wallpaper.value)
-        if (exists) {
-          set({ history: [wallpaper, ...history.filter(w => w.value !== wallpaper.value)].slice(0, 20) })
-        } else {
-          set({ history: [wallpaper, ...history].slice(0, 20) })
-        }
+        const next = exists
+          ? [wallpaper, ...history.filter(w => w.value !== wallpaper.value)]
+          : [wallpaper, ...history]
+        set({ history: next.slice(0, 20) })
       },
 
       removeFromHistory: (id) => {
@@ -85,8 +73,9 @@ export const useWallpaperStore = create<WallpaperState>()(
           name: name || `${type}-${Date.now()}`,
           createdAt: Date.now(),
         }
+        // addToHistory + setCurrent，不重复
         get().addToHistory(wallpaper)
-        get().setCurrent(wallpaper)
+        set({ current: wallpaper })
       },
     }),
     {
@@ -96,10 +85,10 @@ export const useWallpaperStore = create<WallpaperState>()(
   )
 )
 
-// 每次状态变化也写一份文件备份（供导出/导入使用）
+// 文件备份：每次变化同步写 JSON（供导出/导入）
 let _lastBackup = ''
 useWallpaperStore.subscribe((state) => {
-  const key = state.current.id + state.history.length
+  const key = state.current.id + String(state.history.length)
   if (key !== _lastBackup) {
     _lastBackup = key
     saveToFile(FILE_KEYS.WALLPAPER, { current: state.current, history: state.history })
