@@ -1,7 +1,9 @@
 // 底部浮动 Dock — macOS 风格导航
 // 规范来源：doc/macos-design-spec-v1.md §4
 
+import { useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { getGlobalLG } from '../../hooks/useLiquidGlass'
 
 const DOCK_ITEMS = [
   { id: 'home', to: '/', icon: '🏠', label: '首页' },
@@ -13,9 +15,38 @@ const DOCK_ITEMS = [
 
 export function Dock() {
   const location = useLocation()
+  const dockRef = useRef<HTMLDivElement>(null)
+
+  // 注册为液态玻璃面板
+  useEffect(() => {
+    const el = dockRef.current
+    if (!el) return
+    // 等待 LiquidGlass 初始化（最多等 3 秒）
+    let tries = 0
+    const tryRegister = setInterval(() => {
+      const lg = getGlobalLG()
+      if (lg) {
+        clearInterval(tryRegister)
+        if (!lg.panels.find(p => p.el === el)) {
+          lg.addPanel(el, { cornerRadius: 20, blurAmount: 3 })
+        }
+      } else if (++tries > 30) {
+        clearInterval(tryRegister)
+      }
+    }, 100)
+    return () => {
+      clearInterval(tryRegister)
+      const lg = getGlobalLG()
+      if (lg) {
+        const idx = lg.panels.findIndex(p => p.el === el)
+        if (idx >= 0) lg.panels.splice(idx, 1)
+      }
+    }
+  }, [])
 
   return (
     <div
+      ref={dockRef}
       className="fixed z-50 flex items-center gap-1"
       style={{
         bottom: 12,
