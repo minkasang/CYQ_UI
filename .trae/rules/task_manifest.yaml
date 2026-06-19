@@ -13,7 +13,7 @@
 meta:
   project: "cyq_UI"
   file_version: "2.2"
-  last_updated: "2026-06-18T23:30:00+08:00"
+  last_updated: "2026-06-19T13:15:00+08:00"
 
 # ============================================================
 # 活跃任务（AI 只读这里）
@@ -82,10 +82,11 @@ active:
 # ============================================================
 archived:
   summary:
-    total: 7
-    completed: 7
+    total: 8
+    completed: 8
 
   tasks:
+    - { name: "模块开关首页联动",       dir: "模块开关首页联动",       priority: "high",   dependencies: [],                  completed: "2026-06-19", detail: "HomePage条件渲染+Sidebar chat→ai映射+welcome开关" }
     - { name: "模块化架构重构",       dir: "模块化架构重构",       priority: "high",   dependencies: [],                  completed: "2026-06-18", detail: "ModuleManager+5模块生命周期" }
     - { name: "主题系统架构优化",     dir: "主题系统架构优化",     priority: "high",   dependencies: [],                  completed: "2026-06-18", detail: "热拔插主题系统四层架构" }
     - { name: "主题系统测试补充",     dir: "主题系统测试补充",     priority: "medium", dependencies: ["主题系统架构优化"],   completed: "2026-06-18", detail: "4文件53测试tsc零错误" }

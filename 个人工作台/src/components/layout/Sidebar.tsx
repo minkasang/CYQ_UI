@@ -18,13 +18,15 @@ const ALL_SECTIONS = [
 ]
 
 // 始终显示的入口（不可关闭）
-const ALWAYS_ON = new Set(['welcome', 'settings', 'chat'])
+const ALWAYS_ON = new Set(['settings'])
 
 const PREFIX = 'module_toggle_'
 
 function isOn(id: string): boolean {
   if (ALWAYS_ON.has(id)) return true
-  return localStorage.getItem(PREFIX + id) !== 'off'
+  // chat 跟随 ai 模块开关，没有独立的 chat 模块
+  const toggleKey = id === 'chat' ? 'ai' : id
+  return localStorage.getItem(PREFIX + toggleKey) !== 'off'
 }
 
 // 侧边栏订阅路由 Hook 的版本通知

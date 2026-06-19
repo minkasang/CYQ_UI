@@ -14,16 +14,17 @@ const PREFIX = 'module_toggle_'
 const PAGE_PATH = '../../modules/settings/pages/SettingsPage'
 
 beforeEach(() => {
-  ;['settings', 'wallpaper', 'todo', 'diary', 'ai'].forEach(id =>
+  ;['welcome', 'settings', 'wallpaper', 'todo', 'diary', 'ai'].forEach(id =>
     localStorage.removeItem(PREFIX + id)
   )
 })
 
 describe('SettingsPage：模块开关', () => {
-  it('渲染 5 个模块开关', async () => {
+  it('渲染 6 个模块开关（含首页）', async () => {
     const { SettingsPage } = await import(PAGE_PATH)
     render(<MemoryRouter><SettingsPage /></MemoryRouter>)
     expect(screen.getByText('模块管理')).toBeInTheDocument()
+    expect(screen.getByText('首页')).toBeInTheDocument()
     expect(screen.getByText('系统设置')).toBeInTheDocument()
     expect(screen.getByText('壁纸引擎')).toBeInTheDocument()
     expect(screen.getByText('待办管理')).toBeInTheDocument()
@@ -35,7 +36,7 @@ describe('SettingsPage：模块开关', () => {
     const { SettingsPage } = await import(PAGE_PATH)
     render(<MemoryRouter><SettingsPage /></MemoryRouter>)
     const checkboxes = screen.getAllByRole('checkbox')
-    expect(checkboxes.length).toBe(5)
+    expect(checkboxes.length).toBe(6)
     checkboxes.forEach(cb => expect(cb).toBeChecked())
   })
 
@@ -43,7 +44,8 @@ describe('SettingsPage：模块开关', () => {
     const { SettingsPage } = await import(PAGE_PATH)
     render(<MemoryRouter><SettingsPage /></MemoryRouter>)
     const checkboxes = screen.getAllByRole('checkbox')
-    fireEvent.click(checkboxes[2])
+    // ALL_MODULE_IDS: [welcome, settings, wallpaper, todo, diary, ai]
+    fireEvent.click(checkboxes[3]) // todo at index 3
     expect(localStorage.getItem('module_toggle_todo')).toBe('off')
   })
 
@@ -52,9 +54,9 @@ describe('SettingsPage：模块开关', () => {
     const { SettingsPage } = await import(PAGE_PATH)
     render(<MemoryRouter><SettingsPage /></MemoryRouter>)
     const checkboxes = screen.getAllByRole('checkbox')
-    expect(checkboxes[2]).not.toBeChecked()
+    expect(checkboxes[3]).not.toBeChecked()
 
-    fireEvent.click(checkboxes[2])
+    fireEvent.click(checkboxes[3])
     expect(localStorage.getItem('module_toggle_todo')).toBe('on')
   })
 })

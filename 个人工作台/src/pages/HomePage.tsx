@@ -1,8 +1,12 @@
 // 首页 - 纵向滚动布局
 // 给 AI 的话：长页面，每个功能区是一个 section，滚动时入场动画
 // section id: welcome, todo, diary, ai, wallpaper
+//
+// 模块开关：通过 localStorage 'module_toggle_{id}' 控制 section 显隐
+// 开关变化时通过 notifyModuleToggleChanged 触发重渲染
+// chat section 跟随 ai 开关
 
-import { useRef, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CheckSquare, BookText, ArrowRight, ChevronDown } from 'lucide-react'
 import { TodoList } from '../components/todo/TodoList'
 import { DiaryEditor } from '../components/diary/DiaryEditor'
@@ -18,19 +22,16 @@ import { useAIConfigStore } from '../store/useAIConfigStore'
 import { useThemeStore } from '../store/useThemeStore'
 import { friendlyDate, getToday } from '../utils/date'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
-
-// ========== 以下代码已注释，改为条件渲染 ==========
-// 原 HomePage 完整实现已保留在此处，供参考回退使用
-// 修改原因：开关关闭后 section 仍然渲染，需要按 localStorage 开关状态条件渲染
-// ================================================
+import { useModuleToggles } from '../hooks/useModuleRoutes'
 
 // 滚动入场动画 Hook
+// 使用 callback ref 模式：当 section 因开关切换从隐藏→显示时，
+// ref 变化触发状态更新，重新创建 IntersectionObserver
 function useScrollAnimation(threshold = 0.2) {
-  const ref = useRef<HTMLDivElement>(null)
+  const [el, setEl] = useState<HTMLElement | null>(null)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const el = ref.current
     if (!el) return
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -40,9 +41,9 @@ function useScrollAnimation(threshold = 0.2) {
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [threshold])
+  }, [el, threshold])
 
-  return { ref, isVisible }
+  return { ref: setEl, isVisible }
 }
 
 export function HomePage() {
@@ -60,6 +61,7 @@ export function HomePage() {
   const bgUrl = wallpaper.type === 'url' || wallpaper.type === 'local' ? wallpaper.value : undefined
 
   const { registerPanel } = useLiquidGlass(bgUrl)
+  const { isOn } = useModuleToggles()
 
   // 加载所有配置数据
   useEffect(() => {
@@ -87,121 +89,143 @@ export function HomePage() {
   return (
     <div className="max-w-5xl mx-auto pb-20">
       {/* ===== 第 1 屏：欢迎区 ===== */}
-      <section
-        id="welcome"
-        ref={welcomeAnim.ref}
-        className={`min-h-[80vh] flex flex-col justify-center transition-all duration-1000 ${
-          welcomeAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-white mb-3">
-            {getGreeting()} 👋
-          </h1>
-          <p className="text-lg text-white/60">
-            {friendlyDate(new Date())}
-          </p>
-          <p className="text-sm text-white/40 mt-2">
-            向下滚动探索你的工作台
-          </p>
-        </div>
-
-        {/* 统计卡片 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          <StatCard label="今日待办" value={stats.today} icon={CheckSquare} onClick={() => scrollTo('todo')} registerPanel={registerPanel} />
-          <StatCard label="已完成" value={stats.completed} icon={CheckSquare} onClick={() => scrollTo('todo')} registerPanel={registerPanel} />
-          <StatCard label="日记总数" value={diaries.length} icon={BookText} onClick={() => scrollTo('diary')} registerPanel={registerPanel} />
-          <StatCard label="今日日记" value={todayDiary ? '✓' : '–'} icon={BookText} onClick={() => scrollTo('diary')} registerPanel={registerPanel} />
-        </div>
-
-        {/* 向下滚动提示 */}
-        <button
-          onClick={() => scrollTo('todo')}
-          className="flex flex-col items-center gap-1 text-white/30 hover:text-white/60 transition self-center mt-4"
+      {isOn('welcome') && (
+        <section
+          id="welcome"
+          ref={welcomeAnim.ref}
+          className={`min-h-[80vh] flex flex-col justify-center transition-all duration-1000 ${
+            welcomeAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
         >
-          <span className="text-xs">向下滑动</span>
-          <ChevronDown size={20} className="animate-bounce" />
-        </button>
-      </section>
+          <div className="mb-8">
+            <h1 className="text-5xl font-bold text-white mb-3">
+              {getGreeting()} 👋
+            </h1>
+            <p className="text-lg text-white/60">
+              {friendlyDate(new Date())}
+            </p>
+            <p className="text-sm text-white/40 mt-2">
+              向下滚动探索你的工作台
+            </p>
+          </div>
+
+          {/* 统计卡片（各自跟随模块开关） */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+            {isOn('todo') && (
+              <>
+                <StatCard label="今日待办" value={stats.today} icon={CheckSquare} onClick={() => scrollTo('todo')} registerPanel={registerPanel} />
+                <StatCard label="已完成" value={stats.completed} icon={CheckSquare} onClick={() => scrollTo('todo')} registerPanel={registerPanel} />
+              </>
+            )}
+            {isOn('diary') && (
+              <>
+                <StatCard label="日记总数" value={diaries.length} icon={BookText} onClick={() => scrollTo('diary')} registerPanel={registerPanel} />
+                <StatCard label="今日日记" value={todayDiary ? '✓' : '–'} icon={BookText} onClick={() => scrollTo('diary')} registerPanel={registerPanel} />
+              </>
+            )}
+          </div>
+
+          {/* 向下滚动提示（跟随 todo 开关） */}
+          {isOn('todo') && (
+            <button
+              onClick={() => scrollTo('todo')}
+              className="flex flex-col items-center gap-1 text-white/30 hover:text-white/60 transition self-center mt-4"
+            >
+              <span className="text-xs">向下滑动</span>
+              <ChevronDown size={20} className="animate-bounce" />
+            </button>
+          )}
+        </section>
+      )}
 
       {/* ===== 第 2 屏：待办区 ===== */}
-      <section
-        id="todo"
-        ref={todoAnim.ref}
-        className={`py-8 transition-all duration-1000 ${
-          todoAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <SectionTitle title="每日待办" subtitle="管理工作与生活的任务清单" />
-        <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-          <TodoList />
-        </div>
-      </section>
+      {isOn('todo') && (
+        <section
+          id="todo"
+          ref={todoAnim.ref}
+          className={`py-8 transition-all duration-1000 ${
+            todoAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="每日待办" subtitle="管理工作与生活的任务清单" />
+          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+            <TodoList />
+          </div>
+        </section>
+      )}
 
       {/* ===== 第 3 屏：日记区 ===== */}
-      <section
-        id="diary"
-        ref={diaryAnim.ref}
-        className={`py-8 transition-all duration-1000 ${
-          diaryAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <SectionTitle title="每日日记" subtitle="记录今天的想法与感悟" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-              <DiaryEditor />
+      {isOn('diary') && (
+        <section
+          id="diary"
+          ref={diaryAnim.ref}
+          className={`py-8 transition-all duration-1000 ${
+            diaryAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="每日日记" subtitle="记录今天的想法与感悟" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+                <DiaryEditor />
+              </div>
+            </div>
+            <div>
+              <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+                <DiaryList />
+              </div>
             </div>
           </div>
-          <div>
-            <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-              <DiaryList />
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ===== 第 4 屏：AI 总结区 ===== */}
-      <section
-        id="ai"
-        ref={aiAnim.ref}
-        className={`py-8 transition-all duration-1000 ${
-          aiAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <SectionTitle title="AI 总结" subtitle="用 AI 整理你的日记与想法" />
-        <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-          <AISummary />
-        </div>
-      </section>
+      {isOn('ai') && (
+        <section
+          id="ai"
+          ref={aiAnim.ref}
+          className={`py-8 transition-all duration-1000 ${
+            aiAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="AI 总结" subtitle="用 AI 整理你的日记与想法" />
+          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+            <AISummary />
+          </div>
+        </section>
+      )}
 
       {/* ===== 第 5 屏：AI 聊天区 ===== */}
-      <section
-        id="chat"
-        ref={chatAnim.ref}
-        className={`py-10 transition-all duration-1000 ${
-          chatAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <SectionTitle title="AI 聊天" subtitle="与 AI 进行多轮对话" />
-        <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-          <ChatPanel />
-        </div>
-      </section>
+      {isOn('ai') && (
+        <section
+          id="chat"
+          ref={chatAnim.ref}
+          className={`py-10 transition-all duration-1000 ${
+            chatAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="AI 聊天" subtitle="与 AI 进行多轮对话" />
+          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+            <ChatPanel />
+          </div>
+        </section>
+      )}
 
       {/* ===== 第 6 屏：壁纸设置区 ===== */}
-      <section
-        id="wallpaper"
-        ref={wallpaperAnim.ref}
-        className={`py-8 transition-all duration-1000 ${
-          wallpaperAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        <SectionTitle title="壁纸设置" subtitle="换个背景，换个心情" />
-        <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-          <WallpaperManager />
-        </div>
-      </section>
+      {isOn('wallpaper') && (
+        <section
+          id="wallpaper"
+          ref={wallpaperAnim.ref}
+          className={`py-8 transition-all duration-1000 ${
+            wallpaperAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="壁纸设置" subtitle="换个背景，换个心情" />
+          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+            <WallpaperManager />
+          </div>
+        </section>
+      )}
 
       {/* 底部留白 */}
       <div className="h-20" />

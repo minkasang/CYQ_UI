@@ -7,7 +7,7 @@ const PREFIX = 'module_toggle_'
 const SIDEBAR_PATH = '../../components/layout/Sidebar'
 
 beforeEach(() => {
-  ;['settings', 'wallpaper', 'todo', 'diary', 'ai'].forEach(id =>
+  ;['welcome', 'settings', 'wallpaper', 'todo', 'diary', 'ai'].forEach(id =>
     localStorage.removeItem(PREFIX + id)
   )
   ;(window as any).__sidebarRefresh?.()
@@ -48,13 +48,13 @@ describe('Sidebar：模块开关联动', () => {
     expect(screen.getByText('AI 总结')).toBeInTheDocument()
   })
 
-  it('首页永远显示（不可关闭）', async () => {
+  it('首页可被关闭（module_toggle_welcome = off 后消失）', async () => {
     localStorage.setItem('module_toggle_welcome', 'off')
     ;(window as any).__sidebarRefresh?.()
 
     const { Sidebar } = await import(SIDEBAR_PATH)
     render(<MemoryRouter initialEntries={['/']}><Sidebar /></MemoryRouter>)
-    expect(screen.getByText('首页')).toBeInTheDocument()
+    expect(screen.queryByText('首页')).toBeNull()
   })
 
   it('设置永远显示（不可关闭）', async () => {

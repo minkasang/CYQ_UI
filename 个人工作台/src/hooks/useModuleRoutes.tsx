@@ -17,9 +17,27 @@ export function notifyModuleToggleChanged() {
   ;(window as any).__sidebarRefresh?.()
 }
 
+/**
+ * 模块开关订阅 Hook
+ * 供 HomePage 等组件订阅开关变化，返回当前 isOn 快照
+ * 每次开关切换时自动触发重渲染
+ */
+export function useModuleToggles() {
+  const [, setVersion] = useState(_refreshVersion)
+
+  useEffect(() => {
+    const fn = () => setVersion(_refreshVersion)
+    listeners.push(fn)
+    return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1) }
+  }, [])
+
+  return { isOn: isModuleToggledOn }
+}
+
 /** 各模块id列表，用于设置页枚举 */
-export const ALL_MODULE_IDS = ['settings', 'wallpaper', 'todo', 'diary', 'ai']
+export const ALL_MODULE_IDS = ['welcome', 'settings', 'wallpaper', 'todo', 'diary', 'ai']
 export const MODULE_NAMES: Record<string, string> = {
+  welcome: '首页',
   settings: '系统设置',
   wallpaper: '壁纸引擎',
   todo: '待办管理',
@@ -27,7 +45,8 @@ export const MODULE_NAMES: Record<string, string> = {
   ai: 'AI 助手',
 }
 
-function isModuleToggledOn(id: string): boolean {
+/** 读取模块开关状态（纯函数，供 HomePage/Sidebar 复用） */
+export function isModuleToggledOn(id: string): boolean {
   return localStorage.getItem(STORAGE_PREFIX + id) !== 'off'
 }
 
