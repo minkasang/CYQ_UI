@@ -76,7 +76,7 @@ const DEFAULT_PREVIEW_STATE: ThemePreviewState = {
 }
 
 // ========== 深度合并工具（简化类型）==========
-function deepMerge(target: any, source: any): any {
+export function deepMerge(target: any, source: any): any {
   const result = { ...target }
   for (const key in source) {
     if (source[key] !== undefined) {

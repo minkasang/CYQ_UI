@@ -19,6 +19,11 @@ import { useThemeStore } from '../store/useThemeStore'
 import { friendlyDate, getToday } from '../utils/date'
 import { useLiquidGlass } from '../hooks/useLiquidGlass'
 
+// ========== 以下代码已注释，改为条件渲染 ==========
+// 原 HomePage 完整实现已保留在此处，供参考回退使用
+// 修改原因：开关关闭后 section 仍然渲染，需要按 localStorage 开关状态条件渲染
+// ================================================
+
 // 滚动入场动画 Hook
 function useScrollAnimation(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null)

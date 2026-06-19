@@ -1,12 +1,14 @@
 // 左侧导航栏（极简版）
 // 给 AI 的话：去掉所有花哨的 hover/active 玻璃效果，只用纯色背景
 // 避免多层半透明叠加导致的"光晕"和"错位"感
+//
+// 模块开关：读取 localStorage 'module_toggle_{id}'，订阅 useModuleRoutes 的通知重渲染
 
 import { useEffect, useState, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Home, CheckSquare, BookText, Sparkles, Settings as SettingsIcon, Image as ImageIcon, MessageSquare } from 'lucide-react'
 
-const SECTIONS = [
+const ALL_SECTIONS = [
   { id: 'welcome', label: '首页', icon: Home },
   { id: 'todo', label: '待办', icon: CheckSquare },
   { id: 'diary', label: '日记', icon: BookText },
@@ -14,6 +16,26 @@ const SECTIONS = [
   { id: 'chat', label: 'AI 聊天', icon: MessageSquare },
   { id: 'wallpaper', label: '壁纸', icon: ImageIcon },
 ]
+
+// 始终显示的入口（不可关闭）
+const ALWAYS_ON = new Set(['welcome', 'settings', 'chat'])
+
+const PREFIX = 'module_toggle_'
+
+function isOn(id: string): boolean {
+  if (ALWAYS_ON.has(id)) return true
+  return localStorage.getItem(PREFIX + id) !== 'off'
+}
+
+// 侧边栏订阅路由 Hook 的版本通知
+let _v = 0
+const _listeners: Array<() => void> = []
+
+// useModuleRoutes 会在 init 完成后调用这个，侧边栏和路由联动
+;(window as any).__sidebarRefresh = () => {
+  _v++
+  _listeners.forEach(fn => fn())
+}
 
 interface SidebarProps {
   collapsed?: boolean
@@ -24,6 +46,16 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
   const [activeSection, setActiveSection] = useState('welcome')
+  const [, setV] = useState(_v)
+
+  // 订阅切换通知
+  useEffect(() => {
+    const fn = () => setV(_v)
+    _listeners.push(fn)
+    return () => { const i = _listeners.indexOf(fn); if (i >= 0) _listeners.splice(i, 1) }
+  }, [])
+
+  const sections = ALL_SECTIONS.filter(s => isOn(s.id))
 
   // 监听滚动
   useEffect(() => {
@@ -35,7 +67,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
       const scrollTop = main.scrollTop + 200
 
       let current = 'welcome'
-      for (const section of SECTIONS) {
+      for (const section of sections) {
         const el = document.getElementById(section.id)
         if (el && el.offsetTop <= scrollTop) {
           current = section.id
@@ -52,7 +84,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     return () => {
       if (main) main.removeEventListener('scroll', handleScroll)
     }
-  }, [isHome])
+  }, [isHome, sections])
 
   const handleNavClick = useCallback((id: string) => {
     if (isHome) {
@@ -93,7 +125,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
 
       {/* 导航 */}
       <nav className="flex-1 px-2 space-y-1">
-        {SECTIONS.map(({ id, label, icon: Icon }) => {
+        {sections.map(({ id, label, icon: Icon }) => {
           const isActive = isHome && activeSection === id
           return (
             <button
