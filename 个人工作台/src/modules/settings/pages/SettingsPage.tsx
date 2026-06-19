@@ -201,7 +201,7 @@ export function SettingsPage() {
       {/* 玻璃调参 */}
       <div ref={(el) => registerPanel(el, { cornerRadius: 16 })} className="rounded-2xl p-5">
         <h3 className="text-base font-semibold text-white mb-3">🎛 玻璃效果</h3>
-        <GlassControlPanel />
+        <GlassControlPanel inline />
       </div>
 
       {/* 数据管理 */}
