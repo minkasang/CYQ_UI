@@ -3,18 +3,15 @@
 
 import { useEffect } from 'react'
 import { useWallpaperStore } from '../../store/useWallpaperStore'
+import { initTextColor } from '../glass/TextColorPanel'
 
 export function GlobalBackground() {
   const current = useWallpaperStore(s => s.current)
 
-  // 初始化暗化遮罩值（从 localStorage 恢复）
   useEffect(() => {
     const overlay = localStorage.getItem('pw-overlay-opacity')
     if (overlay) document.documentElement.style.setProperty('--overlay-opacity', overlay)
-    const brightness = localStorage.getItem('pw-text-brightness')
-    if (brightness) document.documentElement.style.setProperty('--text-brightness', brightness)
-    const color = localStorage.getItem('pw-text-color')
-    if (color) document.documentElement.style.setProperty('--text-color', color)
+    initTextColor()
   }, [])
 
   // 根据壁纸类型生成 CSS 背景
