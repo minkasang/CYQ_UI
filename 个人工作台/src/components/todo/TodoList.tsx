@@ -138,24 +138,7 @@ export function TodoList() {
 
       {/* 主内容区 */}
       <div className="flex-1 space-y-3">
-        {/* 统计信息 */}
-        <div className="flex items-center justify-between">
-          <div className="grid grid-cols-4 gap-2 text-center flex-1">
-            <StatCard label="今日待办" value={stats.today} color="text-blue-300" />
-            <StatCard label="已完成" value={stats.completed} color="text-green-300" />
-            <StatCard label="归档" value={stats.archived} color="text-white/50" />
-            <StatCard label="总待办" value={stats.total} color="text-white/80" />
-          </div>
-          <button
-            onClick={() => setViewMode('kanban')}
-            className="ml-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition"
-            title="切换到看板视图"
-          >
-            <LayoutGrid size={18} />
-          </button>
-        </div>
-
-        {/* 过滤栏 */}
+        {/* 过滤栏 + 视图切换 */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {FILTERS.map(f => (
             <button
@@ -178,6 +161,13 @@ export function TodoList() {
               清理已完成
             </button>
           )}
+          <button
+            onClick={() => setViewMode(viewMode === 'list' ? 'kanban' : 'list')}
+            className="ml-1 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition"
+            title={viewMode === 'list' ? '切换到看板视图' : '切换到列表视图'}
+          >
+            {viewMode === 'list' ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
+          </button>
         </div>
 
         {/* 搜索框 */}

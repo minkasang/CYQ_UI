@@ -20,10 +20,8 @@ export function DiaryPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-1">日记</h1>
-      <p className="text-sm text-white/60 mb-4">
-        记录生活与心情的日记本
-      </p>
+      <h1 className="text-[26px] font-bold text-white mb-1">📖 我的日记</h1>
+      <p className="text-xs text-white/50 mb-6">记录思考、感悟与生活</p>
       <div ref={(el) => registerPanel(el, { cornerRadius: 20 })} className="rounded-2xl p-5">
         <DiaryList />
       </div>

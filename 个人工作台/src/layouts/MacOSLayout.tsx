@@ -83,11 +83,10 @@ export function MacOSLayout({ children }: { children: ReactNode }) {
         )}
       </div>
 
-      {/* 内容区 — #1C1C1E 背景, 全宽, 独立滚动 */}
+      {/* 内容区 — 透明背景，壁纸透出 */}
       <main
         ref={mainRef}
         className="flex-1 overflow-auto"
-        style={{ background: '#1C1C1E' }}
       >
         <div className="px-8 py-6">
           <ErrorBoundary>

@@ -29,10 +29,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
     >
       <GlobalBackground />
 
-      <main
-        className="flex-1 overflow-auto"
-        style={{ background: '#1C1C1E' }}
-      >
+      <main className="flex-1 overflow-auto">
         <div className="max-w-[960px] mx-auto px-8 py-12 space-y-8">
           <ErrorBoundary>
             {/* 标题区 */}
