@@ -89,7 +89,7 @@ function SliderGroups({ glass, updateParam }: { glass: any; updateParam: (k: str
         <ParamSlider label="垂直偏移" value={glass.shadowOffsetY} min={-20} max={20} step={1} onChange={v => updateParam('shadowOffsetY', v)} />
       </SliderSection>
       <SliderSection title="其他">
-        <ParamSlider label="模糊" value={glass.blurAmount} min={0} max={30} step={0.5} onChange={v => updateParam('blurAmount', v)} />
+        <ParamSlider label="模糊" value={glass.blurAmount} min={0} max={10} step={0.1} onChange={v => updateParam('blurAmount', v)} />
         <ParamSlider label="扭曲" value={glass.distortion} min={0} max={1} step={0.01} onChange={v => updateParam('distortion', v)} />
         <ParamSlider label="边缘高亮" value={glass.edgeHighlight} min={0} max={1} step={0.01} onChange={v => updateParam('edgeHighlight', v)} />
       </SliderSection>
