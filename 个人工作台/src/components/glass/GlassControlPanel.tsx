@@ -24,6 +24,9 @@ export function GlassControlPanel({ onClose, inline }: Props) {
     const saved = parseFloat(localStorage.getItem('pw-text-brightness') || '1')
     return isNaN(saved) ? 1 : saved
   })
+  const [textColor, setTextColor] = useState(() => {
+    return localStorage.getItem('pw-text-color') || '255,255,255'
+  })
 
   const updateParam = (key: string, value: number) => {
     setGlass({ [key]: value } as any)
@@ -54,10 +57,15 @@ export function GlassControlPanel({ onClose, inline }: Props) {
             document.documentElement.style.setProperty('--overlay-opacity', String(v))
             localStorage.setItem('pw-overlay-opacity', String(v))
           }} />
-          <ParamSlider label="文字亮度" value={textBrightness} min={0.4} max={1} step={0.01} onChange={v => {
+          <ParamSlider label="文字亮度" value={textBrightness} min={0.3} max={1} step={0.01} onChange={v => {
             setTextBrightness(v)
             document.documentElement.style.setProperty('--text-brightness', String(v))
             localStorage.setItem('pw-text-brightness', String(v))
+          }} />
+          <ColorPicker label="文字颜色" value={textColor} onChange={v => {
+            setTextColor(v)
+            document.documentElement.style.setProperty('--text-color', v)
+            localStorage.setItem('pw-text-color', v)
           }} />
         </div>
       </div>
@@ -86,10 +94,15 @@ export function GlassControlPanel({ onClose, inline }: Props) {
             document.documentElement.style.setProperty('--overlay-opacity', String(v))
             localStorage.setItem('pw-overlay-opacity', String(v))
           }} />
-          <ParamSlider label="文字亮度" value={textBrightness} min={0.4} max={1} step={0.01} onChange={v => {
+          <ParamSlider label="文字亮度" value={textBrightness} min={0.3} max={1} step={0.01} onChange={v => {
             setTextBrightness(v)
             document.documentElement.style.setProperty('--text-brightness', String(v))
             localStorage.setItem('pw-text-brightness', String(v))
+          }} />
+          <ColorPicker label="文字颜色" value={textColor} onChange={v => {
+            setTextColor(v)
+            document.documentElement.style.setProperty('--text-color', v)
+            localStorage.setItem('pw-text-color', v)
           }} />
         </div>
         <p className="text-xs text-white/50 mt-4">💡 拖动滑块实时预览，参数自动保存。</p>
@@ -166,6 +179,32 @@ function ParamSlider({ label, value, min, max, step, onChange }: {
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5
           [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full
           [&::-webkit-slider-thumb]:bg-blue-400 [&::-webkit-slider-thumb]:cursor-pointer" />
+    </div>
+  )
+}
+
+function ColorPicker({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  // value 格式: "r,g,b"
+  const hex = '#' + value.split(',').map(n => parseInt(n).toString(16).padStart(2, '0')).join('')
+  return (
+    <div className="flex items-center justify-between py-1">
+      <span className="text-[11px] text-white/70">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="color"
+          value={hex}
+          onChange={e => {
+            const h = e.target.value
+            const r = parseInt(h.slice(1, 3), 16)
+            const g = parseInt(h.slice(3, 5), 16)
+            const b = parseInt(h.slice(5, 7), 16)
+            onChange(`${r},${g},${b}`)
+          }}
+          className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+          style={{ background: 'transparent' }}
+        />
+        <span className="text-[10px] text-white/40 font-mono">{hex}</span>
+      </div>
     </div>
   )
 }

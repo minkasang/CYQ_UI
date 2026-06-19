@@ -13,6 +13,8 @@ export function GlobalBackground() {
     if (overlay) document.documentElement.style.setProperty('--overlay-opacity', overlay)
     const brightness = localStorage.getItem('pw-text-brightness')
     if (brightness) document.documentElement.style.setProperty('--text-brightness', brightness)
+    const color = localStorage.getItem('pw-text-color')
+    if (color) document.documentElement.style.setProperty('--text-color', color)
   }, [])
 
   // 根据壁纸类型生成 CSS 背景
