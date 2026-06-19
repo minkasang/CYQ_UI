@@ -2,7 +2,7 @@
 // 给 AI 的话：左编辑右预览，支持 Markdown，集成 AI 辅助功能
 
 import { useState, useEffect, useRef } from 'react'
-import { X, FileText, Eye, ChevronDown, ChevronUp, Brain } from 'lucide-react'
+import { X, FileText, Eye, ChevronDown, ChevronUp, Brain, Save } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useDiaryStore } from '../../store/useDiaryStore'
@@ -45,9 +45,13 @@ export function DiaryEditor() {
   const diary = diaries.find(d => d.id === currentId)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [mood, setMood] = useState('')
+  const [weather, setWeather] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const [showPreview, setShowPreview] = useState(true)
   const [showMeta, setShowMeta] = useState(true)
   const [saved, setSaved] = useState(false)
+  const [dirty, setDirty] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const saveTimerRef = useRef<number | null>(null)
 
@@ -56,44 +60,105 @@ export function DiaryEditor() {
     if (diary) {
       setTitle(diary.title)
       setContent(diary.content)
+      setMood(diary.mood || '')
+      setWeather(diary.weather || '')
+      setTags(diary.tags || [])
     }
   }, [diary?.id])
 
-  // 自动保存（防抖）
+  // 标记是否有未保存的修改
   useEffect(() => {
     if (!diary) return
-    if (title === diary.title && content === diary.content) return
+    const metaDirty =
+      mood !== (diary.mood || '') ||
+      weather !== (diary.weather || '') ||
+      JSON.stringify(tags) !== JSON.stringify(diary.tags || [])
+    setDirty(title !== diary.title || content !== diary.content || metaDirty)
+  }, [title, content, mood, weather, tags, diary?.title, diary?.content, diary?.mood, diary?.weather, diary?.tags])
 
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current)
-    }
+  // 自动保存（5 秒安全网，主要靠用户手动保存）
+  useEffect(() => {
+    if (!diary) return
+    // 所有字段都没变则跳过
+    if (title === diary.title && content === diary.content &&
+        mood === (diary.mood || '') && weather === (diary.weather || '') &&
+        JSON.stringify(tags) === JSON.stringify(diary.tags || [])) return
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     saveTimerRef.current = window.setTimeout(async () => {
-      updateDiary(diary.id, { title, content })
+      updateDiary(diary.id, { title, content, mood, weather, tags })
       setSaved(true)
+      setDirty(false)
       setTimeout(() => setSaved(false), 2000)
 
-      // 自动分析情绪（如果启用且有足够内容）
       if (content.trim().length >= 20) {
         setAnalyzing(true)
         await analyzeDiaryEmotion(diary.id, content)
         setAnalyzing(false)
       }
-    }, 800)
+    }, 5000) // 5 秒无操作自动保存（安全网）
 
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     }
   }, [title, content, diary?.id])
 
+  // 手动保存
+  const handleSave = () => {
+    if (!diary) return
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = null
+    }
+    updateDiary(diary.id, { title, content, mood, weather, tags })
+    setSaved(true)
+    setDirty(false)
+    setTimeout(() => setSaved(false), 2000)
+
+    if (content.trim().length >= 20) {
+      setAnalyzing(true)
+      analyzeDiaryEmotion(diary.id, content).finally(() => setAnalyzing(false))
+    }
+  }
+
+  // Ctrl+S 快捷键
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        handleSave()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [title, content, diary?.id])
+
   // 更新元数据
   const handleMetaChange = (patch: { mood?: string; weather?: string; tags?: string[] }) => {
-    if (!diary) return
-    updateDiary(diary.id, patch)
+    if (patch.mood !== undefined) setMood(patch.mood)
+    if (patch.weather !== undefined) setWeather(patch.weather)
+    if (patch.tags !== undefined) setTags(patch.tags)
+    // 不直接保存——标记 dirty，等用户手动保存
   }
 
   // AI 工具栏应用内容
   const handleAIApply = (newContent: string) => {
     setContent(newContent)
+  }
+
+  // 关闭前保存（避免自动保存 800ms 延迟导致内容丢失）
+  const handleClose = () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = null
+    }
+    if (diary && (title !== diary.title || content !== diary.content ||
+        mood !== (diary.mood || '') || weather !== (diary.weather || '') ||
+        JSON.stringify(tags) !== JSON.stringify(diary.tags || []))) {
+      updateDiary(diary.id, { title, content, mood, weather, tags })
+    }
+    setDirty(false)
+    setCurrent(null)
   }
 
   // 渲染情绪分析结果
@@ -134,14 +199,32 @@ export function DiaryEditor() {
           placeholder="日记标题..."
           className="flex-1 bg-transparent text-lg font-semibold text-white outline-none placeholder-white/30"
         />
-        <span className={`text-xs transition ${saved ? 'text-green-300' : 'text-white/0'}`}>
-          ✓ 已保存
-        </span>
+        {/* 保存状态 */}
+        {dirty ? (
+          <span className="text-xs text-amber-300 flex items-center gap-1 whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" /> 未保存
+          </span>
+        ) : saved ? (
+          <span className="text-xs text-green-300 whitespace-nowrap">✓ 已保存</span>
+        ) : null}
         {analyzing && (
-          <span className="text-xs text-blue-300 flex items-center gap-1">
+          <span className="text-xs text-blue-300 flex items-center gap-1 whitespace-nowrap">
             <Brain size={12} className="animate-pulse" /> 分析中...
           </span>
         )}
+        {/* 保存按钮 */}
+        <button
+          onClick={handleSave}
+          disabled={!dirty}
+          className={`text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 ${
+            dirty
+              ? 'bg-blue-500/40 hover:bg-blue-500/60 text-white'
+              : 'bg-white/5 text-white/30 cursor-not-allowed'
+          }`}
+          title="保存 (Ctrl+S)"
+        >
+          <Save size={12} /> 保存
+        </button>
         <button
           onClick={() => setShowPreview(!showPreview)}
           className={`text-xs px-3 py-1.5 rounded-lg transition ${
@@ -152,7 +235,7 @@ export function DiaryEditor() {
           {showPreview ? <><FileText size={12} className="inline mr-1" />编辑</> : <><Eye size={12} className="inline mr-1" />预览</>}
         </button>
         <button
-          onClick={() => setCurrent(null)}
+          onClick={handleClose}
           className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 transition"
           title="关闭"
         >
@@ -214,9 +297,9 @@ export function DiaryEditor() {
 
         {showMeta && (
           <DiaryMeta
-            mood={diary.mood}
-            weather={diary.weather}
-            tags={diary.tags}
+            mood={mood}
+            weather={weather}
+            tags={tags}
             wordCount={diary.wordCount}
             onChange={handleMetaChange}
           />

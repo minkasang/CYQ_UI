@@ -13,7 +13,7 @@
 meta:
   project: "cyq_UI"
   file_version: "2.2"
-  last_updated: "2026-06-19T13:15:00+08:00"
+  last_updated: "2026-07-18T10:00:00+08:00"
 
 # ============================================================
 # 活跃任务（AI 只读这里）
@@ -32,6 +32,15 @@ active:
   # 嵌套规则：A 被 B 打断 → A.status=blocked, A.blocked_by=B, B.parent=A。支持多层。
 
   tasks:
+    - name: "前端设计布局优化"
+      status: "blocked"
+      blocked_by: "个人工作台MVP"
+      dir: "前端设计布局优化"
+      priority: "medium"
+      dependencies: ["个人工作台MVP"]
+      created_at: "2026-07-18"
+      detail: "设计参考skill已安装(apple-design+macos-design), 等待MVP验收后开始设计审计"
+
     - name: "个人工作台MVP"
       status: "blocked"
       blocked_by: "用户确认"
@@ -51,13 +60,12 @@ active:
       detail: "S7全局测试11项待执行"
 
     - name: "待办功能增强"
-      status: "blocked"
-      blocked_by: "用户确认"
+      status: "in_progress"
       dir: "待办功能增强"
       priority: "medium"
       dependencies: ["个人工作台MVP"]
       created_at: "2026-06-17"
-      detail: "3个待确认问题：移动端/同步/搜索"
+      detail: "用户已确认：多设备→导出/导入, 搜索→需要, 移动端→暂不需要。按4阶段计划：数据结构→交互增强→高级功能→扩展功能"
 
     - name: "日记功能拓展"
       status: "blocked"
@@ -82,10 +90,11 @@ active:
 # ============================================================
 archived:
   summary:
-    total: 8
-    completed: 8
+    total: 9
+    completed: 9
 
   tasks:
+    - { name: "待办功能增强",         dir: "待办功能增强",         priority: "medium", dependencies: ["个人工作台MVP"],   completed: "2026-07-18", detail: "代码分析→90%+已实现, 仅补搜索+导出增强。6文件变更" }
     - { name: "模块开关首页联动",       dir: "模块开关首页联动",       priority: "high",   dependencies: [],                  completed: "2026-06-19", detail: "HomePage条件渲染+Sidebar chat→ai映射+welcome开关" }
     - { name: "模块化架构重构",       dir: "模块化架构重构",       priority: "high",   dependencies: [],                  completed: "2026-06-18", detail: "ModuleManager+5模块生命周期" }
     - { name: "主题系统架构优化",     dir: "主题系统架构优化",     priority: "high",   dependencies: [],                  completed: "2026-06-18", detail: "热拔插主题系统四层架构" }

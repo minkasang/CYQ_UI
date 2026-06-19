@@ -41,9 +41,9 @@ export function SettingsPage() {
     setTimeout(() => window.location.reload(), 1000)
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      downloadExport()
+      await downloadExport()
       showToast('✓ 导出成功')
     } catch {
       showToast('✗ 导出失败')
@@ -59,7 +59,7 @@ export function SettingsPage() {
       if (!file) return
       try {
         const text = await readFileAsText(file)
-        const result = importData(text)
+        const result = await importData(text)
         if (result.success) {
           showToast(`✓ 导入成功（${result.count} 条）`)
           setTimeout(() => window.location.reload(), 1000)

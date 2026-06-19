@@ -1,8 +1,8 @@
 // 待办列表
 // 给 AI 的话：展示过滤后的待办项，支持切换过滤条件、拖拽排序和视图切换
 
-import { useEffect, useState } from 'react'
-import { LayoutList, LayoutGrid } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { LayoutList, LayoutGrid, Search, X } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -48,8 +48,10 @@ export function TodoList() {
 
   const loadProjects = useProjectStore(s => s.loadProjects)
   const loadTags = useTagStore(s => s.loadTags)
+  const allTags = useTagStore(s => s.tags)
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [searchQuery, setSearchQuery] = useState('')
 
   // 拖拽传感器
   const sensors = useSensors(
@@ -73,15 +75,29 @@ export function TodoList() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (over && active.id !== over.id) {
-      const oldIndex = todos.findIndex(t => t.id === active.id)
-      const newIndex = todos.findIndex(t => t.id === over.id)
+      const oldIndex = filteredTodos.findIndex(t => t.id === active.id)
+      const newIndex = filteredTodos.findIndex(t => t.id === over.id)
       if (oldIndex !== -1 && newIndex !== -1) {
         reorderTodos(oldIndex, newIndex)
       }
     }
   }
 
-  const completedCount = todos.filter(t => t.completed).length
+  // 搜索过滤
+  const filteredTodos = useMemo(() => {
+    if (!searchQuery.trim()) return todos
+    const q = searchQuery.toLowerCase()
+    return todos.filter(todo =>
+      todo.title.toLowerCase().includes(q) ||
+      (todo.content?.toLowerCase().includes(q)) ||
+      todo.tags.some(tagId => {
+        const tag = allTags.find(t => t.id === tagId)
+        return tag?.name.toLowerCase().includes(q)
+      })
+    )
+  }, [todos, searchQuery, allTags])
+
+  const completedCount = filteredTodos.filter(t => t.completed).length
 
   // 看板视图
   if (viewMode === 'kanban') {
@@ -164,17 +180,44 @@ export function TodoList() {
           )}
         </div>
 
+        {/* 搜索框 */}
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Escape' && setSearchQuery('')}
+            placeholder="搜索待办..."
+            className="w-full pl-9 pr-8 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-white outline-none placeholder-white/30 focus:border-white/20 transition"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
         {/* 输入框 */}
         {filter !== 'archived' && <TodoInput />}
 
         {/* 待办列表 */}
-        {todos.length === 0 ? (
+        {filteredTodos.length === 0 ? (
           <div className="text-center py-12 text-white/40 text-sm">
-            {filter === 'today' && '📝 今天还没有待办'}
-            {filter === 'pending' && '✨ 所有待办都已完成'}
-            {filter === 'completed' && '还没有完成过待办'}
-            {filter === 'archived' && '📦 还没有归档的任务'}
-            {filter === 'all' && '📋 还没有添加待办，点击上方按钮开始'}
+            {searchQuery ? (
+              <>🔍 未找到匹配 "{searchQuery}" 的待办</>
+            ) : (
+              <>
+                {filter === 'today' && '📝 今天还没有待办'}
+                {filter === 'pending' && '✨ 所有待办都已完成'}
+                {filter === 'completed' && '还没有完成过待办'}
+                {filter === 'archived' && '📦 还没有归档的任务'}
+                {filter === 'all' && '📋 还没有添加待办，点击上方按钮开始'}
+              </>
+            )}
           </div>
         ) : (
           <DndContext
@@ -183,11 +226,11 @@ export function TodoList() {
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={todos.map(t => t.id)}
+              items={filteredTodos.map(t => t.id)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-1">
-                {todos.map(todo => (
+                {filteredTodos.map(todo => (
                   <DraggableTodoItem key={todo.id} todo={todo} />
                 ))}
               </div>

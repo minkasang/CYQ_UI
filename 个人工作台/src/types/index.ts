@@ -216,4 +216,8 @@ export interface ExportData {
   diaries: Diary[]
   wallpapers: Wallpaper[]
   settings: AppSettings
+  apiKeys: Record<string, APIKeyEntry[]>  // 新增：API Keys
+  projects: Project[]                      // 新增：项目
+  tags: Tag[]                              // 新增：标签
+  achievements: any[]                      // 新增：成就
 }

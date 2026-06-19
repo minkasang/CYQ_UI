@@ -25,9 +25,9 @@ export function TopBar({ onToggleSidebar }: TopBarProps) {
   }
 
   // 处理导出
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      downloadExport()
+      await downloadExport()
       showToast('✓ 导出成功')
     } catch (err) {
       showToast('✗ 导出失败：' + (err instanceof Error ? err.message : '未知错误'))
@@ -44,7 +44,7 @@ export function TopBar({ onToggleSidebar }: TopBarProps) {
       if (!file) return
       try {
         const text = await readFileAsText(file)
-        const result = importData(text)
+        const result = await importData(text)
         if (result.success) {
           showToast(`✓ 导入成功（${result.count} 条数据）`)
           setTimeout(() => window.location.reload(), 1000)
