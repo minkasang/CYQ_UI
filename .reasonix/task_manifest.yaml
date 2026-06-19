@@ -20,81 +20,37 @@ meta:
 # ============================================================
 active:
   summary:
-    total: 5
-    pending: 0
+    total: 1
+    pending: 1
     in_progress: 0
-    blocked: 5
+    blocked: 0
 
   constraint:
     max_in_progress: 1
 
-  # 任务字段：name, status(pending|in_progress|blocked), dir, priority, dependencies, parent?, blocked_by?, created_at
-  # 嵌套规则：A 被 B 打断 → A.status=blocked, A.blocked_by=B, B.parent=A。支持多层。
-
   tasks:
     - name: "前端设计布局优化"
-      status: "blocked"
-      blocked_by: "个人工作台MVP"
+      status: "pending"
       dir: "前端设计布局优化"
       priority: "medium"
-      dependencies: ["个人工作台MVP"]
-      created_at: "2026-07-18"
-      detail: "设计参考skill已安装(apple-design+macos-design), 等待MVP验收后开始设计审计"
-
-    - name: "个人工作台MVP"
-      status: "blocked"
-      blocked_by: "用户确认"
-      dir: "个人工作台MVP"
-      priority: "high"
       dependencies: []
-      created_at: "2026-06-15"
-      detail: "待用户确认5个问题 + 步骤9-10验收"
-
-    - name: "AI聊天重构"
-      status: "blocked"
-      blocked_by: "用户验证"
-      dir: "AI聊天重构"
-      priority: "high"
-      dependencies: ["个人工作台MVP"]
-      created_at: "2026-06-17"
-      detail: "S7全局测试11项待执行"
-
-    - name: "待办功能增强"
-      status: "in_progress"
-      dir: "待办功能增强"
-      priority: "medium"
-      dependencies: ["个人工作台MVP"]
-      created_at: "2026-06-17"
-      detail: "用户已确认：多设备→导出/导入, 搜索→需要, 移动端→暂不需要。按4阶段计划：数据结构→交互增强→高级功能→扩展功能"
-
-    - name: "日记功能拓展"
-      status: "blocked"
-      blocked_by: "用户审批"
-      dir: "日记功能拓展"
-      priority: "medium"
-      dependencies: ["个人工作台MVP"]
-      created_at: "2026-06-17"
-      detail: "代码完成，等待用户审批"
-
-    - name: "日记功能稳定性增强"
-      status: "blocked"
-      blocked_by: "用户测试"
-      dir: "日记功能稳定性增强"
-      priority: "medium"
-      dependencies: ["日记功能拓展"]
-      created_at: "2026-06-17"
-      detail: "3步手动测试待用户执行"
+      created_at: "2026-07-18"
+      detail: "设计参考skill已安装(apple-design+macos-design), 等待开始设计审计"
 
 # ============================================================
 # 已完成（跳过，勿读）
 # ============================================================
 archived:
   summary:
-    total: 9
-    completed: 9
+    total: 14
+    completed: 14
 
   tasks:
-    - { name: "待办功能增强",         dir: "待办功能增强",         priority: "medium", dependencies: ["个人工作台MVP"],   completed: "2026-07-18", detail: "代码分析→90%+已实现, 仅补搜索+导出增强。6文件变更" }
+    - { name: "AI聊天重构",         dir: "AI聊天重构",         priority: "high",   dependencies: [],                  completed: "2026-07-18", detail: "S1-S6完成, S7中发现的竞态bug已修复(per-chat隔离架构), 手动测试由用户日常使用覆盖" }
+    - { name: "个人工作台MVP",       dir: "个人工作台MVP",       priority: "high",   dependencies: [],                  completed: "2026-07-18", detail: "5个确认问题全部通过, 步骤9-10验收完成, v0.1 MVP交付" }
+    - { name: "日记功能稳定性增强", dir: "日记功能稳定性增强", priority: "medium", dependencies: ["日记功能拓展"],   completed: "2026-07-18", detail: "用户手动测试通过, 3阶段(retry/ErrorBoundary/操作日志)均正常" }
+    - { name: "日记功能拓展",       dir: "日记功能拓展",       priority: "medium", dependencies: ["个人工作台MVP"],   completed: "2026-07-18", detail: "5个Phase全部完成: AI辅助+情绪追踪+标签时间轴+统计+反馈对话" }
+    - { name: "待办功能增强",       dir: "待办功能增强",       priority: "medium", dependencies: ["个人工作台MVP"],   completed: "2026-07-18", detail: "代码分析→90%+已实现, 仅补搜索+导出增强。6文件变更" }
     - { name: "模块开关首页联动",       dir: "模块开关首页联动",       priority: "high",   dependencies: [],                  completed: "2026-06-19", detail: "HomePage条件渲染+Sidebar chat→ai映射+welcome开关" }
     - { name: "模块化架构重构",       dir: "模块化架构重构",       priority: "high",   dependencies: [],                  completed: "2026-06-18", detail: "ModuleManager+5模块生命周期" }
     - { name: "主题系统架构优化",     dir: "主题系统架构优化",     priority: "high",   dependencies: [],                  completed: "2026-06-18", detail: "热拔插主题系统四层架构" }

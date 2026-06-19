@@ -45,10 +45,15 @@ export function ChatPanel() {
   const hasProviderKey = availableKeys.length > 0
   const activeKeyId = useAPIKeysStore.getState().activeKeyId[provider]
 
-  // ========== 本地状态 ==========
-  const [loading, setLoading] = useState(false)
-  const [streamContent, setStreamContent] = useState('')
-  const [streamReasoning, setStreamReasoning] = useState('')
+  // ========== 每对话独立状态（架构健康：对话间完全隔离） ==========
+  const [chatStates, setChatStates] = useState<Record<string, { loading: boolean; streamContent: string; streamReasoning: string }>>({})
+
+  // 当前对话的流式状态
+  const currentChatState = activeChatId ? chatStates[activeChatId] : undefined
+  const loading = currentChatState?.loading || false
+  const streamContent = currentChatState?.streamContent || ''
+  const streamReasoning = currentChatState?.streamReasoning || ''
+
   const [reasoningEnabled, setReasoningEnabled] = useState(true)
   const [webSearchEnabled, setWebSearchEnabled] = useState(false)
   const [temperature, setTemperature] = useState(0.7)
@@ -57,6 +62,30 @@ export function ChatPanel() {
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const requestChatIdRef = useRef<string | null>(null)
+
+  // 辅助：更新指定对话的流式状态
+  const updateChatState = (chatId: string, patch: Partial<{ loading: boolean; streamContent: string; streamReasoning: string }>) => {
+    setChatStates(prev => ({
+      ...prev,
+      [chatId]: { ...(prev[chatId] || { loading: false, streamContent: '', streamReasoning: '' }), ...patch }
+    }))
+  }
+
+  // 辅助：追加流式内容到指定对话
+  const appendStreamContent = (chatId: string, chunk: string) => {
+    setChatStates(prev => {
+      const cur = prev[chatId] || { loading: false, streamContent: '', streamReasoning: '' }
+      return { ...prev, [chatId]: { ...cur, streamContent: cur.streamContent + chunk } }
+    })
+  }
+
+  const appendStreamReasoning = (chatId: string, r: string) => {
+    setChatStates(prev => {
+      const cur = prev[chatId] || { loading: false, streamContent: '', streamReasoning: '' }
+      return { ...prev, [chatId]: { ...cur, streamReasoning: cur.streamReasoning + r } }
+    })
+  }
 
   // ========== 初始化 ==========
   useEffect(() => { loadChats(); loadKeys() }, [loadChats, loadKeys])
@@ -77,6 +106,7 @@ export function ChatPanel() {
   }
 
   const handleDeleteChat = (id: string) => {
+    setChatStates(prev => { const next = { ...prev }; delete next[id]; return next })
     if (chats.length === 1) { deleteChat(id); createChat() }
     else { deleteChat(id) }
   }
@@ -100,9 +130,8 @@ export function ChatPanel() {
   const handleCancel = () => {
     abortRef.current?.abort()
     abortRef.current = null
-    setLoading(false)
-    setStreamContent('')
-    setStreamReasoning('')
+    const cid = requestChatIdRef.current
+    if (cid) updateChatState(cid, { loading: false, streamContent: '', streamReasoning: '' })
   }
 
   // ========== 发送消息（请求 ID 绑定 + 竞态守卫） ==========
@@ -110,6 +139,7 @@ export function ChatPanel() {
     if (!text.trim() || loading) return
 
     const requestChatId = activeChatId
+    requestChatIdRef.current = requestChatId  // 记下请求归属
     abortRef.current?.abort()
     abortRef.current = new AbortController()
 
@@ -131,9 +161,7 @@ export function ChatPanel() {
     }
 
     const effectiveChatId = requestChatId || useChatStore.getState().activeChatId!
-    setLoading(true)
-    setStreamContent('')
-    setStreamReasoning('')
+    updateChatState(effectiveChatId, { loading: true, streamContent: '', streamReasoning: '' })
 
     try {
       // 图片模型
@@ -146,13 +174,9 @@ export function ChatPanel() {
             body: JSON.stringify({ url: result.url, path: localPath }),
           })
           const saveData = await saveResp.json()
-          if (useChatStore.getState().activeChatId === effectiveChatId) {
-            addMessage(effectiveChatId, 'assistant', saveData.ok ? localPath : result.url)
-          }
+          addMessage(effectiveChatId, 'assistant', saveData.ok ? localPath : result.url)
         } catch {
-          if (useChatStore.getState().activeChatId === effectiveChatId) {
-            addMessage(effectiveChatId, 'assistant', result.url)
-          }
+          addMessage(effectiveChatId, 'assistant', result.url)
         }
         return
       }
@@ -176,13 +200,9 @@ export function ChatPanel() {
             body: JSON.stringify({ url: result.url, path: vLocalPath }),
           })
           const saveData = await saveResp.json()
-          if (useChatStore.getState().activeChatId === effectiveChatId) {
-            addMessage(effectiveChatId, 'assistant', saveData.ok ? vLocalPath : result.url)
-          }
+          addMessage(effectiveChatId, 'assistant', saveData.ok ? vLocalPath : result.url)
         } catch {
-          if (useChatStore.getState().activeChatId === effectiveChatId) {
-            addMessage(effectiveChatId, 'assistant', result.url)
-          }
+          addMessage(effectiveChatId, 'assistant', result.url)
         }
         return
       }
@@ -199,26 +219,27 @@ export function ChatPanel() {
       const modelSupportsReasoning = isReasoningModel(provider, model)
       const result = await chat(fullConfig, {
         messages, stream: true,
-        onChunk: (chunk) => setStreamContent(prev => prev + chunk),
+        onChunk: (chunk) => {
+          appendStreamContent(effectiveChatId, chunk)
+        },
         onReasoning: modelSupportsReasoning && reasoningEnabled
-          ? (r) => setStreamReasoning(prev => prev + r) : undefined,
+          ? (r) => {
+              appendStreamReasoning(effectiveChatId, r)
+            }
+          : undefined,
         signal: abortRef.current?.signal,
         reasoningEffort: modelSupportsReasoning && reasoningEnabled ? 'medium' : undefined,
         enableWebSearch: webSearchSupported && webSearchEnabled,
       })
 
-      if (useChatStore.getState().activeChatId === effectiveChatId) {
-        addMessage(effectiveChatId, 'assistant', result.content)
-      }
-      setStreamContent('')
-      setStreamReasoning('')
+      // 始终存入请求归属的对话
+      addMessage(effectiveChatId, 'assistant', result.content)
+      updateChatState(effectiveChatId, { loading: false, streamContent: '', streamReasoning: '' })
     } catch (err: any) {
       if (err.name === 'AbortError') return
-      if (useChatStore.getState().activeChatId === effectiveChatId) {
-        addMessage(effectiveChatId, 'assistant', `错误: ${err.message || 'AI 调用失败'}`)
-      }
+      addMessage(effectiveChatId, 'assistant', `错误: ${err.message || 'AI 调用失败'}`)
     } finally {
-      setLoading(false)
+      updateChatState(effectiveChatId, { loading: false })
     }
   }
 
