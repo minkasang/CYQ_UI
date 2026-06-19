@@ -138,33 +138,58 @@ export function TodoList() {
 
       {/* 主内容区 */}
       <div className="flex-1 space-y-3">
-        {/* 过滤栏 + 视图切换 */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {FILTERS.map(f => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={`text-xs px-3 py-1 rounded-full transition ${
-                filter === f.value
-                  ? 'bg-white/15 text-white border border-white/20'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 border border-transparent'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+        {/* 过滤卡片式 Tab 栏 */}
+        <div className="flex items-center gap-2">
+          {FILTERS.map(f => {
+            const isActive = filter === f.value
+            const count = f.value === 'today' ? stats.today :
+                         f.value === 'pending' ? stats.pending :
+                         f.value === 'completed' ? stats.completed :
+                         f.value === 'archived' ? stats.archived :
+                         stats.total
+            return (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-all"
+                style={{
+                  background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  color: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
+                  fontWeight: isActive ? 500 : 400,
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+              >
+                {f.label}
+                <span className="text-[10px] px-1.5 py-px rounded-full"
+                  style={{
+                    background: isActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
+                    color: isActive ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
+                  }}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+          <div className="flex-1" />
           {completedCount > 0 && filter !== 'archived' && (
             <button
               onClick={clearCompleted}
-              className="ml-auto text-xs px-3 py-1 rounded-full bg-red-500/15 text-red-200 hover:bg-red-500/25 transition"
+              className="text-[11px] px-2 py-1.5 rounded-lg transition-colors"
+              style={{ color: 'rgba(255,100,80,0.8)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,69,58,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              清理已完成
+              清理
             </button>
           )}
           <button
             onClick={() => setViewMode(viewMode === 'list' ? 'kanban' : 'list')}
-            className="ml-1 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition"
-            title={viewMode === 'list' ? '切换到看板视图' : '切换到列表视图'}
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: 'rgba(255,255,255,0.4)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            title={viewMode === 'list' ? '看板视图' : '列表视图'}
           >
             {viewMode === 'list' ? <LayoutGrid size={16} /> : <LayoutList size={16} />}
           </button>
