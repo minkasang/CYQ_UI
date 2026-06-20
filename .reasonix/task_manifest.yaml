@@ -13,36 +13,28 @@
 meta:
   project: "cyq_UI"
   file_version: "2.2"
-  last_updated: "2026-06-20T15:35:00+08:00"
+  last_updated: "2026-06-20T15:45:00+08:00"
 
 # ============================================================
 # 活跃任务（AI 只读这里）
 # ============================================================
 active:
   summary:
-    total: 2
+    total: 1
     pending: 0
-    in_progress: 1
+    in_progress: 0
     blocked: 1
 
   constraint:
     max_in_progress: 1
 
   tasks:
-    - name: "Bento布局设计系统重构"
-      status: "in_progress"
-      dir: "2026-06-20-1535_Bento布局设计系统重构"
-      priority: "high"
-      dependencies: []
-      created_at: "2026-06-20"
-      detail: "S0诊断文档产出中。6阶段：Token体系→新布局壳→Bento首页→Dock集成→测试"
-
     - name: "设置页设计改造"
       status: "blocked"
       dir: "2026-06-20-1202_设置页设计改造"
       priority: "medium"
       dependencies: []
-      blocked_by: "Bento布局重构优先，设计token规范将在本任务中确立，设置页改造后续基于新token进行"
+      blocked_by: "Bento布局重构已完成，建议基于新token体系进行设置页改造"
       created_at: "2026-07-20"
       detail: "阶段0待用户确认5个全局设计决策。6阶段27问题改造计划已产出tasks.md+architecture.md"
 
@@ -51,10 +43,11 @@ active:
 # ============================================================
 archived:
   summary:
-    total: 18
-    completed: 18
+    total: 19
+    completed: 19
 
   tasks:
+    - { name: "Bento布局设计系统重构", dir: "2026-06-20-1535_Bento布局设计系统重构", priority: "high", dependencies: [], completed: "2026-06-20", detail: "✅6阶段完成。Token体系(tailwind+CSS变量)→BentoLayout→HomePageBento→Dock→测试。tsc:0 vitest:118/122 build:ok" }
     - { name: "每日灵感",         dir: "每日灵感",         priority: "medium", dependencies: [],                   completed: "2026-06-20", detail: "✅7步完成。首页Section(空状态+捕获+回顾+操作)+导航改滚动(Dock/TopNav→scrollTo)。tsc:0 vitest:115/119 build:ok" }
     - { name: "规则优化分析",     dir: "规则优化分析",     priority: "low",    dependencies: [],                   completed: "2026-07-18", detail: "规则对比分析+优化建议文档" }
     - { name: "布局系统",         dir: "布局系统",         priority: "medium", dependencies: [],                   completed: "2026-07-18", detail: "全部7步完成:Store+5壳+CSS归一化+导入导出。tsc:0 vitest:105/109" }
