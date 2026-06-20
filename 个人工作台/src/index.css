@@ -152,6 +152,10 @@ body {
   from { opacity: 0; transform: scale(0.96) translateY(-4px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
+@keyframes breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.7); }
+}
 @keyframes accordionDown {
   from { max-height: 0; opacity: 0; }
   to   { max-height: 2000px; opacity: 1; }
@@ -176,6 +180,9 @@ body {
 }
 .animate-popover {
   animation: popoverIn var(--duration-fast) var(--ease-out) forwards;
+}
+.animate-breathe {
+  animation: breathe 1.5s ease-in-out infinite;
 }
 .animate-accordion-down {
   animation: accordionDown var(--duration-normal) var(--ease-smooth) forwards;

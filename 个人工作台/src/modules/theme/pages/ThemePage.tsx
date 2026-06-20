@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { ThemeList } from '../../../components/theme/ThemeList'
 import { ThemeConfig } from '../../../components/theme/ThemeConfig'
+import { ThemePreview } from '../../../components/theme/ThemePreview'
 import { useThemePresetStore, type ThemePreset } from '../../../store/useThemePresetStore'
 import { LiquidGlassEngine } from '../../../themes/engines/LiquidGlassEngine'
 import { FlatThemeEngine } from '../../../themes/engines/FlatThemeEngine'
@@ -155,10 +156,10 @@ export function ThemePage() {
       {/* 隐藏的文件输入 */}
       <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden" />
 
-      {/* 三栏布局 */}
+      {/* 三栏布局：列表 | 预览 | 配置 */}
       <div className="flex-1 flex overflow-hidden">
-        {/* 左：主题列表 (220px) */}
-        <div className="w-[220px] flex-shrink-0 border-r border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+        {/* 左：主题列表 (200px) */}
+        <div className="w-[200px] flex-shrink-0 border-r border-[var(--border-subtle)] bg-[var(--bg-surface)]">
           <ThemeList
             presets={presets}
             activeId={activeId}
@@ -169,19 +170,9 @@ export function ThemePage() {
           />
         </div>
 
-        {/* 中：预览区 — 透明让背景透出 */}
-        <div className="flex-1 flex items-center justify-center bg-transparent relative overflow-hidden">
-          {/* 背景透出 */}
-          <div className="absolute inset-0 -z-10 bg-[var(--bg-root)] opacity-50" />
-          <div className="text-center z-10">
-            <p className="text-6xl mb-3 opacity-30">🎨</p>
-            <p className="text-sm text-[var(--text-secondary)]">
-              {activePreset ? activePreset.name : '选择一个主题'}
-            </p>
-            <p className="text-xs text-[var(--text-tertiary)] mt-2">
-              {activePreset?.engine === 'liquid-glass' ? '液态玻璃' : activePreset?.engine === 'flat' ? '扁平' : ''}
-            </p>
-          </div>
+        {/* 中：实时预览 (flex-1) */}
+        <div className="flex-1 bg-[var(--bg-root)]">
+          <ThemePreview preset={activePreset} />
         </div>
 
         {/* 右：配置面板 (260px) */}

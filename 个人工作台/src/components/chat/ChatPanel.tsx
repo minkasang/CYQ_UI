@@ -34,6 +34,7 @@ export function ChatPanel() {
   const updateChatModel = useChatStore(s => s.updateChatModel)
   const updateChatTitle = useChatStore(s => s.updateChatTitle)
   const togglePin = useChatStore(s => s.togglePin)
+  const markAsRead = useChatStore(s => s.markAsRead)
 
   const loadKeys = useAPIKeysStore(s => s.loadFromFile)
   const apiKeys = useAPIKeysStore(s => s.keys)
@@ -48,7 +49,7 @@ export function ChatPanel() {
   const activeKeyId = useAPIKeysStore.getState().activeKeyId[provider]
 
   // ========== 每对话独立状态（架构健康：对话间完全隔离） ==========
-  const [chatStates, setChatStates] = useState<Record<string, { loading: boolean; streamContent: string; streamReasoning: string; lastSentProvider?: string; lastSentModel?: string }>>({})
+  const [chatStates, setChatStates] = useState<Record<string, { loading: boolean; streamContent: string; streamReasoning: string; lastSentProvider?: string; lastSentModel?: string; error?: boolean }>>({})
 
   // 当前对话的流式状态
   const currentChatState = activeChatId ? chatStates[activeChatId] : undefined
@@ -67,7 +68,7 @@ export function ChatPanel() {
   const requestChatIdRef = useRef<string | null>(null)
 
   // 辅助：更新指定对话的流式状态
-  const updateChatState = (chatId: string, patch: Partial<{ loading: boolean; streamContent: string; streamReasoning: string; lastSentProvider: string; lastSentModel: string }>) => {
+  const updateChatState = (chatId: string, patch: Partial<{ loading: boolean; streamContent: string; streamReasoning: string; lastSentProvider: string; lastSentModel: string; error: boolean }>) => {
     setChatStates(prev => ({
       ...prev,
       [chatId]: { ...(prev[chatId] || { loading: false, streamContent: '', streamReasoning: '' }), ...patch }
@@ -104,6 +105,11 @@ export function ChatPanel() {
   // ========== 对话操作 ==========
   const handleNewChat = () => {
     const id = createChat(provider, model)
+    setActiveChat(id)
+  }
+
+  const selectChat = (id: string) => {
+    markAsRead(id)
     setActiveChat(id)
   }
 
@@ -164,7 +170,7 @@ export function ChatPanel() {
 
     const effectiveChatId = requestChatId || useChatStore.getState().activeChatId!
     // 记录实际发出的模型（数据链路拦截验证）
-    updateChatState(effectiveChatId, { loading: true, streamContent: '', streamReasoning: '', lastSentProvider: provider, lastSentModel: getModelName(provider, model) })
+    updateChatState(effectiveChatId, { loading: true, streamContent: '', streamReasoning: '', lastSentProvider: provider, lastSentModel: getModelName(provider, model), error: false })
 
     try {
       // 图片模型
@@ -241,6 +247,7 @@ export function ChatPanel() {
     } catch (err: any) {
       if (err.name === 'AbortError') return
       addMessage(effectiveChatId, 'assistant', `错误: ${err.message || 'AI 调用失败'}`)
+      updateChatState(effectiveChatId, { error: true })
     } finally {
       updateChatState(effectiveChatId, { loading: false })
     }
@@ -318,11 +325,12 @@ export function ChatPanel() {
     <div className="flex gap-4 h-[calc(100vh-260px)]">
       <ChatSidebar
         chats={chats} activeChatId={activeChatId}
-        onSelect={setActiveChat} onNew={handleNewChat} onDelete={handleDeleteChat}
+        onSelect={selectChat} onNew={handleNewChat} onDelete={handleDeleteChat}
         onRename={(id, title) => updateChatTitle(id, title)}
         onTogglePin={(id) => togglePin(id)}
         onOpenAPIModal={() => setApiModalOpen(true)}
         onExport={activeChat ? handleExport : undefined}
+        chatStates={chatStates}
       />
       <GlassPanel cornerRadius={16} padding="0" className="flex-1 flex flex-col overflow-hidden">
         {/* 模型状态栏 — 显示实际发出的模型（从数据链路拦截读取） */}

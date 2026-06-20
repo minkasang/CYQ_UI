@@ -17,6 +17,7 @@ export interface ChatSidebarProps {
   onTogglePin: (id: string) => void
   onOpenAPIModal: () => void
   onExport?: () => void
+  chatStates?: Record<string, { loading?: boolean; error?: boolean }>
 }
 
 // 排序：置顶优先，然后按更新时间倒序
@@ -35,6 +36,7 @@ function ChatItem({
   onDelete,
   onRename,
   onTogglePin,
+  status,
 }: {
   chat: Chat
   isActive: boolean
@@ -42,6 +44,7 @@ function ChatItem({
   onDelete: () => void
   onRename: (title: string) => void
   onTogglePin: () => void
+  status: 'loading' | 'error' | 'unread' | null
 }) {
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(chat.title)
@@ -91,6 +94,17 @@ function ChatItem({
 
       <MessageSquare size={11} className="flex-shrink-0 text-white/25" />
 
+      {/* 状态指示灯 */}
+      {status === 'loading' && (
+        <span className="w-1.5 h-1.5 rounded-full bg-[#30D158] animate-breathe flex-shrink-0" />
+      )}
+      {status === 'error' && (
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FF453A] flex-shrink-0" />
+      )}
+      {status === 'unread' && (
+        <span className="w-1.5 h-1.5 rounded-full bg-[#0A84FF] flex-shrink-0" />
+      )}
+
       {/* 标题 / 编辑框 */}
       {editing ? (
         <div className="flex-1 flex items-center gap-1 min-w-0" onClick={e => e.stopPropagation()}>
@@ -132,8 +146,17 @@ export function ChatSidebar({
   onTogglePin,
   onOpenAPIModal,
   onExport,
+  chatStates = {},
 }: ChatSidebarProps) {
   const sorted = sortChats(chats)
+
+  const getStatus = (chat: Chat): 'loading' | 'error' | 'unread' | null => {
+    const state = chatStates[chat.id]
+    if (state?.loading) return 'loading'
+    if (state?.error) return 'error'
+    if (chat.hasUnread) return 'unread'
+    return null
+  }
 
   return (
     <GlassPanel cornerRadius={16} padding="12px" className="w-48 flex flex-col">
@@ -161,6 +184,7 @@ export function ChatSidebar({
             onDelete={() => onDelete(chat.id)}
             onRename={(title) => onRename(chat.id, title)}
             onTogglePin={() => onTogglePin(chat.id)}
+            status={getStatus(chat)}
           />
         ))}
       </div>

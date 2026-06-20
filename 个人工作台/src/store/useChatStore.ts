@@ -138,17 +138,21 @@ export const useChatStore = create<ChatState>((set, get) => ({
       content,
       createdAt: Date.now(),
     }
+    const { activeChatId } = get()
     const newChats = get().chats.map(c => {
       if (c.id !== chatId) return c
       // 自动更新标题：第一条用户消息的前20字符作为标题
       const title = c.messages.length === 0 && role === 'user' 
         ? content.slice(0, 20) || '新对话'
         : c.title
+      // AI 回复到达时，如果当前不在该对话，标记未读
+      const hasUnread = role === 'assistant' && chatId !== activeChatId ? true : c.hasUnread
       return {
         ...c,
         title,
         messages: [...c.messages, message],
         updatedAt: Date.now(),
+        hasUnread,
       }
     })
     set({ chats: newChats })
