@@ -101,8 +101,7 @@ export function SettingsPage() {
       </aside>
 
       {/* 右侧内容 */}
-      <main className="flex-1 overflow-auto py-6 px-8">
-        <div className="max-w-2xl space-y-5">
+      <main className="flex-1 overflow-auto py-8 px-10 space-y-5">
           {activeSection === 'display' && (
             <>
               <h2 className="text-[22px] font-normal text-white">🎨 显示</h2>
@@ -211,7 +210,6 @@ export function SettingsPage() {
               </div>
             </>
           )}
-        </div>
       </main>
 
       {toast && (
