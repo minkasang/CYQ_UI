@@ -6,10 +6,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, CheckSquare, BookText, Sparkles, Settings as SettingsIcon, Image as ImageIcon, MessageSquare } from 'lucide-react'
+import { Home, CheckSquare, BookText, Sparkles, Settings as SettingsIcon, Image as ImageIcon, MessageSquare, Lightbulb } from 'lucide-react'
 
 const ALL_SECTIONS = [
   { id: 'welcome', label: '首页', icon: Home },
+  { id: 'inspiration', label: '灵感', icon: Lightbulb },
   { id: 'todo', label: '待办', icon: CheckSquare },
   { id: 'diary', label: '日记', icon: BookText },
   { id: 'ai', label: 'AI 总结', icon: Sparkles },
@@ -102,19 +103,10 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
   }, [isHome, navigate])
 
   return (
-    <aside
-      className={`flex flex-col h-full py-6 ${collapsed ? 'w-16' : 'w-52'}`}
-      style={{
-        background: 'rgba(0, 0, 0, 0.4)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.06)',
-      }}
-    >
+    <aside className={`flex flex-col h-full py-6 bg-black/40 border-r border-white/5 ${collapsed ? 'w-16' : 'w-52'}`}>
       {/* Logo */}
       <div className="px-4 mb-8 flex items-center gap-3">
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-white"
-          style={{ background: '#3b82f6' }}
-        >
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-white bg-blue-500">
           W
         </div>
         {!collapsed && (
@@ -133,24 +125,9 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             <button
               key={id}
               onClick={() => handleNavClick(id)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded text-sm text-left"
-              style={{
-                background: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background 0.15s, color 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'transparent'
-                }
-              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded text-sm text-left transition-[background,color] duration-150 ${
+                isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'
+              }`}
             >
               <Icon size={16} className="flex-shrink-0" />
               {!collapsed && <span>{label}</span>}
@@ -158,28 +135,13 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
           )
         })}
 
-        <div style={{ height: 1, background: 'rgba(255, 255, 255, 0.06)', margin: '8px 0' }}></div>
+        <div className="h-px bg-white/5 my-2"></div>
 
         <button
           onClick={() => navigate('/settings')}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded text-sm text-left"
-          style={{
-            background: location.pathname === '/settings' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-            color: location.pathname === '/settings' ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'background 0.15s, color 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            if (location.pathname !== '/settings') {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (location.pathname !== '/settings') {
-              e.currentTarget.style.background = 'transparent'
-            }
-          }}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded text-sm text-left transition-[background,color] duration-150 ${
+            location.pathname === '/settings' ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5'
+          }`}
         >
           <SettingsIcon size={16} className="flex-shrink-0" />
           {!collapsed && <span>设置</span>}

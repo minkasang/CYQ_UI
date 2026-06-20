@@ -92,6 +92,10 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             return self.api_read_batch()
         elif parsed.path == '/api/save-image':
             return self.api_save_image()
+        elif parsed.path == '/api/copy':
+            return self.api_copy()
+        elif parsed.path == '/api/move':
+            return self.api_move()
 
         self.send_error(404)
 
@@ -348,6 +352,66 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         except Exception as e:
             log(f'ERROR image_api {path}: {e}')
             self.send_error(500)
+
+    def api_copy(self):
+        """POST /api/copy — 复制文件 { source, dest }"""
+        try:
+            body = self.read_body()
+            data = json.loads(body)
+            source = data.get('source')
+            dest = data.get('dest')
+        except:
+            return self.json_resp(400, {'ok': False, 'error': 'JSON 格式错误'})
+
+        if not source or not dest:
+            return self.json_resp(400, {'ok': False, 'error': '缺少 source 或 dest 参数'})
+
+        src_full = safe_path(source)
+        dst_full = safe_path(dest)
+        if not src_full or not dst_full:
+            return self.json_resp(403, {'ok': False, 'error': '路径越权'})
+        if not os.path.isfile(src_full):
+            return self.json_resp(404, {'ok': False, 'error': f'源文件不存在: {source}'})
+
+        try:
+            os.makedirs(os.path.dirname(dst_full), exist_ok=True)
+            shutil.copy2(src_full, dst_full)
+            size = os.path.getsize(dst_full)
+            log(f'COPY  {source} -> {dest} ({size} bytes)')
+            return self.json_resp(200, {'ok': True, 'source': source, 'dest': dest, 'size': size})
+        except Exception as e:
+            log(f'ERROR copy {source} -> {dest}: {e}')
+            return self.json_resp(500, {'ok': False, 'error': str(e)})
+
+    def api_move(self):
+        """POST /api/move — 移动文件 { source, dest }"""
+        try:
+            body = self.read_body()
+            data = json.loads(body)
+            source = data.get('source')
+            dest = data.get('dest')
+        except:
+            return self.json_resp(400, {'ok': False, 'error': 'JSON 格式错误'})
+
+        if not source or not dest:
+            return self.json_resp(400, {'ok': False, 'error': '缺少 source 或 dest 参数'})
+
+        src_full = safe_path(source)
+        dst_full = safe_path(dest)
+        if not src_full or not dst_full:
+            return self.json_resp(403, {'ok': False, 'error': '路径越权'})
+        if not os.path.isfile(src_full):
+            return self.json_resp(404, {'ok': False, 'error': f'源文件不存在: {source}'})
+
+        try:
+            os.makedirs(os.path.dirname(dst_full), exist_ok=True)
+            shutil.move(src_full, dst_full)
+            size = os.path.getsize(dst_full)
+            log(f'MOVE  {source} -> {dest} ({size} bytes)')
+            return self.json_resp(200, {'ok': True, 'source': source, 'dest': dest, 'size': size})
+        except Exception as e:
+            log(f'ERROR move {source} -> {dest}: {e}')
+            return self.json_resp(500, {'ok': False, 'error': str(e)})
 
     def api_search(self, parsed):
         """GET /api/search?q=xxx&dir=xxx — 搜索文件内容"""

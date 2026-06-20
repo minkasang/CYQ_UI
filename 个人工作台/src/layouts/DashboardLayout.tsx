@@ -21,15 +21,10 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const highPriority = useTodoStore(s => s.todos.filter(t => t.priority === 'high' && !t.completed).length)
 
   return (
-    <div
-      className="h-screen w-screen overflow-hidden flex flex-col"
-      style={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif',
-      }}
-    >
+    <div className="h-screen w-screen overflow-hidden flex flex-col">
       <GlobalBackground />
 
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto snap-y snap-proximity">
         <div className="max-w-[960px] mx-auto px-8 py-12 space-y-8">
           <ErrorBoundary>
             {/* 标题区 */}
@@ -119,35 +114,7 @@ function DashboardCard({ icon, title, onClick, children }: {
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer"
-      style={{
-        minHeight: 160,
-        padding: 20,
-        borderRadius: 12,
-        background: 'rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        border: '0.5px solid rgba(255,255,255,0.08)',
-        boxShadow: [
-          '0 0 0 0.5px rgba(255,255,255,0.05)',
-          '0 1px 3px rgba(0,0,0,0.2)',
-        ].join(', '),
-        transition: 'transform 150ms cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 150ms ease',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)'
-        e.currentTarget.style.boxShadow = [
-          '0 0 0 0.5px rgba(255,255,255,0.08)',
-          '0 4px 16px rgba(0,0,0,0.3)',
-        ].join(', ')
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = [
-          '0 0 0 0.5px rgba(255,255,255,0.05)',
-          '0 1px 3px rgba(0,0,0,0.2)',
-        ].join(', ')
-      }}
+      className="cursor-pointer min-h-[160px] p-5 rounded-xl bg-white/[.06] backdrop-blur-[10px] border border-white/10 shadow-card transition-all duration-150 ease-apple hover:-translate-y-0.5 hover:shadow-card-hover"
     >
       <h3 className="text-[15px] font-semibold text-white mb-3">
         {icon} {title}

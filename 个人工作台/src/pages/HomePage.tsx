@@ -1,6 +1,6 @@
 // 首页 - 纵向滚动布局
 // 给 AI 的话：长页面，每个功能区是一个 section，滚动时入场动画
-// section id: welcome, todo, diary, ai, wallpaper
+// section id: welcome, todo, diary, ai, wallpaper, inspiration
 //
 // 模块开关：通过 localStorage 'module_toggle_{id}' 控制 section 显隐
 // 开关变化时通过 notifyModuleToggleChanged 触发重渲染
@@ -14,6 +14,7 @@ import { DiaryList } from '../components/diary/DiaryList'
 import { AISummary } from '../components/ai/AISummary'
 import { ChatPanel } from '../components/chat/ChatPanel'
 import { WallpaperManager } from '../components/wallpaper/WallpaperManager'
+import { InspirationSection } from '../modules/inspiration/pages/InspirationSection'
 import { useTodoStore, selectTodoStats } from '../store/useTodoStore'
 import { useDiaryStore, selectSortedDiaries } from '../store/useDiaryStore'
 import { useWallpaperStore } from '../store/useWallpaperStore'
@@ -75,6 +76,7 @@ export function HomePage() {
 
   // 各个 section 的滚动动画
   const welcomeAnim = useScrollAnimation(0.3)
+  const inspirationAnim = useScrollAnimation(0.2)
   const todoAnim = useScrollAnimation(0.2)
   const diaryAnim = useScrollAnimation(0.2)
   const aiAnim = useScrollAnimation(0.2)
@@ -87,13 +89,13 @@ export function HomePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-20">
+    <div className="max-w-5xl mx-auto">
       {/* ===== 第 1 屏：欢迎区 ===== */}
       {isOn('welcome') && (
         <section
           id="welcome"
           ref={welcomeAnim.ref}
-          className={`min-h-[80vh] flex flex-col justify-center transition-all duration-1000 ${
+          className={`min-h-dvh flex flex-col justify-center snap-start transition-all duration-1000 ${
             welcomeAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -138,12 +140,28 @@ export function HomePage() {
         </section>
       )}
 
-      {/* ===== 第 2 屏：待办区 ===== */}
+      {/* ===== 第 2 屏：每日灵感 ===== */}
+      {isOn('inspiration') && (
+        <section
+          id="inspiration"
+          ref={inspirationAnim.ref}
+          className={`py-8 min-h-dvh snap-start transition-all duration-1000 ${
+            inspirationAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="每日灵感" subtitle="记录触动你的名言与哲理" />
+          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5 overflow-visible">
+            <InspirationSection />
+          </div>
+        </section>
+      )}
+
+      {/* ===== 第 3 屏：待办区 ===== */}
       {isOn('todo') && (
         <section
           id="todo"
           ref={todoAnim.ref}
-          className={`py-8 transition-all duration-1000 ${
+          className={`py-8 min-h-dvh snap-start transition-all duration-1000 ${
             todoAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -159,7 +177,7 @@ export function HomePage() {
         <section
           id="diary"
           ref={diaryAnim.ref}
-          className={`py-8 transition-all duration-1000 ${
+          className={`py-8 min-h-dvh snap-start transition-all duration-1000 ${
             diaryAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -184,7 +202,7 @@ export function HomePage() {
         <section
           id="ai"
           ref={aiAnim.ref}
-          className={`py-8 transition-all duration-1000 ${
+          className={`py-8 min-h-dvh snap-start transition-all duration-1000 ${
             aiAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -200,7 +218,7 @@ export function HomePage() {
         <section
           id="chat"
           ref={chatAnim.ref}
-          className={`py-10 transition-all duration-1000 ${
+          className={`py-10 min-h-dvh snap-start transition-all duration-1000 ${
             chatAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -216,7 +234,7 @@ export function HomePage() {
         <section
           id="wallpaper"
           ref={wallpaperAnim.ref}
-          className={`py-8 transition-all duration-1000 ${
+          className={`py-8 min-h-dvh snap-start transition-all duration-1000 ${
             wallpaperAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
@@ -227,8 +245,8 @@ export function HomePage() {
         </section>
       )}
 
-      {/* 底部留白 */}
-      <div className="h-20" />
+      {/* 底部留白 — 最后一条滚动到底的缓冲 */}
+      <div className="h-[20vh] snap-start" />
     </div>
   )
 }

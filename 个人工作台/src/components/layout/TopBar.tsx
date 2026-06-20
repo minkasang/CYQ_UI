@@ -60,15 +60,7 @@ export function TopBar({ onToggleSidebar }: TopBarProps) {
 
   return (
     <>
-      <header
-        className="flex items-center justify-between px-6 py-3"
-        style={{
-          background: 'rgba(0, 0, 0, 0.2)',
-          backdropFilter: 'blur(20px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        }}
-      >
+      <header className="flex items-center justify-between px-6 py-3 bg-black/20 backdrop-blur-[20px] backdrop-saturate-150 border-b border-white/10">
         {/* 左侧：菜单 + 日期 */}
         <div className="flex items-center gap-4">
           {onToggleSidebar && (
@@ -125,13 +117,7 @@ export function TopBar({ onToggleSidebar }: TopBarProps) {
       {/* 顶部提示 */}
       {toast && (
         <div
-          className="fixed top-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm text-white shadow-xl z-50"
-          style={{
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-          }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm text-white shadow-xl z-50 bg-black/85 backdrop-blur-[20px] border border-white/15"
         >
           {toast}
         </div>

@@ -21,12 +21,7 @@ export function MacOSLayout({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <div
-      className="h-screen w-screen overflow-hidden flex flex-col"
-      style={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif',
-      }}
-    >
+    <div className="h-screen w-screen overflow-hidden flex flex-col">
       <GlobalBackground />
 
       {/* Traffic light 装饰 */}
@@ -38,16 +33,9 @@ export function MacOSLayout({ children }: { children: ReactNode }) {
 
       {/* 顶栏 — 44px, sticky, 滚动渐变 */}
       <div
-        className="sticky top-0 z-40 flex items-center px-4 flex-shrink-0"
-        style={{
-          height: 44,
-          background: scrolled
-            ? 'rgba(0,0,0,0.6)'
-            : 'rgba(0,0,0,0)',
-          backdropFilter: scrolled ? 'saturate(180%) blur(10px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'saturate(180%) blur(10px)' : 'none',
-          transition: 'background 0.3s ease',
-        }}
+        className={`sticky top-0 z-40 flex items-center px-4 flex-shrink-0 h-[44px] transition-colors duration-300 ${
+          scrolled ? 'bg-black/60 backdrop-blur-[10px] backdrop-saturate-[180%]' : 'bg-transparent'
+        }`}
       >
         {/* 日期 */}
         <div className="flex-1 text-center text-xs text-white/50">
@@ -86,7 +74,7 @@ export function MacOSLayout({ children }: { children: ReactNode }) {
       {/* 内容区 — 透明背景，壁纸透出 */}
       <main
         ref={mainRef}
-        className="flex-1 overflow-auto"
+        className="flex-1 overflow-auto snap-y snap-proximity"
       >
         <div className="px-8 py-6">
           <ErrorBoundary>

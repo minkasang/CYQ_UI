@@ -24,8 +24,8 @@ const BUILTIN: LayoutInfo[] = [
   { id: 'default', name: '初始布局', description: '当前页面结构', icon: '📦', isBuiltin: true },
   { id: 'macos', name: 'macOS 风格', description: '纯内容 + 浮动 Dock', icon: '🍎', isBuiltin: true },
   { id: 'dashboard', name: '仪表盘', description: 'Widget 卡片网格首页', icon: '📊', isBuiltin: true },
-  { id: 'fullwidth', name: '无侧栏全宽', description: '全宽内容区（待开发）', icon: '📐', isBuiltin: true },
-  { id: 'topnav', name: '顶栏导航', description: '顶部导航菜单（待开发）', icon: '📋', isBuiltin: true },
+  { id: 'fullwidth', name: '无侧栏全宽', description: '全宽内容 + 底部 Dock', icon: '📐', isBuiltin: true },
+  { id: 'topnav', name: '顶栏导航', description: '水平导航菜单', icon: '📋', isBuiltin: true },
 ]
 
 export const useLayoutRegistry = create<LayoutRegistryState>()(

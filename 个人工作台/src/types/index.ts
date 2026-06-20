@@ -148,6 +148,19 @@ export interface ModelCapabilities {
   videoGen?: boolean    // 视频生成
 }
 
+// ============== 每日灵感 ==============
+export interface InspirationItem {
+  id: string              // crypto.randomUUID()
+  content: string         // 那句话本身（必填）
+  source?: string         // 谁说的/哪看到的
+  tags: string[]          // 多标签
+  reflection?: string     // 我的感想
+  impact: number          // 触动程度 1-3（默认2）
+  isFavorite: boolean     // 收藏标记
+  createdAt: number       // 收集时间戳
+  lastReviewedAt: number  // 最近回顾时间戳
+}
+
 // ============== 壁纸 ==============
 export type WallpaperType = 'url' | 'local' | 'color' | 'gradient' | 'preset'
 
