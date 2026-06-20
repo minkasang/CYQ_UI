@@ -21,8 +21,9 @@ export interface Chat {
   messages: Message[]
   createdAt: number
   updatedAt: number
-  provider?: AIProvider  // 该对话的模型提供商
-  model?: string         // 该对话的模型名称
+  provider?: AIProvider
+  model?: string
+  pinned?: boolean       // 置顶
 }
 
 interface ChatState {
@@ -54,6 +55,9 @@ interface ChatState {
   
   // 更新对话的模型配置
   updateChatModel: (chatId: string, provider: AIProvider, model: string) => void
+  
+  // 置顶/取消置顶
+  togglePin: (id: string) => void
 }
 
 // 生成简单唯一 ID
@@ -170,6 +174,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
     console.log(`[ChatStore] ${new Date().toISOString()} updateChatModel:`, { chatId, provider, model })
     const newChats = get().chats.map(c =>
       c.id === chatId ? { ...c, provider, model, updatedAt: Date.now() } : c
+    )
+    set({ chats: newChats })
+    saveToFile(FILE_KEYS.CHATS, { chats: newChats, activeChatId: get().activeChatId })
+  },
+
+  // 置顶/取消置顶
+  togglePin: (id) => {
+    const newChats = get().chats.map(c =>
+      c.id === id ? { ...c, pinned: !c.pinned } : c
     )
     set({ chats: newChats })
     saveToFile(FILE_KEYS.CHATS, { chats: newChats, activeChatId: get().activeChatId })

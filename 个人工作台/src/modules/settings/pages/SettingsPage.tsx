@@ -93,10 +93,10 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col md:flex-row gap-0 overflow-hidden">
-      {/* 侧边栏 — 桌面竖排固定 / 移动端横排 */}
-      <aside className="md:w-52 flex-shrink-0 md:py-6 md:px-3 md:border-r border-[var(--border-subtle)] md:h-full overflow-x-auto md:overflow-y-auto">
-        <nav className="flex md:flex-col gap-0.5 px-2 md:px-0 py-2 md:py-0 overflow-x-auto md:overflow-x-visible">
+    <div className="flex flex-col md:flex-row min-h-full">
+        {/* 侧边栏 — sticky 固定 */}
+        <aside className="md:sticky md:top-0 md:w-52 flex-shrink-0 md:py-6 md:px-3 md:border-r border-[var(--border-subtle)] md:self-start">
+          <nav className="flex md:flex-col gap-0.5 px-2 md:px-0 py-2 md:py-0 overflow-x-auto md:overflow-x-visible">
           {SECTIONS.map(s => (
             <button
               key={s.id}
@@ -115,7 +115,7 @@ export function SettingsPage() {
       </aside>
 
       {/* 右侧内容 — 多列卡片网格 */}
-      <main className="flex-1 overflow-auto py-6 md:py-12 px-4 md:px-12">
+      <main className="flex-1 py-6 md:py-12 px-4 md:px-12">
         <div key={activeSection} className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 animate-fade-slide-up">
 
           {/* 显示 */}

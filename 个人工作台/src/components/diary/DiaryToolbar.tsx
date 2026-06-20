@@ -7,6 +7,7 @@ import { useAIConfigStore } from '../../store/useAIConfigStore'
 import { useAPIKeysStore } from '../../store/useAPIKeysStore'
 import { useSettingsStore } from '../../store/useSettingsStore'
 import { polishText, continueText, rewriteText, AIServiceError } from '../ai/aiService'
+import { Popover } from '../ui/Popover'
 import type { AIConfig } from '../../types'
 
 interface DiaryToolbarProps {
@@ -25,7 +26,6 @@ const REWRITE_STYLES = [
 export function DiaryToolbar({ content, onApply }: DiaryToolbarProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showStylePicker, setShowStylePicker] = useState(false)
 
   // AI 配置
   const config = useAIConfigStore(s => s.config)
@@ -89,7 +89,6 @@ export function DiaryToolbar({ content, onApply }: DiaryToolbarProps) {
       setError(msg)
     } finally {
       setLoading(false)
-      setShowStylePicker(false)
     }
   }
 
@@ -129,35 +128,33 @@ export function DiaryToolbar({ content, onApply }: DiaryToolbarProps) {
         </button>
 
         {/* 改写按钮 */}
-        <div className="relative">
-          <button
-            onClick={() => setShowStylePicker(!showStylePicker)}
-            disabled={loading || !currentProviderHasKey}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 text-xs transition disabled:opacity-40 disabled:cursor-not-allowed"
-            title="改写为不同风格"
-          >
-            {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-            改写
-          </button>
-
-          {/* 风格选择器 */}
-          {showStylePicker && (
-            <div className="absolute top-full left-0 mt-1 p-2 rounded-lg bg-black/80 border border-white/10 backdrop-blur-sm z-10">
-              <div className="text-[10px] text-white/40 mb-1">选择风格</div>
-              <div className="flex flex-col gap-1">
-                {REWRITE_STYLES.map((style) => (
-                  <button
-                    key={style.value}
-                    onClick={() => handleAIAction('rewrite', style.value)}
-                    className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-xs text-white/70 transition text-left"
-                  >
-                    {style.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <Popover
+          align="left"
+          minWidth={120}
+          trigger={
+            <button
+              disabled={loading || !currentProviderHasKey}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 text-xs transition disabled:opacity-40 disabled:cursor-not-allowed"
+              title="改写为不同风格"
+            >
+              {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+              改写
+            </button>
+          }
+        >
+          <div className="p-2">
+            <div className="text-[10px] text-white/30 mb-1 px-1">选择风格</div>
+            {REWRITE_STYLES.map((style) => (
+              <button
+                key={style.value}
+                onClick={() => handleAIAction('rewrite', style.value)}
+                className="w-full px-3 py-1.5 rounded text-xs text-white/60 hover:bg-white/[0.08] hover:text-white/80 transition text-left"
+              >
+                {style.label}
+              </button>
+            ))}
+          </div>
+        </Popover>
 
         {/* API Key 提示 */}
         {!currentProviderHasKey && (

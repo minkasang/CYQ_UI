@@ -150,9 +150,7 @@ export function HomePage() {
           }`}
         >
           <SectionTitle title="每日灵感" subtitle="记录触动你的名言与哲理" />
-          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5 overflow-visible">
-            <InspirationSection />
-          </div>
+          <InspirationSection registerPanel={registerPanel} />
         </section>
       )}
 

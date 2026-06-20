@@ -52,9 +52,9 @@ src/
 │   └── __tests__/
 │       └── useInspirationStore.test.ts  # 单元测试
 ├── modules/inspiration/
-│   ├── index.ts                      # 模块注册（Module 对象）
+│   ├── index.ts                      # 模块注册（Module 对象，无独立路由）
 │   └── pages/
-│       └── InspirationPage.tsx       # 首页（随机卡片+捕获+列表）
+│       └── InspirationSection.tsx    # 首页内嵌 Section（Hero 推荐卡 + 工具箱）
 ├── hooks/
 │   └── useModuleRoutes.tsx           # 修改：ALL_MODULE_IDS + initBuiltinModules
 └── components/layout/                # 导航入口（修改）
@@ -79,12 +79,15 @@ interface InspirationItem {
   lastReviewedAt: number // 最近回顾时间戳
 }
 
-// Store 接口（小接口原则）
+// Store 接口（小接口原则，7 个方法各司其职）
 interface InspirationStore {
   items: InspirationItem[]
-  add: (item: Omit<InspirationItem, 'id' | 'createdAt' | 'lastReviewedAt'>) => void
+  currentId: string | null
+  add: (item: Omit<InspirationItem, 'id' | 'createdAt' | 'lastReviewedAt'>) => InspirationItem
+  remove: (id: string) => void
+  update: (id: string, patch: Partial<Pick<InspirationItem, 'content' | 'source' | 'tags' | 'reflection'>>) => void
   toggleFavorite: (id: string) => void
-  setImpact: (id: string, impact: 1 | 2 | 3) => void
+  setImpact: (id: string, impact: number) => void
   markReviewed: (id: string) => void
   getNextReview: () => InspirationItem | null  // "优先遗忘"算法
 }

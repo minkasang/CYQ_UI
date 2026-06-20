@@ -76,7 +76,7 @@ export function MacOSLayout({ children }: { children: ReactNode }) {
         ref={mainRef}
         className="flex-1 overflow-auto snap-y snap-proximity"
       >
-        <div className="px-8 py-6">
+        <div className="px-8 py-6 h-full">
           <ErrorBoundary>
             {children}
           </ErrorBoundary>

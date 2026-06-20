@@ -29,13 +29,14 @@ interface DockItem {
   scrollTo?: string
 }
 
-const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'ai', 'chat', 'settings']
+const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'chat', 'settings']
 
 const ITEM_MAP: Record<string, DockItem> = {
   home: { id: 'home', to: '/', icon: '🏠', label: '首页' },
   inspiration: { id: 'inspiration', to: '/', icon: '💡', label: '灵感', scrollTo: 'inspiration' },
   todo: { id: 'todo', to: '/', icon: '✅', label: '待办', scrollTo: 'todo' },
   diary: { id: 'diary', to: '/', icon: '📖', label: '日记', scrollTo: 'diary' },
+  wallpaper: { id: 'wallpaper', to: '/', icon: '🖼', label: '壁纸', scrollTo: 'wallpaper' },
   ai: { id: 'ai', to: '/', icon: '✨', label: 'AI 总结', scrollTo: 'ai' },
   chat: { id: 'chat', to: '/', icon: '💬', label: 'AI 聊天', scrollTo: 'chat' },
   settings: { id: 'settings', to: '/settings', icon: '⚙️', label: '设置' },

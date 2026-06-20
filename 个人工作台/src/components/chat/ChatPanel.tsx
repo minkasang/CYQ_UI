@@ -32,6 +32,8 @@ export function ChatPanel() {
   const setActiveChat = useChatStore(s => s.setActiveChat)
   const addMessage = useChatStore(s => s.addMessage)
   const updateChatModel = useChatStore(s => s.updateChatModel)
+  const updateChatTitle = useChatStore(s => s.updateChatTitle)
+  const togglePin = useChatStore(s => s.togglePin)
 
   const loadKeys = useAPIKeysStore(s => s.loadFromFile)
   const apiKeys = useAPIKeysStore(s => s.keys)
@@ -46,7 +48,7 @@ export function ChatPanel() {
   const activeKeyId = useAPIKeysStore.getState().activeKeyId[provider]
 
   // ========== 每对话独立状态（架构健康：对话间完全隔离） ==========
-  const [chatStates, setChatStates] = useState<Record<string, { loading: boolean; streamContent: string; streamReasoning: string }>>({})
+  const [chatStates, setChatStates] = useState<Record<string, { loading: boolean; streamContent: string; streamReasoning: string; lastSentProvider?: string; lastSentModel?: string }>>({})
 
   // 当前对话的流式状态
   const currentChatState = activeChatId ? chatStates[activeChatId] : undefined
@@ -65,7 +67,7 @@ export function ChatPanel() {
   const requestChatIdRef = useRef<string | null>(null)
 
   // 辅助：更新指定对话的流式状态
-  const updateChatState = (chatId: string, patch: Partial<{ loading: boolean; streamContent: string; streamReasoning: string }>) => {
+  const updateChatState = (chatId: string, patch: Partial<{ loading: boolean; streamContent: string; streamReasoning: string; lastSentProvider: string; lastSentModel: string }>) => {
     setChatStates(prev => ({
       ...prev,
       [chatId]: { ...(prev[chatId] || { loading: false, streamContent: '', streamReasoning: '' }), ...patch }
@@ -161,7 +163,8 @@ export function ChatPanel() {
     }
 
     const effectiveChatId = requestChatId || useChatStore.getState().activeChatId!
-    updateChatState(effectiveChatId, { loading: true, streamContent: '', streamReasoning: '' })
+    // 记录实际发出的模型（数据链路拦截验证）
+    updateChatState(effectiveChatId, { loading: true, streamContent: '', streamReasoning: '', lastSentProvider: provider, lastSentModel: getModelName(provider, model) })
 
     try {
       // 图片模型
@@ -267,7 +270,7 @@ export function ChatPanel() {
   const handleEditMessage = (_msgId: string, content: string) => {
     // 简化：将内容填入输入框的思路通过 ChatInput 的初始值实现
     // 这里使用一个 ref 方案：直接操作 input
-    const input = document.querySelector('input[placeholder*="输入消息"]') as HTMLInputElement
+    const input = document.querySelector('textarea[placeholder*="输入消息"]') as HTMLTextAreaElement
     if (input) {
       input.value = content
       input.focus()
@@ -312,14 +315,29 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="flex gap-4 h-[600px]">
+    <div className="flex gap-4 h-[calc(100vh-260px)]">
       <ChatSidebar
         chats={chats} activeChatId={activeChatId}
         onSelect={setActiveChat} onNew={handleNewChat} onDelete={handleDeleteChat}
+        onRename={(id, title) => updateChatTitle(id, title)}
+        onTogglePin={(id) => togglePin(id)}
         onOpenAPIModal={() => setApiModalOpen(true)}
         onExport={activeChat ? handleExport : undefined}
       />
       <GlassPanel cornerRadius={16} padding="0" className="flex-1 flex flex-col overflow-hidden">
+        {/* 模型状态栏 — 显示实际发出的模型（从数据链路拦截读取） */}
+        <div className="flex items-center gap-1.5 px-4 py-1.5 border-b border-white/[.06]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0A84FF]/80 flex-shrink-0" />
+          {currentChatState?.lastSentProvider ? (
+            <>
+              <span className="text-[11px] text-white/35">{PROVIDER_NAMES_FOR_SYSTEM[currentChatState.lastSentProvider as AIProvider] || currentChatState.lastSentProvider}</span>
+              <span className="text-[10px] text-white/15">·</span>
+              <span className="text-[11px] text-white/25">{currentChatState.lastSentModel}</span>
+            </>
+          ) : (
+            <span className="text-[11px] text-white/20">等待发送…</span>
+          )}
+        </div>
         <ChatMessages
           messages={activeChat?.messages || []}
           streamContent={streamContent} streamReasoning={streamReasoning}

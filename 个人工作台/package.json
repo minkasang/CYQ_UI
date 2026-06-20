@@ -5,7 +5,6 @@
   "type": "module",
   "description": "个人工作台 - 督促个人习惯、安排工作与生活",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx",

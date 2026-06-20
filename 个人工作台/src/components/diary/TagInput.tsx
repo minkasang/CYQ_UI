@@ -1,8 +1,9 @@
 // 标签输入组件
 // 支持创建、删除标签
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { X, Plus, Tag } from 'lucide-react'
+import { Popover } from '../ui/Popover'
 
 interface TagInputProps {
   value?: string[]
@@ -13,6 +14,7 @@ interface TagInputProps {
 export function TagInput({ value = [], onChange, suggestions = [] }: TagInputProps) {
   const [inputValue, setInputValue] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // 添加标签
   const addTag = (tag: string) => {
@@ -58,53 +60,56 @@ export function TagInput({ value = [], onChange, suggestions = [] }: TagInputPro
       )}
 
       {/* 输入框 */}
-      <div className="relative">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value)
-              setShowSuggestions(true)
-            }}
-            onFocus={() => setShowSuggestions(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && inputValue.trim()) {
-                e.preventDefault()
-                addTag(inputValue)
-              }
-            }}
-            placeholder="输入标签..."
-            className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-blue-400/50"
-          />
-          {inputValue.trim() && (
-            <button
-              onClick={() => addTag(inputValue)}
-              className="px-2 py-1.5 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-white text-xs transition flex items-center gap-1"
-            >
-              <Plus size={12} /> 添加
-            </button>
-          )}
-        </div>
-
-        {/* 建议列表 */}
-        {showSuggestions && filteredSuggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 p-2 rounded-lg bg-black/50 border border-white/10 backdrop-blur-sm z-10">
-            <div className="text-[10px] text-white/40 mb-1">建议标签</div>
-            <div className="flex flex-wrap gap-1">
-              {filteredSuggestions.slice(0, 6).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => addTag(s)}
-                  className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-xs text-white/70 transition"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+      <Popover
+        open={showSuggestions && filteredSuggestions.length > 0}
+        onOpenChange={setShowSuggestions}
+        align="left"
+        trigger={
+          <div className="flex items-center gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value)
+                if (e.target.value.trim()) setShowSuggestions(true)
+              }}
+              onFocus={() => { if (inputValue.trim()) setShowSuggestions(true) }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && inputValue.trim()) {
+                  e.preventDefault()
+                  addTag(inputValue)
+                }
+              }}
+              placeholder="输入标签..."
+              className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-blue-400/50"
+            />
+            {inputValue.trim() && (
+              <button
+                onClick={() => addTag(inputValue)}
+                className="px-2 py-1.5 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-white text-xs transition flex items-center gap-1"
+              >
+                <Plus size={12} /> 添加
+              </button>
+            )}
           </div>
-        )}
-      </div>
+        }
+      >
+        <div className="p-2">
+          <div className="text-[10px] text-white/30 mb-1 px-1">建议标签</div>
+          <div className="flex flex-wrap gap-1">
+            {filteredSuggestions.slice(0, 6).map((s) => (
+              <button
+                key={s}
+                onClick={() => addTag(s)}
+                className="px-2 py-1 rounded text-xs text-white/60 hover:bg-white/[0.08] hover:text-white/80 transition"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Popover>
     </div>
   )
 }

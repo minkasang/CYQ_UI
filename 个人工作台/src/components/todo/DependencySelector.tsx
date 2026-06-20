@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import { Link, X, AlertCircle, CheckCircle } from 'lucide-react'
+import { Popover } from '../ui/Popover'
 import type { Todo } from '../../types'
 
 interface DependencySelectorProps {
@@ -18,7 +19,6 @@ export function DependencySelector({
   allTodos,
   onChange,
 }: DependencySelectorProps) {
-  const [showPicker, setShowPicker] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
   // 获取依赖的任务详情
@@ -96,54 +96,51 @@ export function DependencySelector({
 
       {/* 添加依赖按钮 */}
       {availableTasks.length > 0 && (
-        <div className="relative">
-          <button
-            onClick={() => setShowPicker(!showPicker)}
-            className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition"
-          >
-            + 添加依赖
-          </button>
-
-          {/* 任务选择下拉 */}
-          {showPicker && (
-            <div className="absolute z-10 mt-1 w-64 rounded-lg bg-gray-800/95 border border-white/10 shadow-lg">
-              {/* 搜索框 */}
-              <div className="p-2 border-b border-white/10">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="搜索任务..."
-                  className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-xs text-white outline-none focus:border-blue-400/50"
-                  autoFocus
-                />
-              </div>
-
-              {/* 任务列表 */}
-              <div className="max-h-48 overflow-y-auto">
-                {filteredTasks.length === 0 ? (
-                  <div className="px-3 py-2 text-xs text-white/40 text-center">
-                    没有可选的任务
-                  </div>
-                ) : (
-                  filteredTasks.map(task => (
-                    <button
-                      key={task.id}
-                      onClick={() => {
-                        handleAdd(task.id)
-                        setShowPicker(false)
-                      }}
-                      className="w-full px-3 py-2 text-left text-xs text-white/80 hover:bg-white/10 transition flex items-center gap-2"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-                      <span className="flex-1 truncate">{task.title}</span>
-                    </button>
-                  ))
-                )}
-              </div>
+        <Popover
+          align="left"
+          minWidth={256}
+          trigger={
+            <button className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition">
+              + 添加依赖
+            </button>
+          }
+        >
+          <div>
+            {/* 搜索框 */}
+            <div className="p-2 border-b border-white/[0.06]">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="搜索任务..."
+                className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-xs text-white outline-none focus:border-blue-400/50"
+                autoFocus
+              />
             </div>
-          )}
-        </div>
+
+            {/* 任务列表 */}
+            <div className="max-h-48 overflow-y-auto">
+              {filteredTasks.length === 0 ? (
+                <div className="px-3 py-2 text-xs text-white/30 text-center">
+                  没有可选的任务
+                </div>
+              ) : (
+                filteredTasks.map(task => (
+                  <button
+                    key={task.id}
+                    onClick={() => {
+                      handleAdd(task.id)
+                    }}
+                    className="w-full px-3 py-2 text-left text-xs text-white/60 hover:bg-white/[0.06] hover:text-white/80 transition flex items-center gap-2"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/60 flex-shrink-0" />
+                    <span className="flex-1 truncate">{task.title}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </Popover>
       )}
 
       {/* 空状态 */}

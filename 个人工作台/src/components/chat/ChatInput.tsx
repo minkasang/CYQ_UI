@@ -1,11 +1,13 @@
 // ChatInput - 输入区 + 模型选择器
 // 纯展示组件，0 个 store 导入
 // 功能：模型选择（按能力分组）、深度思考开关、Key 切换、发送/取消
+// v2: 弹窗统一用 Popover 组件（玻璃风格 + 点击外部关闭 + 智能方向）
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Send, ChevronDown, Brain, Key, Image, Video } from 'lucide-react'
 import type { AIProvider, APIKeyEntry } from '../../types'
 import { PROVIDER_MODELS, getModelName, isReasoningModel } from '../../store/useAIConfigStore'
+import { Popover } from '../ui/Popover'
 
 // 提供商显示名
 const PROVIDER_NAMES: Record<AIProvider, string> = {
@@ -42,6 +44,14 @@ export interface ChatInputProps {
   onMaxTokensChange: (t: number) => void
 }
 
+function pillBase(active: boolean): string {
+  return `flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors border ${
+    active
+      ? 'bg-white/10 border-white/[0.12] text-white'
+      : 'bg-transparent border-white/[0.06] text-white/50 hover:text-white/70 hover:bg-white/5'
+  }`
+}
+
 export function ChatInput({
   provider,
   model,
@@ -66,12 +76,6 @@ export function ChatInput({
   onMaxTokensChange,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
-  const [showProvider, setShowProvider] = useState(false)
-  const [showModel, setShowModel] = useState(false)
-  const [showKeyPicker, setShowKeyPicker] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const modelBtnRef = useRef<HTMLButtonElement>(null)
-  const keyBtnRef = useRef<HTMLButtonElement>(null)
 
   const modelSupportsReasoning = isReasoningModel(provider, model)
   const currentModelName = getModelName(provider, model)
@@ -96,173 +100,135 @@ export function ChatInput({
       {/* 模型选择栏 */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
         {/* 提供商选择 */}
-        <div className="relative">
-          <button
-            onClick={() => setShowProvider(!showProvider)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
-            style={{
-              background: showProvider ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            <span>{PROVIDER_NAMES[provider]}</span>
-            {hasKey ? <span className="text-green-400">✓</span> : <span className="text-red-400">!</span>}
-            <ChevronDown size={12} />
-          </button>
-          {showProvider && (
-            <div
-              className="absolute bottom-full left-0 mb-1 z-20 rounded-lg p-2"
-              style={{
-                background: 'rgba(0, 0, 0, 0.92)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                minWidth: '180px',
-              }}
-            >
-              {(Object.keys(PROVIDER_NAMES) as AIProvider[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => { onProviderChange(p); setShowProvider(false) }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left hover:bg-white/10"
-                  style={{
-                    background: provider === p ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                    color: provider === p ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                  }}
-                >
-                  <span>{PROVIDER_NAMES[p]}</span>
-                  {hasKey ? (
-                    <span className="text-green-400 text-[10px]">已配置</span>
-                  ) : (
-                    <span className="text-red-400/60 text-[10px]">未配置</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Popover
+          align="left"
+          minWidth={180}
+          trigger={
+            <button className={pillBase(false)}>
+              <span>{PROVIDER_NAMES[provider]}</span>
+              {hasKey ? <span className="text-green-400 text-[10px]">✓</span> : <span className="text-red-400 text-[10px]">!</span>}
+              <ChevronDown size={12} />
+            </button>
+          }
+        >
+          <div className="p-1.5">
+            {(Object.keys(PROVIDER_NAMES) as AIProvider[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => onProviderChange(p)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left transition-colors ${
+                  provider === p ? 'bg-white/[0.12] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'
+                }`}
+              >
+                <span>{PROVIDER_NAMES[p]}</span>
+                {hasKey ? (
+                  <span className="text-green-400/70 text-[10px]">已配置</span>
+                ) : (
+                  <span className="text-red-400/40 text-[10px]">未配置</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </Popover>
 
         {/* 模型选择 */}
-        <div className="relative">
-          <button
-            ref={modelBtnRef}
-            onClick={() => setShowModel(!showModel)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/70 hover:bg-white/10"
-            style={{
-              background: showModel ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            <span>{currentModelName}</span>
-            <ChevronDown size={12} />
-          </button>
-          {showModel && (
-            <div
-              className="absolute bottom-full mb-1 z-20 rounded-lg p-2 max-h-72 overflow-y-auto"
-              style={{
-                background: 'rgba(0, 0, 0, 0.92)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                minWidth: '240px',
-              }}
-            >
-              {/* 推理模型 */}
-              {reasoningModels.length > 0 && (
-                <div className="mb-2">
-                  <div className="px-3 py-1 text-[10px] text-purple-400/70 flex items-center gap-1">
-                    <Brain size={10} /> 推理模型
-                  </div>
-                  {reasoningModels.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => { onModelChange(m.id); setShowModel(false) }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left hover:bg-white/10"
-                      style={{
-                        background: model === m.id ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                        color: model === m.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                      }}
-                    >
-                      <span>{m.name}</span>
-                      <span className="text-white/40">{m.desc}</span>
-                    </button>
-                  ))}
+        <Popover
+          align="left"
+          minWidth={240}
+          trigger={
+            <button className={pillBase(false)}>
+              <span>{currentModelName}</span>
+              <ChevronDown size={12} />
+            </button>
+          }
+        >
+          <div className="py-1 max-h-64 overflow-y-auto">
+            {reasoningModels.length > 0 && (
+              <div className="mb-1">
+                <div className="px-3 py-1 text-[10px] text-purple-400/60 flex items-center gap-1">
+                  <Brain size={10} /> 推理模型
                 </div>
-              )}
-              {/* 文本模型 */}
-              {textModels.length > 0 && (
-                <div className="mb-2">
-                  <div className="px-3 py-1 text-[10px] text-white/40">文本模型</div>
-                  {textModels.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => { onModelChange(m.id); setShowModel(false) }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left hover:bg-white/10"
-                      style={{
-                        background: model === m.id ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                        color: model === m.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                      }}
-                    >
-                      <span>{m.name}</span>
-                      <span className="text-white/40">{m.desc}</span>
-                    </button>
-                  ))}
+                {reasoningModels.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => onModelChange(m.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left transition-colors ${
+                      model === m.id ? 'bg-white/[0.12] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'
+                    }`}
+                  >
+                    <span>{m.name}</span>
+                    <span className="text-white/30">{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {textModels.length > 0 && (
+              <div className="mb-1">
+                <div className="px-3 py-1 text-[10px] text-white/30">文本模型</div>
+                {textModels.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => onModelChange(m.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left transition-colors ${
+                      model === m.id ? 'bg-white/[0.12] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'
+                    }`}
+                  >
+                    <span>{m.name}</span>
+                    <span className="text-white/30">{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {imageModels.length > 0 && (
+              <div className="mb-1">
+                <div className="px-3 py-1 text-[10px] text-blue-400/60 flex items-center gap-1">
+                  <Image size={10} /> 图片生成
                 </div>
-              )}
-              {/* 图片模型 */}
-              {imageModels.length > 0 && (
-                <div className="mb-2">
-                  <div className="px-3 py-1 text-[10px] text-blue-400/70 flex items-center gap-1">
-                    <Image size={10} /> 图片生成
-                  </div>
-                  {imageModels.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => { onModelChange(m.id); setShowModel(false) }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left hover:bg-white/10"
-                      style={{
-                        background: model === m.id ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                        color: model === m.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                      }}
-                    >
-                      <span>{m.name}</span>
-                      <span className="text-white/40">{m.desc}</span>
-                    </button>
-                  ))}
+                {imageModels.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => onModelChange(m.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left transition-colors ${
+                      model === m.id ? 'bg-white/[0.12] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'
+                    }`}
+                  >
+                    <span>{m.name}</span>
+                    <span className="text-white/30">{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {videoModels.length > 0 && (
+              <div>
+                <div className="px-3 py-1 text-[10px] text-red-400/60 flex items-center gap-1">
+                  <Video size={10} /> 视频生成
                 </div>
-              )}
-              {/* 视频模型 */}
-              {videoModels.length > 0 && (
-                <div>
-                  <div className="px-3 py-1 text-[10px] text-red-400/70 flex items-center gap-1">
-                    <Video size={10} /> 视频生成
-                  </div>
-                  {videoModels.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => { onModelChange(m.id); setShowModel(false) }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left hover:bg-white/10"
-                      style={{
-                        background: model === m.id ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                        color: model === m.id ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                      }}
-                    >
-                      <span>{m.name}</span>
-                      <span className="text-white/40">{m.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                {videoModels.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => onModelChange(m.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left transition-colors ${
+                      model === m.id ? 'bg-white/[0.12] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'
+                    }`}
+                  >
+                    <span>{m.name}</span>
+                    <span className="text-white/30">{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </Popover>
 
         {/* 深度思考开关 */}
         {modelSupportsReasoning && (
           <button
             onClick={() => onToggleReasoning(!reasoningEnabled)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition"
-            style={{
-              background: reasoningEnabled ? 'rgba(139, 92, 246, 0.3)' : 'rgba(255, 255, 255, 0.05)',
-              border: `1px solid ${reasoningEnabled ? 'rgba(139, 92, 246, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
-              color: reasoningEnabled ? '#c4b5fd' : 'rgba(255, 255, 255, 0.5)',
-            }}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors border ${
+              reasoningEnabled
+                ? 'bg-purple-500/20 border-purple-500/30 text-purple-200'
+                : 'bg-white/[0.03] border-white/[0.06] text-white/40 hover:text-white/60 hover:bg-white/5'
+            }`}
           >
             <Brain size={12} />
             <span>深度思考</span>
@@ -273,12 +239,11 @@ export function ChatInput({
         {webSearchSupported && (
           <button
             onClick={() => onToggleWebSearch(!webSearchEnabled)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition"
-            style={{
-              background: webSearchEnabled ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.05)',
-              border: `1px solid ${webSearchEnabled ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
-              color: webSearchEnabled ? '#93c5fd' : 'rgba(255, 255, 255, 0.5)',
-            }}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors border ${
+              webSearchEnabled
+                ? 'bg-blue-500/20 border-blue-500/30 text-blue-200'
+                : 'bg-white/[0.03] border-white/[0.06] text-white/40 hover:text-white/60 hover:bg-white/5'
+            }`}
           >
             <span className="text-[10px]">🌐</span>
             <span>联网搜索</span>
@@ -286,103 +251,76 @@ export function ChatInput({
         )}
 
         {/* 参数设置 */}
-        <div className="relative">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/40 hover:text-white/70"
-            style={{
-              background: showSettings ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-            }}
-          >
-            <span className="text-[10px]">⚙</span>
-          </button>
-          {showSettings && (
-            <div
-              className="absolute bottom-full right-0 mb-1 z-20 rounded-lg p-3"
-              style={{
-                background: 'rgba(0, 0, 0, 0.92)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                minWidth: '200px',
-              }}
-            >
-              <div className="space-y-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-white/50">Temperature</span>
-                    <span className="text-[10px] text-white/40">{temperature.toFixed(1)}</span>
-                  </div>
-                  <input
-                    type="range" min="0" max="2" step="0.1"
-                    value={temperature}
-                    onChange={e => onTemperatureChange(parseFloat(e.target.value))}
-                    className="w-full h-1 accent-blue-500"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-white/50">Max Tokens</span>
-                    <span className="text-[10px] text-white/40">{maxTokens}</span>
-                  </div>
-                  <input
-                    type="range" min="256" max="8192" step="256"
-                    value={maxTokens}
-                    onChange={e => onMaxTokensChange(parseInt(e.target.value))}
-                    className="w-full h-1 accent-blue-500"
-                  />
-                </div>
+        <Popover
+          align="right"
+          minWidth={200}
+          trigger={
+            <button className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/40 hover:text-white/70 transition-colors border border-white/[0.04] hover:bg-white/5">
+              <span className="text-[10px]">⚙</span>
+            </button>
+          }
+        >
+          <div className="p-3 space-y-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-white/40">Temperature</span>
+                <span className="text-[10px] text-white/30">{temperature.toFixed(1)}</span>
               </div>
+              <input
+                type="range" min="0" max="2" step="0.1"
+                value={temperature}
+                onChange={e => onTemperatureChange(parseFloat(e.target.value))}
+                className="w-full h-1 accent-blue-500"
+              />
             </div>
-          )}
-        </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-white/40">Max Tokens</span>
+                <span className="text-[10px] text-white/30">{maxTokens}</span>
+              </div>
+              <input
+                type="range" min="256" max="8192" step="256"
+                value={maxTokens}
+                onChange={e => onMaxTokensChange(parseInt(e.target.value))}
+                className="w-full h-1 accent-blue-500"
+              />
+            </div>
+          </div>
+        </Popover>
 
         {/* Key 切换 */}
         {availableKeys.length > 1 && (
-          <div className="relative">
-            <button
-              ref={keyBtnRef}
-              onClick={() => setShowKeyPicker(!showKeyPicker)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/50 hover:text-white/70"
-              style={{
-                background: showKeyPicker ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-              }}
-            >
-              <Key size={10} />
-              <span>{activeKeyLabel || 'Key'}</span>
-              <ChevronDown size={10} />
-            </button>
-            {showKeyPicker && (
-              <div
-                className="absolute bottom-full mb-1 z-20 rounded-lg p-2"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.92)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  minWidth: '160px',
-                }}
-              >
-                {availableKeys.map((k) => (
-                  <button
-                    key={k.id}
-                    onClick={() => { onSwitchKey(k.id); setShowKeyPicker(false) }}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left hover:bg-white/10"
-                    style={{
-                      background: k.id === activeKeyId ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                      color: k.id === activeKeyId ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      {k.id === activeKeyId && <span className="text-green-400">●</span>}
-                      <span>{k.label}</span>
-                    </div>
-                    <span className="text-white/30 text-[10px] font-mono">
-                      {k.key.slice(0, 6)}...
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <Popover
+            align="left"
+            minWidth={160}
+            trigger={
+              <button className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/50 hover:text-white/70 transition-colors border border-white/[0.04] hover:bg-white/5">
+                <Key size={10} />
+                <span>{activeKeyLabel || 'Key'}</span>
+                <ChevronDown size={10} />
+              </button>
+            }
+          >
+            <div className="p-1.5">
+              {availableKeys.map((k) => (
+                <button
+                  key={k.id}
+                  onClick={() => onSwitchKey(k.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs text-left transition-colors ${
+                    k.id === activeKeyId ? 'bg-white/[0.12] text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {k.id === activeKeyId && <span className="text-green-400 text-[8px]">●</span>}
+                    <span>{k.label}</span>
+                  </div>
+                  <span className="text-white/25 text-[10px] font-mono">
+                    {k.key.slice(0, 6)}...
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Popover>
         )}
       </div>
 
@@ -397,9 +335,8 @@ export function ChatInput({
       )}
 
       {/* 输入区 */}
-      <div className="flex gap-2">
-        <input
-          type="text"
+      <div className="flex gap-2 items-end">
+        <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -410,7 +347,8 @@ export function ChatInput({
           }}
           placeholder="输入消息... (Enter 发送，Shift+Enter 换行)"
           disabled={loading || !hasKey}
-          className="flex-1 px-3 py-2 rounded-lg text-xs text-white placeholder-white/40 outline-none disabled:opacity-50"
+          rows={2}
+          className="flex-1 px-3 py-2 rounded-lg text-sm text-white placeholder-white/40 outline-none disabled:opacity-50 resize-none"
           style={{
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.1)',

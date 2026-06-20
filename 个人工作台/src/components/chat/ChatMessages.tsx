@@ -107,7 +107,7 @@ function MessageBubble({ msg, isLastAssistant, onEdit, onRegenerate }: {
     <div className={`flex group ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className="relative max-w-[80%]">
         <div
-          className="px-3 py-2 rounded-xl text-xs whitespace-pre-wrap"
+          className="px-4 py-2.5 rounded-xl text-sm whitespace-pre-wrap"
           style={{
             background: isUser ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.1)',
             color: '#ffffff',
@@ -127,7 +127,7 @@ function MessageBubble({ msg, isLastAssistant, onEdit, onRegenerate }: {
                     )
                   }
                   return (
-                    <code className="bg-black/30 px-1 py-0.5 rounded text-xs" {...props}>
+                    <code className="bg-black/30 px-1 py-0.5 rounded text-sm" {...props}>
                       {children}
                     </code>
                   )
@@ -223,7 +223,7 @@ export function ChatMessages({
             </button>
             {reasoningExpanded && (
               <div
-                className="px-3 py-2 rounded-xl text-xs whitespace-pre-wrap italic"
+                className="px-4 py-2.5 rounded-xl text-sm whitespace-pre-wrap italic"
                 style={{
                   background: 'rgba(139, 92, 246, 0.15)',
                   color: 'rgba(255, 255, 255, 0.7)',
@@ -241,7 +241,7 @@ export function ChatMessages({
       {streamContent && (
         <div className="flex justify-start">
           <div
-            className="max-w-[80%] px-3 py-2 rounded-xl text-xs whitespace-pre-wrap"
+            className="max-w-[80%] px-4 py-2.5 rounded-xl text-sm whitespace-pre-wrap"
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
               color: '#ffffff',
@@ -260,7 +260,7 @@ export function ChatMessages({
                     )
                   }
                   return (
-                    <code className="bg-black/30 px-1 py-0.5 rounded text-xs" {...props}>
+                    <code className="bg-black/30 px-1 py-0.5 rounded text-sm" {...props}>
                       {children}
                     </code>
                   )
@@ -277,7 +277,7 @@ export function ChatMessages({
       {loading && !streamContent && (
         <div className="flex justify-start">
           <div
-            className="max-w-[80%] px-3 py-2 rounded-xl text-xs flex items-center gap-2"
+            className="max-w-[80%] px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
               color: 'rgba(255, 255, 255, 0.7)',
