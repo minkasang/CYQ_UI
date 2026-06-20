@@ -51,6 +51,21 @@ export const useLayoutRegistry = create<LayoutRegistryState>()(
         if (get().activeId === id) set({ activeId: 'default' })
       },
     }),
-    { name: 'pw-layout-registry', partialize: (s) => ({ layouts: s.layouts, activeId: s.activeId }) }
+    { name: 'pw-layout-registry', partialize: (s) => ({ layouts: s.layouts, activeId: s.activeId }),
+      // 迁移：确保新内置布局自动合并到已持久化的旧列表中
+      merge: (persisted, current) => {
+        const p = persisted as Partial<LayoutRegistryState> | null
+        const currentLayouts = current.layouts as LayoutInfo[]
+        // 合并旧列表中的自定义布局 + 当前完整的内置列表
+        const oldLayouts: LayoutInfo[] = p?.layouts || []
+        const customLayouts = oldLayouts.filter(l => !l.isBuiltin)
+        const mergedLayouts = [...currentLayouts, ...customLayouts]
+        return {
+          ...current,
+          layouts: mergedLayouts,
+          activeId: p?.activeId || current.activeId,
+        } as LayoutRegistryState
+      },
+    }
   )
 )
