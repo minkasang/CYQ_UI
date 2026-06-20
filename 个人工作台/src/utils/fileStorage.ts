@@ -19,6 +19,8 @@ export const FILE_KEYS = {
   TAGS: `${DATA_DIR}/tags.json`,
   ACHIEVEMENTS: `${DATA_DIR}/achievements.json`,
   THEME_PRESETS: `${DATA_DIR}/theme_presets.json`,
+  AGENTS: `${DATA_DIR}/agents.json`,
+  CHATROOMS: `${DATA_DIR}/chatrooms.json`,
 } as const
 
 // 从文件读取数据

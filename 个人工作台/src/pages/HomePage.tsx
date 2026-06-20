@@ -15,6 +15,7 @@ import { AISummary } from '../components/ai/AISummary'
 import { ChatPanel } from '../components/chat/ChatPanel'
 import { WallpaperManager } from '../components/wallpaper/WallpaperManager'
 import { InspirationSection } from '../modules/inspiration/pages/InspirationSection'
+import { AgentSection } from '../modules/agents/pages/AgentSection'
 import { useTodoStore, selectTodoStats } from '../store/useTodoStore'
 import { useDiaryStore, selectSortedDiaries } from '../store/useDiaryStore'
 import { useWallpaperStore } from '../store/useWallpaperStore'
@@ -77,6 +78,7 @@ export function HomePage() {
   // 各个 section 的滚动动画
   const welcomeAnim = useScrollAnimation(0.3)
   const inspirationAnim = useScrollAnimation(0.2)
+  const agentsAnim = useScrollAnimation(0.2)
   const todoAnim = useScrollAnimation(0.2)
   const diaryAnim = useScrollAnimation(0.2)
   const aiAnim = useScrollAnimation(0.2)
@@ -151,6 +153,22 @@ export function HomePage() {
         >
           <SectionTitle title="每日灵感" subtitle="记录触动你的名言与哲理" />
           <InspirationSection registerPanel={registerPanel} />
+        </section>
+      )}
+
+      {/* ===== 第 2.5 屏：智能体群聊 ===== */}
+      {isOn('agents') && (
+        <section
+          id="agents"
+          ref={agentsAnim.ref}
+          className={`py-8 min-h-dvh snap-start transition-all duration-1000 ${
+            agentsAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <SectionTitle title="智能体群聊" subtitle="创建 AI 智能体，让它们一起聊天" />
+          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
+            <AgentSection />
+          </div>
         </section>
       )}
 

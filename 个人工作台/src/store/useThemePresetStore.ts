@@ -166,20 +166,23 @@ export const useThemePresetStore = create<ThemePresetState>((set, get) => ({
 
     // 2. 壁纸不自动应用 — 避免覆盖用户当前壁纸
 
-    // 3. 应用引擎参数
+    // 3. 应用引擎 — 切换或更新参数
     try {
       const { useThemeStore } = await import('../store/useThemeStore')
       const themeStore = useThemeStore.getState()
-      // 动态加载引擎模块并切换
-      const themeManager = (themeStore as any)._themeManager
-      if (themeManager) {
-        // 尝试直接更新当前引擎参数
-        themeManager.updateThemeConfig({
-          engine: {
-            type: preset.engine as any,
-            params: preset.params,
-          },
-        } as any)
+      const currentThemeId = themeStore.activeThemeId
+
+      if (currentThemeId !== preset.engine) {
+        // 引擎不同 → 真正切换引擎
+        await themeStore.switchTheme(preset.engine)
+      } else {
+        // 引擎相同 → 只更新参数
+        const themeManager = (themeStore as any)._themeManager
+        if (themeManager) {
+          themeManager.updateThemeConfig({
+            engine: { type: preset.engine as any, params: preset.params },
+          } as any)
+        }
       }
     } catch { /* theme store may not be ready */ }
 
