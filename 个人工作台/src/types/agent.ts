@@ -1,44 +1,76 @@
-// Agent 与 Room 类型定义 + 可插拔模块架构
-// 智能体群聊模块
+// Agent 与 Room 类型定义 + 可插拔模块架构 + 聊天策略接口
+// 智能体群聊模块 v2.0
 //
 // 架构说明：
-//   AgentConfig.modules 是核心扩展点。每个 AgentModule 实现一个 AgentModule 接口，
-//   聊天循环会自动调用所有已启用模块的 getContext() 方法，将其输出注入 LLM 上下文。
-//   新增能力（记忆/关系/工具）只需实现 AgentModule 接口并注册，不修改现有代码。
+//   AgentConfig.modules —— Agent 能力扩展点（记忆/关系/工具）
+//   ChatStrategy —— 聊天互动策略扩展点（事件驱动/被动/轮转）
+//   新增能力 = 实现接口 + 注册，不修改现有代码。
 
 import type { AIProvider } from './index'
+import type { Message } from '../store/useChatStore'
 
 // ============================================================
 // AgentModule — 可插拔模块接口
-// 遵守开闭原则：新增能力 = 新模块，不修改聊天循环
 // ============================================================
 
-/** 模块上下文：聊天循环调用模块时传入 */
 export interface AgentModuleContext {
   agent: AgentConfig
-  messages: ChatMessage[]
-  currentMessage?: ChatMessage
+  messages: Message[]
+  currentMessage?: Message
 }
 
-/** 模块返回：要注入 LLM prompt 的上下文 */
 export interface AgentModuleResult {
   contextText: string
 }
 
-/** Agent 可插拔模块 */
 export interface AgentModule {
   type: string
   name: string
   enabled: boolean
-  /** 检索模块相关的信息，注入到 Agent 的 system prompt 后方 */
   getContext: (ctx: AgentModuleContext) => Promise<AgentModuleResult>
+}
+
+// ============================================================
+// ChatStrategy — 可插拔聊天策略接口
+// ============================================================
+
+/** Chat 中的 Agent 快照（创建时复制，后续 Agent 变更不影响） */
+export interface ChatAgent {
+  agentId: string
+  name: string
+  provider: AIProvider
+  model: string
+  systemPrompt: string
+  cooldownMin: number
+  cooldownMax: number
+  modules: AgentModule[]
+}
+
+/** 策略上下文 */
+export interface StrategyContext {
+  agents: ChatAgent[]
+  history: Message[]
+  newMessage: Message
+  /** 调用 LLM：返回 null = 跳过/失败，返回 string = Agent 的回复 */
+  callLLM: (
+    agent: ChatAgent,
+    systemPrompt: string,
+    history: Message[],
+    instruction: string
+  ) => Promise<string | null>
+}
+
+/** 聊天互动策略 */
+export interface ChatStrategy {
+  type: string
+  /** 执行策略，返回本轮新产生的消息 */
+  execute(ctx: StrategyContext): Promise<Message[]>
 }
 
 // ============================================================
 // 核心类型
 // ============================================================
 
-/** Agent 配置 */
 export interface AgentConfig {
   id: string
   name: string
@@ -47,12 +79,11 @@ export interface AgentConfig {
   systemPrompt: string
   cooldownMin: number
   cooldownMax: number
-  modules: AgentModule[]     // 启用的模块（后续扩展：memory, relationship, tool...）
+  modules: AgentModule[]
   createdAt: number
   updatedAt: number
 }
 
-/** Room 配置 */
 export interface RoomConfig {
   id: string
   name: string
@@ -61,15 +92,5 @@ export interface RoomConfig {
   createdAt: number
 }
 
-/** 聊天消息 */
-export interface ChatMessage {
-  id: string
-  roomId: string
-  sender: string
-  senderType: 'human' | 'agent'
-  content: string
-  timestamp: number
-}
-
-/** Agent 表单提交数据 */
 export type AgentFormData = Omit<AgentConfig, 'id' | 'createdAt' | 'updatedAt' | 'modules'>
+

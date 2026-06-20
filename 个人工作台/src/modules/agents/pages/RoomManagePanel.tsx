@@ -7,7 +7,6 @@ import { useRoomStore } from '../../../store/useRoomStore'
 import { useAgentStore } from '../../../store/useAgentStore'
 import { RoomCard } from '../../../components/agents/RoomCard'
 import { RoomForm } from '../../../components/agents/RoomForm'
-import { ChatRoom } from './ChatRoom'
 import type { RoomConfig } from '../../../types/agent'
 
 export function RoomManagePanel() {
@@ -24,7 +23,6 @@ export function RoomManagePanel() {
 
   const [showForm, setShowForm] = useState(false)
   const [editingRoom, setEditingRoom] = useState<RoomConfig | undefined>(undefined)
-  const [activeRoomId, setActiveRoomId] = useState<string | null>(null)
 
   useEffect(() => { loadRooms(); loadAgents() }, [loadRooms, loadAgents])
 
@@ -78,53 +76,38 @@ export function RoomManagePanel() {
 
   return (
     <div className="space-y-4">
-      {/* 激活的聊天室 — 全屏聊天窗口 */}
-      {activeRoomId && (() => {
-        const activeRoom = rooms.find(r => r.id === activeRoomId)
-        if (!activeRoom) return null
-        return <ChatRoom room={activeRoom} onClose={() => setActiveRoomId(null)} />
-      })()}
+      {!showForm && (
+        <button
+          onClick={() => { setEditingRoom(undefined); setShowForm(true) }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-xs text-white/60 hover:bg-white/[0.10] hover:text-white/80 transition-colors"
+        >
+          <Plus size={13} />
+          新建聊天室
+        </button>
+      )}
 
-      {/* 新建按钮 + 表单（不在聊天中时显示） */}
-      {!activeRoomId && (
-        <>
-          {!showForm && (
-            <button
-              onClick={() => { setEditingRoom(undefined); setShowForm(true) }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-xs text-white/60 hover:bg-white/[0.10] hover:text-white/80 transition-colors"
-            >
-              <Plus size={13} />
-              新建聊天室
-            </button>
-          )}
+      {showForm && (
+        <RoomForm
+          allAgents={agents}
+          initial={editingRoom}
+          onSave={editingRoom ? handleManageSave : handleCreate}
+          onCancel={() => { setShowForm(false); setEditingRoom(undefined) }}
+        />
+      )}
 
-          {/* 表单 */}
-          {showForm && (
-            <RoomForm
-              allAgents={agents}
-              initial={editingRoom}
-              onSave={editingRoom ? handleManageSave : handleCreate}
-              onCancel={() => { setShowForm(false); setEditingRoom(undefined) }}
+      {rooms.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {rooms.map(room => (
+            <RoomCard
+              key={room.id}
+              room={room}
+              agents={agents}
+              onToggleActive={() => toggleActive(room.id)}
+              onManage={() => { setEditingRoom(room); setShowForm(true) }}
+              onDelete={() => handleDelete(room)}
             />
-          )}
-
-          {/* Room 列表 */}
-          {rooms.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {rooms.map(room => (
-                <div key={room.id} onClick={() => setActiveRoomId(room.id)} className="cursor-pointer">
-                  <RoomCard
-                    room={room}
-                    agents={agents}
-                    onToggleActive={() => toggleActive(room.id)}
-                    onManage={() => { setEditingRoom(room); setShowForm(true) }}
-                    onDelete={() => handleDelete(room)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
     </div>
   )

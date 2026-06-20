@@ -24,7 +24,7 @@ export interface Chat {
   provider?: AIProvider
   model?: string
   pinned?: boolean
-  hasUnread?: boolean     // 有未读 AI 回复
+  hasUnread?: boolean
 }
 
 interface ChatState {
@@ -104,8 +104,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      provider,  // 继承当前全局配置
-      model,     // 继承当前全局配置
+      provider,
+      model,
     }
     const newChats = [chat, ...get().chats]
     set({ chats: newChats, activeChatId: id })

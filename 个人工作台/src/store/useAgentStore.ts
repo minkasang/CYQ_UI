@@ -28,7 +28,12 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     if (get().loaded) return
     try {
       const data = await loadFromFile<{ agents: AgentConfig[] }>(FILE_KEYS.AGENTS, { agents: [] })
-      set({ agents: data.agents || [], loaded: true })
+      // 向后兼容：确保旧数据有 modules 字段
+      const agents = (data.agents || []).map(a => ({
+        ...a,
+        modules: a.modules || [],
+      }))
+      set({ agents, loaded: true })
     } catch {
       set({ agents: [], loaded: true })
     }

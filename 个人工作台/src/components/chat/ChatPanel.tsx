@@ -142,7 +142,6 @@ export function ChatPanel() {
     if (cid) updateChatState(cid, { loading: false, streamContent: '', streamReasoning: '' })
   }
 
-  // ========== 发送消息（请求 ID 绑定 + 竞态守卫） ==========
   const handleSend = async (text: string) => {
     if (!text.trim() || loading) return
 

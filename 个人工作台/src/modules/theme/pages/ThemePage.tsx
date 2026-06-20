@@ -1,195 +1,157 @@
-// 主题管理页面 — 三栏布局
-// 左：主题列表 | 中：实时预览 | 右：配置面板
+// 主题管理页面 — 简洁版
+// 引擎卡片 + 实时预览 + 预设快捷切换
 
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { ThemeList } from '../../../components/theme/ThemeList'
-import { ThemeConfig } from '../../../components/theme/ThemeConfig'
-import { ThemePreview } from '../../../components/theme/ThemePreview'
+import { useEffect, useState, useCallback } from 'react'
+import { Plus, Check, Trash2 } from 'lucide-react'
 import { useThemePresetStore, type ThemePreset } from '../../../store/useThemePresetStore'
-import { LiquidGlassEngine } from '../../../themes/engines/LiquidGlassEngine'
-import { FlatThemeEngine } from '../../../themes/engines/FlatThemeEngine'
+import { ThemePreview } from '../../../components/theme/ThemePreview'
+
+type EngineKey = 'liquid-glass' | 'flat'
+
+const ENGINE_INFO: Record<EngineKey, { name: string; icon: string; desc: string }> = {
+  'liquid-glass': { name: '液态玻璃', icon: '🪟', desc: 'WebGL 流体玻璃效果，支持折射、模糊、色差等参数' },
+  'flat': { name: '暗黑扁平', icon: '📄', desc: '简洁扁平化风格，轻量高性能' },
+}
 
 export function ThemePage() {
   const {
     presets, activeId, loaded,
     loadFromFile, addPreset, removePreset,
-    updatePreset, setActive, applyPreset,
+    setActive, applyPreset,
   } = useThemePresetStore()
 
-  const [newPresetDraft, setNewPresetDraft] = useState<Omit<ThemePreset, 'id' | 'createdAt' | 'isBuiltin'> | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedEngine, setSelectedEngine] = useState<EngineKey>('liquid-glass')
 
-  // 加载数据
-  useEffect(() => {
-    loadFromFile()
-  }, [loadFromFile])
+  useEffect(() => { loadFromFile() }, [loadFromFile])
 
-  const activePreset = presets.find(p => p.id === activeId) || presets[0] || null
+  const activePreset = presets.find(p => p.id === activeId) || null
 
-  // 选择主题 → 实时预览
-  const handleSelect = useCallback((id: string) => {
-    setActive(id)
-    applyPreset(id)
+  // 选中预设 → 应用
+  const handleSelect = useCallback((preset: ThemePreset) => {
+    setActive(preset.id)
+    applyPreset(preset.id)
+    setSelectedEngine(preset.engine as EngineKey)
   }, [setActive, applyPreset])
 
-  // 参数变更 → 更新预设 + 实时应用
-  const handleParamChange = useCallback((key: string, value: number | boolean) => {
-    if (!activePreset) return
-    const updatedParams = { ...activePreset.params, [key]: value }
-    updatePreset(activePreset.id, { params: updatedParams })
-    applyPreset(activePreset.id)
-  }, [activePreset, updatePreset, applyPreset])
-
-  // 字体变更
-  const handleFontChange = useCallback((patch: { fontFamily?: string; fontSize?: number }) => {
-    if (!activePreset) return
-    updatePreset(activePreset.id, {
-      fontFamily: patch.fontFamily ?? activePreset.fontFamily,
-      fontSize: patch.fontSize ?? activePreset.fontSize,
+  // 新建预设（基于当前引擎 + 默认参数）
+  const handleCreate = useCallback(() => {
+    const builtin = presets.find(p => p.engine === selectedEngine && p.isBuiltin)
+    const base = builtin || presets.find(p => p.engine === selectedEngine)
+    const name = `自定义${presets.filter(p => p.engine === selectedEngine && !p.isBuiltin).length + 1}`
+    const p = addPreset({
+      name,
+      engine: selectedEngine,
+      params: { ...(base?.params || {}) },
+      fontFamily: base?.fontFamily || '-apple-system, BlinkMacSystemFont, sans-serif',
+      fontSize: base?.fontSize || 13,
+      wallpaper: base?.wallpaper || { type: 'color', value: '#0a0a0a' },
     })
-    if (patch.fontFamily) document.documentElement.style.fontFamily = patch.fontFamily
-    if (patch.fontSize !== undefined) {
-      document.documentElement.style.fontSize = `${patch.fontSize}px`
-      localStorage.setItem('pw-font-size', String(patch.fontSize))
-    }
-  }, [activePreset, updatePreset])
+    setActive(p.id)
+    applyPreset(p.id)
+  }, [selectedEngine, presets, addPreset, setActive, applyPreset])
 
-  // 新建主题
-  const handleCreateNew = useCallback(() => {
-    const engine = activePreset?.engine || 'liquid-glass'
-    const paramDefs = engine === 'liquid-glass'
-      ? new LiquidGlassEngine().getParamDefs()
-      : new FlatThemeEngine().getParamDefs()
-    const defaultParams: Record<string, number | boolean> = {}
-    paramDefs.forEach((d: any) => { defaultParams[d.key] = d.defaultValue })
-    setNewPresetDraft({
-      name: '未命名主题',
-      engine,
-      params: defaultParams,
-      fontFamily: activePreset?.fontFamily || '-apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif',
-      fontSize: activePreset?.fontSize || 13,
-      wallpaper: activePreset?.wallpaper || { type: 'color', value: '#0a0a0a' },
-    })
-  }, [activePreset])
-
-  // 保存为新主题
-  const handleSaveAsNew = useCallback(() => {
-    if (newPresetDraft) {
-      const p = addPreset(newPresetDraft)
-      setActive(p.id)
-      applyPreset(p.id)
-      setNewPresetDraft(null)
-    } else if (activePreset) {
-      const p = addPreset({
-        name: activePreset.name + ' (副本)',
-        engine: activePreset.engine,
-        params: { ...activePreset.params },
-        fontFamily: activePreset.fontFamily,
-        fontSize: activePreset.fontSize,
-        wallpaper: { ...activePreset.wallpaper },
-      })
-      setActive(p.id)
-      applyPreset(p.id)
-    }
-  }, [newPresetDraft, activePreset, addPreset, setActive, applyPreset])
-
-  // 删除
+  // 删除预设
   const handleDelete = useCallback((id: string) => {
-    if (!confirm('确定删除这个主题？')) return
-    removePreset(id)
-  }, [removePreset])
+    const p = presets.find(pr => pr.id === id)
+    if (!p || p.isBuiltin) return
+    if (confirm(`删除「${p.name}」？`)) removePreset(id)
+  }, [presets, removePreset])
 
-  // 导出
-  const handleExport = useCallback(() => {
-    if (!activePreset) return
-    const blob = new Blob([JSON.stringify(activePreset, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${activePreset.name.replace(/\s+/g, '_')}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [activePreset])
-
-  // 导入
-  const handleImport = useCallback(() => {
-    fileInputRef.current?.click()
-  }, [])
-
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result as string)
-        if (data.engine && data.params) {
-          const p = addPreset({
-            name: data.name || '导入主题',
-            engine: data.engine,
-            params: data.params,
-            fontFamily: data.fontFamily || '-apple-system, BlinkMacSystemFont, sans-serif',
-            fontSize: data.fontSize || 13,
-            wallpaper: data.wallpaper || { type: 'color', value: '#0a0a0a' },
-          })
-          setActive(p.id)
-          applyPreset(p.id)
-        }
-      } catch {
-        alert('无效的主题文件')
-      }
-    }
-    reader.readAsText(file)
-    e.target.value = ''
-  }, [addPreset, setActive, applyPreset])
+  // 按引擎分组
+  const enginePresets = (engine: EngineKey) =>
+    presets.filter(p => p.engine === engine)
 
   if (!loaded) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-[var(--text-tertiary)]">加载中...</p>
-      </div>
-    )
+    return <div className="flex items-center justify-center h-full"><p className="text-sm text-[var(--text-tertiary)]">加载中...</p></div>
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* 隐藏的文件输入 */}
-      <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden" />
-
-      {/* 三栏布局：列表 | 预览 | 配置 */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 左：主题列表 (200px) */}
-        <div className="w-[200px] flex-shrink-0 border-r border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-          <ThemeList
-            presets={presets}
-            activeId={activeId}
-            onSelect={handleSelect}
-            onDelete={handleDelete}
-            onImport={handleImport}
-            onCreateNew={handleCreateNew}
-          />
-        </div>
-
-        {/* 中：实时预览 (flex-1) — 透明背景让壁纸透出 */}
-        <div className="flex-1 bg-transparent relative overflow-hidden">
-          {/* 半透明遮罩突出模拟窗口 */}
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="relative z-10 h-full">
-            <ThemePreview preset={activePreset} />
-          </div>
-        </div>
-
-        {/* 右：配置面板 (260px) */}
-        <div className="w-[260px] flex-shrink-0 border-l border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
-          <ThemeConfig
-            preset={activePreset}
-            onParamChange={handleParamChange}
-            onFontChange={handleFontChange}
-            onSaveAsNew={handleSaveAsNew}
-            onExport={handleExport}
-          />
-        </div>
+    <div className="max-w-[720px] mx-auto p-6 space-y-8">
+      {/* 标题 */}
+      <div>
+        <h2 className="text-xl font-bold text-[var(--text-primary)]">主题</h2>
+        <p className="text-sm text-[var(--text-tertiary)] mt-1">选择渲染引擎，切换预设效果</p>
       </div>
+
+      {/* 引擎列表 */}
+      {(Object.keys(ENGINE_INFO) as EngineKey[]).map(engine => {
+        const info = ENGINE_INFO[engine]
+        const enginePresetList = enginePresets(engine)
+        const isActive = selectedEngine === engine
+
+        return (
+          <div key={engine}>
+            {/* 引擎卡片头部 */}
+            <button
+              onClick={() => setSelectedEngine(engine)}
+              className={`w-full text-left p-4 rounded-xl border transition-all duration-150 ${
+                isActive
+                  ? 'border-[var(--accent)] bg-[var(--accent-muted)]'
+                  : 'border-[var(--border-subtle)] bg-[var(--bg-card)] hover:border-[var(--border-hairline)]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{info.icon}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-[var(--text-primary)]">{info.name}</div>
+                  <div className="text-xs text-[var(--text-tertiary)] mt-0.5">{info.desc}</div>
+                </div>
+                {isActive && <Check size={16} className="text-[var(--accent)]" />}
+              </div>
+            </button>
+
+            {/* 展开后的预览 + 预设列表 */}
+            {isActive && (
+              <div className="mt-3 ml-2 pl-4 border-l-2 border-[var(--border-subtle)] space-y-3">
+                {/* 实时预览 */}
+                <div className="rounded-xl overflow-hidden bg-[var(--bg-root)]" style={{ height: 200 }}>
+                  <ThemePreview preset={activePreset?.engine === engine ? activePreset : enginePresetList[0] || null} />
+                </div>
+
+                {/* 预设列表 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">预设</span>
+                    <button
+                      onClick={handleCreate}
+                      className="flex items-center gap-1 text-[11px] text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+                    >
+                      <Plus size={12} /> 新建
+                    </button>
+                  </div>
+                  {enginePresetList.map(p => (
+                    <div
+                      key={p.id}
+                      onClick={() => handleSelect(p)}
+                      className={`group flex items-center gap-2.5 px-3 py-2 rounded-md cursor-pointer transition-all duration-150 ${
+                        activeId === p.id
+                          ? 'bg-[var(--accent-muted)] ring-1 ring-[var(--accent)]'
+                          : 'hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <span className="text-sm">
+                        {p.isBuiltin ? '📌' : '💾'}
+                      </span>
+                      <span className="text-xs text-[var(--text-primary)] flex-1 truncate">{p.name}</span>
+                      {!p.isBuiltin && (
+                        <button
+                          onClick={e => { e.stopPropagation(); handleDelete(p.id) }}
+                          className="opacity-0 group-hover:opacity-100 text-[var(--text-tertiary)] hover:text-red-400 transition-all"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {enginePresetList.length === 0 && (
+                    <p className="text-[11px] text-[var(--text-tertiary)] px-3 py-2">暂无预设，点「新建」创建一个</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

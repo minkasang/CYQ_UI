@@ -1,310 +1,315 @@
-# 架构设计 — 智能体群聊
+# 架构设计 — 智能体群聊 v2.0
 
-> 设计参考：healthy-architecture（6大维度） + macOS 设计规范（玻璃风格）
-
----
-
-## 一、质量目标
-
-| 质量属性 | 如何保证 |
-|----------|----------|
-| **可靠性** | 本地文件存储，读取失败容错降级为空数组；写失败 toast 提示 |
-| **可维护性** | Agent Store 与 Room Store 独立，各自单文件，接口清晰 |
-| **可扩展性** | Agent 新增字段只需扩展类型 + 表单，不改 Room 逻辑；Room 新增属性同理 |
-| **性能效率** | Zustand selector 精准订阅，不全局重渲染；列表无虚拟滚动（MVP 规模小） |
-| **可测试性** | Store 纯逻辑可单测；组件接收 props 可集成测 |
-| **安全性** | 纯本地存储，无外部请求；Agent 人设内容用户自控 |
-| **兼容性** | JSON 格式持久化，加字段用可选属性，旧数据自动兼容 |
-| **可移植性** | 纯前端模块，无后端依赖 |
+> 合并到现有 AI 聊天模块，遵守 healthy-architecture 六大设计维度
+> 
+> 不做：不引入假想缝、不过度抽象、不重复逻辑
 
 ---
 
-## 二、设计原则
+## 质量目标 → 设计维度映射
 
-### 2.1 单一职责
+| 质量属性 | 实现手段 | 涉及维度 |
+|----------|----------|----------|
+| **可扩展性** | ChatStrategy + AgentModule 双接口 | 设计原则、接口与契约 |
+| **可维护性** | 单一职责、深度模块、局部性 | 设计原则、项目结构 |
+| **可测试性** | 副作用隔离、依赖注入 | 可测试性设计 |
+| **可靠性** | 容错降级、向后兼容 | 错误处理、接口与契约 |
+| **性能效率** | 并行 Promise.allSettled、冷却机制 | 数据流 |
+| **兼容性** | 旧 Chat 无 agents 字段 → 单 Agent 模式 | 接口与契约 |
 
-| 模块 | 唯一职责 |
-|------|----------|
-| `useAgentStore` | Agent 的 CRUD + 查询 |
-| `useRoomStore` | Room 的 CRUD + 成员管理 + 开关 |
-| `AgentCard` | 渲染单个 Agent 卡片 |
-| `AgentForm` | 创建/编辑 Agent 的表单逻辑 |
-| `RoomCard` | 渲染单个 Room 卡片 |
-| `RoomForm` | 创建 Room + 成员选择 |
+---
 
-### 2.2 开闭原则
+## 一、设计原则
 
-- Agent 新增字段（如"头像 emoji"）：扩展类型 → 扩展表单 → 完成，不改 Store 方法签名
-- Room 新增属性（如"自动关闭时间"）：同上
+### 1.1 单一职责
 
-### 2.3 接口隔离
+| 模块 | 唯一职责 | 变更原因 |
+|------|----------|----------|
+| `useAgentStore` | Agent 实体的 CRUD + 持久化 | Agent 属性变更 |
+| `useChatStore`（扩展） | Chat 的 CRUD + 消息管理（单/多 Agent 统一） | Chat 数据结构变更 |
+| `EventDrivenStrategy` | 事件驱动的多 Agent 回复决策 | 互动策略变更 |
+| `contextBuilder` | 组装 LLM 调用上下文 | prompt 格式变更 |
+| `ChatPanel`（扩展） | 聊天 UI 容器 | 布局变更 |
+| `AgentCard / AgentForm` | Agent 管理 UI | 表单字段变更 |
 
-- 组件不依赖完整 Store，只用需要的 selector
-- `AgentCard` 不关心 Room，`RoomCard` 只读 Agent 的 id+name，不读完整配置
+### 1.2 开闭原则
 
-### 2.4 组合优于继承
+```
+扩展点（开放）：
+  ChatStrategy 接口   → 新增策略 = 新增文件，不改 ChatPanel/chatLoop
+  AgentModule 接口    → 新增模块 = 新增文件，不改 ChatStrategy/contextBuilder
 
-- 不创建基类，所有组件独立
-- 共享 UI 模式用独立小组件组合
+修改点（封闭）：
+  ChatPanel 内部布局   → 只改 ChatPanel
+  chatLoop 调度逻辑    → 只改 chatLoop
+```
 
-### 2.5 最少知识
+### 1.3 依赖反转
 
-- `useAgentStore` 不知道 Room 存在
-- `useRoomStore` 只知道 Agent ID，不知道 Agent 内部结构
-- 删除 Agent 时，`RoomStore` 通过回调清理引用
+```
+ChatPanel（高层）
+  → 依赖 ChatStrategy 接口（抽象），不依赖 EventDrivenStrategy（实现）
+  → 依赖 callLLM 回调（注入），不依赖 aiService（实现）
 
-### 2.6 深度模块
+chatLoop（中层，纯逻辑）
+  → 依赖 ChatStrategy 接口
+  → 输出 Message[]，不接触 IO
+```
+
+### 1.4 深度模块
 
 | 模块 | 接口 | 隐藏的实现 |
 |------|------|-----------|
-| `useAgentStore` | `agents`, `add()`, `update()`, `remove()` | 文件读写、ID 生成、重名校验 |
-| `useRoomStore` | `rooms`, `create()`, `delete()`, `toggleActive()`, `addMember()`, `removeMember()` | 成员关系维护、Agent 删除时级联清理 |
+| `EventDrivenStrategy` | `onMessage()` 一个方法 | 多轮收敛、冷却管理、@提及解析、并行调度 |
+| `contextBuilder` | `buildContext()` 一个函数 | 模块遍历、消息格式化、prompt 拼接、容错 |
+| `useChatStore` | CRUD + messages + send | 文件读写、ID 生成、自动标题、未读标记 |
+| `useAgentStore` | CRUD | 文件读写、重名校验 |
+
+删除测试：
+- 删除 `useAgentStore` → Agent 管理功能消失，复杂度分散到各 Agent 表单 → 它在赚位置 ✅
+- 删除 `EventDrivenStrategy` → 多 Agent 互动消失但消息仍能收发（走 passive）→ 接口有意义 ✅
+
+### 1.5 最少知识原则
+
+- `ChatPanel` 不知道 `agentStore` 存在（通过 props 传入 agents）
+- `EventDrivenStrategy` 不知道 LLM 怎么调（通过 `callLLM` 注入）
+- `contextBuilder` 不知道聊天策略细节（只收 agent + messages）
+
+### 组合优于继承
+
+- 不创建 BaseStrategy 基类，每个策略独立实现 `ChatStrategy` 接口
+- Agent 不继承任何基类，通过 `modules: AgentModule[]` 组合能力
 
 ---
 
-## 三、项目结构
+## 二、项目结构
 
 ```
-个人工作台/src/
-├── types/
-│   └── agent.ts                      # AgentConfig + RoomConfig 类型
-├── store/
-│   ├── useAgentStore.ts              # Agent CRUD + 持久化
-│   ├── useRoomStore.ts               # Room CRUD + 成员管理 + 持久化
-│   └── __tests__/
-│       ├── useAgentStore.test.ts
-│       └── useRoomStore.test.ts
-├── modules/agents/
-│   ├── index.ts                      # 模块注册（待定，先走首页 Section）
-│   └── pages/
-│       ├── AgentSection.tsx           # 首页 Section 入口
-│       ├── AgentManagePanel.tsx       # Agent 列表 + 新建/编辑
-│       └── RoomManagePanel.tsx        # Room 列表 + 新建/管理
-├── components/
-│   └── agents/                        # 可复用子组件
-│       ├── AgentCard.tsx
-│       ├── AgentForm.tsx
-│       ├── RoomCard.tsx
-│       └── RoomForm.tsx
-├── pages/
-│   └── HomePage.tsx                   # 修改：新增 agents Section
-└── data/
-    ├── agents.json                    # Agent 持久化文件
-    └── chatrooms.json                 # Room 持久化文件
+modules/ai/                          ← 现有模块，扩展
+  ├── index.ts                        ← 不改
+  ├── pages/
+  │   ├── AIPage.tsx                  ← 不改
+  │   ├── AgentSection.tsx            ← 新增：Agent 管理入口
+  │   └── AgentManagePanel.tsx        ← 新增：Agent CRUD UI
+  ├── chat/                           ← 聊天核心
+  │   ├── ChatPanel.tsx               ← 扩展：支持 agents prop
+  │   ├── ChatMessages.tsx            ← 不改
+  │   ├── ChatInput.tsx               ← 扩展：多 Agent 状态提示
+  │   ├── ChatSidebar.tsx             ← 扩展：显示 Agent 数量
+  │   └── APIKeyModal.tsx             ← 不改
+  ├── strategies/                     ← 新增：可拔插策略模块
+  │   ├── types.ts                    ← ChatStrategy 接口
+  │   ├── EventDrivenStrategy.ts      ← 事件驱动实现
+  │   └── PassiveStrategy.ts          ← 被动模式实现
+  ├── lib/                            ← 新增：纯逻辑模块
+  │   └── contextBuilder.ts           ← 上下文构建
+  └── modules/                        ← 新增：Agent 能力模块（预留）
+      └── README.md
+
+store/
+  ├── useChatStore.ts                 ← 扩展：Chat 加 agents/strategy 字段
+  ├── useAgentStore.ts                ← 已有，不改接口
+  └── __tests__/
+      ├── useAgentStore.test.ts       ← 已有
+      └── useChatStore.test.ts        ← 扩展：多 Agent 消息测试
+
+types/
+  ├── agent.ts                        ← AgentConfig + ChatAgent + ChatStrategy 接口
+  └── index.ts                        ← 不改
+
+components/
+  └── agents/                         ← 保留（AgentCard / AgentForm 复用）
+      ├── AgentCard.tsx
+      └── AgentForm.tsx
 ```
 
-### 改动现有文件
+改动激进程度：
 
-| 文件 | 改动 |
-|------|------|
-| `pages/HomePage.tsx` | 新增 agents Section（类似 inspiration） |
-| `hooks/useModuleRoutes.tsx` | 如果需要模块路由，加 agents |
-| `components/layout/Dock.tsx` | 如需底部图标，加 agents 入口 |
-| `components/layout/Sidebar.tsx` | 如需侧边栏入口，加 agents |
+| 级别 | 文件 | 说明 |
+|------|------|------|
+| **不改** | AIPage, ChatMessages, APIKeyModal, aiService, index.ts | 完全不受影响 |
+| **扩展字段** | useChatStore, ChatPanel, ChatInput, ChatSidebar | 加可选 prop/字段，旧逻辑完整保留 |
+| **新增** | strategies/, lib/contextBuilder, AgentSection, AgentManagePanel | 全新代码，零影响现有功能 |
 
 ---
 
-## 四、接口与契约
+## 三、接口与契约
 
-### 4.1 类型定义
+### 3.1 ChatStrategy 接口（小接口原则）
 
 ```typescript
-// types/agent.ts
+// strategies/types.ts
 
-import type { AIProvider } from './index'  // 复用现有类型
-
-export interface AgentConfig {
-  id: string               // crypto.randomUUID()
-  name: string             // 显示名
-  provider: AIProvider     // deepseek / openai / claude ...
-  model: string            // 具体模型 ID
-  systemPrompt: string     // 人设
-  replyProbability: number // 0.0 ~ 1.0
-  cooldownMin: number      // 毫秒，最小冷却
-  cooldownMax: number      // 毫秒，最大冷却
-  createdAt: number
-  updatedAt: number
+export interface StrategyContext {
+  agents: ChatAgent[]               // 本轮参与 Agent
+  history: Message[]                 // 完整聊天记录（冻结快照）
+  newMessage: Message                // 触发本轮的消息
+  callLLM: (agent: ChatAgent, systemPrompt: string, history: Message[], instruction: string) => Promise<string | null>
 }
 
-export interface RoomConfig {
-  id: string
-  name: string
-  agentIds: string[]       // 成员 Agent ID 列表
-  isActive: boolean        // 总开关
-  createdAt: number
+export interface ChatStrategy {
+  type: string
+  /** 返回新产生的消息（Agent 回复），策略内部决定如何调度 */
+  execute(ctx: StrategyContext): Promise<Message[]>
 }
 ```
 
-### 4.2 Store 接口
+### 3.2 第一个适配器：EventDrivenStrategy
+
+```
+execute() →
+  1. 解析 @提及
+  2. 筛选参与者（排除冷却中 + 已回复者 + 发送者自己；
+     @提及强制参与）
+  3. Promise.allSettled 并行调用各 Agent
+  4. 收集回复 → 加入 history → 检查是否需继续（新消息 + 有未发言者）
+  5. 最多 3 轮，已回复者被排除
+  6. 返回所有新消息
+```
+
+### 3.3 Chat 类型兼容（向后兼容）
 
 ```typescript
-// useAgentStore 对外接口
-interface AgentStore {
-  agents: AgentConfig[]
-  loaded: boolean
-
-  load: () => Promise<void>
-  add: (data: Omit<AgentConfig, 'id' | 'createdAt' | 'updatedAt'>) => AgentConfig
-  update: (id: string, patch: Partial<AgentConfig>) => void
-  remove: (id: string) => void
-  getById: (id: string) => AgentConfig | undefined
+// 旧数据无 agents 字段 → 视为单 Agent 模式
+function isMultiAgent(chat: Chat): boolean {
+  return Array.isArray(chat.agents) && chat.agents.length > 0
 }
 
-// useRoomStore 对外接口
-interface RoomStore {
-  rooms: RoomConfig[]
-  loaded: boolean
-
-  load: () => Promise<void>
-  create: (name: string, agentIds: string[]) => RoomConfig
-  delete: (id: string) => void
-  toggleActive: (id: string) => void
-  addMember: (roomId: string, agentId: string) => void
-  removeMember: (roomId: string, agentId: string) => void
-  removeAgentFromAllRooms: (agentId: string) => void  // 级联清理
+// 旧数据无 strategy 字段 → 默认 event-driven
+function getStrategy(chat: Chat): ChatStrategy {
+  if (!chat.strategy || chat.strategy === 'event-driven') return eventDrivenStrategy
+  if (chat.strategy === 'passive') return passiveStrategy
+  return eventDrivenStrategy
 }
 ```
 
-### 4.3 组件 Props 契约
+### 3.4 输入校验归属
 
-```typescript
-// AgentCard
-interface AgentCardProps {
-  agent: AgentConfig
-  onEdit: () => void
-  onDelete: () => void
-}
-
-// AgentForm（新建 / 编辑复用）
-interface AgentFormProps {
-  initial?: AgentConfig       // 编辑模式传入
-  onSave: (data: AgentFormData) => void
-  onCancel: () => void
-}
-
-// RoomCard
-interface RoomCardProps {
-  room: RoomConfig
-  agents: AgentConfig[]       // 用于展示成员名
-  onToggleActive: () => void
-  onManage: () => void
-  onDelete: () => void
-}
-
-// RoomForm
-interface RoomFormProps {
-  allAgents: AgentConfig[]    // 可选 Agent 列表
-  initial?: RoomConfig        // 编辑模式
-  onSave: (name: string, agentIds: string[]) => void
-  onCancel: () => void
-}
-```
+| 校验 | 位置 | 方式 |
+|------|------|------|
+| Agent 名不为空 | AgentForm | 按钮 disabled |
+| Agent 名不重复 | useAgentStore.add | 返回 null |
+| 消息不为空 | ChatInput | 按钮 disabled |
+| API Key 存在 | callLLM 内部 | 返回 null，不抛异常 |
+| 策略类型合法 | getStrategy | 默认 fallback |
 
 ---
 
-## 五、错误处理
+## 四、错误处理
 
-| 场景 | 策略 |
-|------|------|
-| 文件读取失败 | 容错降级：初始化为空数组，不阻塞渲染 |
-| 文件写入失败 | toast 错误提示，数据保留在内存中 |
-| 名称重复 | 表单校验拦截，提示"名称已存在" |
-| Agent 名为空 | 不允许提交，按钮 disabled |
-| 人设（systemPrompt）为空 | 允许（默认人设由后续聊天逻辑补充） |
-| 删除被 Room 引用的 Agent | 弹出确认："将从 N 个房间中移除"，确认后级联删除 |
-| Room 名为空 | 不允许提交 |
-| Room 未选 Agent | 允许创建空房间 |
+| 场景 | 策略 | 分类 |
+|------|------|------|
+| LLM 调用失败 | 返回 null，跳过该 Agent，继续处理其他 | 容错降级 |
+| LLM 调用超时 | AbortController 15s 超时，返回 null | 容错降级 |
+| 模块 getContext 失败 | console.warn，跳过该模块，不影响其他模块和 LLM 调用 | 容错降级 |
+| Chat 文件读取失败 | 初始化为空数组 | 容错降级 |
+| Agent 文件读取失败 | 初始化为空数组 + modules 默认 [] | 容错降级 |
+| 策略执行异常 | catch 后返回空消息列表，UI 提示 | 容错降级 |
+
+业务异常（用户可见）vs 技术异常（日志记录）：
+- "Agent 未配置 API Key" → 技术异常，console.warn，UI 静默跳过
+- "温度设为 3.0" → 业务异常，表单校验拦截
 
 ---
 
-## 六、数据流与状态管理
+## 五、数据流与状态管理
 
-### 6.1 单向数据流
-
-```
-用户操作 → Store 方法 → 文件写入 → State 更新 → React 重渲染
-```
+### 5.1 单向数据流
 
 ```
-Agent 删除流程：
-  removeAgent(id)
-    → useAgentStore.remove(id)          // 删除 Agent
-    → useRoomStore.removeAgentFromAllRooms(id)  // 级联清理 Room 引用
-    → 两个 Store 各自 saveToFile        // 持久化
-    → UI 自动更新
+用户输入 → ChatInput.onSend(text)
+  → ChatPanel.handleSend(text)
+    → addMessage(user, text)                 // Store 更新
+    → strategy.execute({ agents, history, newMessage, callLLM })
+      → for each agent: callLLM(...) → reply
+    → for each reply: addMessage(agent, reply)  // Store 更新
+  → UI 自动刷新（Zustand selector）
 ```
 
-### 6.2 状态归属
+### 5.2 状态归属
 
 | 状态 | 归属 | 原因 |
 |------|------|------|
-| Agent 列表 | `useAgentStore` | 唯一数据源 |
-| Room 列表 + 成员 | `useRoomStore` | 唯一数据源 |
-| Agent 编辑状态 | `AgentForm` 本地 state | 纯 UI 状态，不共享 |
-| Room 管理弹窗状态 | `AgentManagePanel` / `RoomManagePanel` | 同上 |
-| 首页 Section 统计数据 | 派生数据，不存 | `agents.length` 实时计算 |
+| Chat 消息列表 | useChatStore | 唯一数据源，持久化 |
+| Agent 列表 | useAgentStore | 唯一数据源，持久化 |
+| 当前对话 agentIds | Chat.agents（快照） | 创建 Chat 时复制，后续 Agent 改名不影响 |
+| 冷却时间 | EventDrivenStrategy 内部 Map | 策略私有状态，不持久化 |
+| 流式内容 | ChatPanel 本地 chatStates | UI 状态 |
 
-### 6.3 持久化
+### 5.3 快照策略
 
-- `useAgentStore` → `data/agents.json`
-- `useRoomStore` → `data/chatrooms.json`
-- 复用现有 `fileStorage` 工具的 `loadFromFile` / `saveToFile`
-
----
-
-## 七、可测试性设计
-
-| 测试类型 | 测试内容 | 如何测 |
-|----------|----------|--------|
-| **单元测试** | Store CRUD 方法 | Mock `fileStorage`，测纯逻辑 |
-| **单元测试** | 名称重复校验 | 构造已有 agents 列表，调 add 验证 |
-| **单元测试** | 删除 Agent 级联清理 Room | 创建 agent + room，删 agent，验 room.agentIds |
-| **单元测试** | 派生数据计算 | agents.length、rooms.filter 等 |
-| **集成测试** | 表单提交流程 | render AgentForm，填表，点击保存，验回调参数 |
-| **集成测试** | Room 成员选择 | render RoomForm，勾选 Agent，保存，验回调 |
-
-### 副作用隔离
-
-```
-纯逻辑（测试覆盖）
-  ├── Store 方法内的数据操作
-  ├── 名称重复判断
-  └── 级联清理逻辑
-
-IO 操作（集成测试覆盖）
-  ├── loadFromFile / saveToFile
-  └── localStorage 读写
-```
+创建多 Agent Chat 时，将 Agent 的关键属性快照到 `ChatAgent`：
+- Agent 改名 → 已有 Chat 中显示旧名（设计选择：保持历史一致性）
+- Agent 删人设 → 已有 Chat 中人设不变
+- Agent 删模型 → Chat 仍可用（API Key 是全局的）
 
 ---
 
-## 八、质量属性检查清单
+## 六、可测试性设计
+
+### 6.1 测试边界
+
+```
+单元测试（纯逻辑）：
+  contextBuilder.buildContext()   ← mock modules
+  EventDrivenStrategy.execute()   ← mock callLLM
+  useAgentStore CRUD              ← mock fileStorage
+
+集成测试（模块间）：
+  ChatPanel + strategy + store    ← mock LLM
+
+端到端测试：
+  创建Agent → 创建多Agent Chat → 发消息 → 验证回复
+```
+
+### 6.2 依赖注入
+
+```
+ChatPanel 使用 strategy：
+  <ChatPanel strategy={eventDrivenStrategy} agents={chat.agents} />
+
+EventDrivenStrategy 使用 callLLM：
+  strategy.execute({ ...callLLM })  -- callLLM 由 ChatPanel 注入
+
+测试时：
+  const mockLLM = vi.fn().mockResolvedValue('mock reply')
+  const strategy = new EventDrivenStrategy()
+  const replies = await strategy.execute({ ...ctx, callLLM: mockLLM })
+```
+
+---
+
+## 七、架构健康检查清单
 
 | 检查项 | 状态 |
 |--------|------|
-| 模块职责清晰 | ✅ Agent / Room 分离，各自独立 Store |
-| 接口稳定 | ✅ 类型定义简单，后续加字段只需扩展 |
-| 接口深度 | ✅ Store 小接口（几个方法），隐藏文件读写 |
-| 依赖方向正确 | ✅ Room → Agent（单向引用），Agent 不知道 Room |
-| 错误有处理 | ✅ 文件失败容错、表单校验、级联确认 |
-| 可测试 | ✅ Store 纯逻辑，mock fileStorage 即可 |
-| 无过度设计 | ✅ 无抽象层，直接 Store → Component |
-| 副作用隔离 | ✅ Store 方法先改内存再写文件 |
+| 模块职责清晰 | ✅ AgentStore / ChatStore / Strategy 各司其职 |
+| 接口稳定 | ✅ ChatStrategy 接口 1 个方法，AgentModule 接口 1 个方法 |
+| 接口深度 | ✅ EventDrivenStrategy 复杂逻辑隐藏在 execute() 后面 |
+| 依赖方向正确 | ✅ ChatPanel → Strategy 接口 ← EventDrivenStrategy |
+| 错误有处理 | ✅ 每层有容错，单个 Agent 失败不阻塞全体 |
+| 可测试 | ✅ 核心逻辑通过依赖注入，mock LLM 即可测试 |
+| 无过度设计 | ✅ 1 个策略 + 1 个模块接口，无抽象工厂/注册中心 |
+| 副作用隔离 | ✅ 纯逻辑（策略、contextBuilder）与 IO（LLM 调用、文件读写）分离 |
+| 向后兼容 | ✅ 旧 Chat 无 agents → 走单 Agent 模式，零影响 |
+| 删除测试 | ✅ 删 AgentStore → CRUD 功能消失；删 Strategy → 策略可换 passive |
 
 ---
 
-## 九、禁止行为检查
+## 八、禁止行为检查
 
-- ❌ 没有接口设计就直接写实现 → ✅ 本文档先于代码
-- ❌ 深层继承链 → ✅ 无继承，纯组合
-- ❌ 第一次重复就抽象 → ✅ 表单逻辑在各自组件内，不提前抽象
-- ❌ 吞异常 → ✅ 文件错误 toast 提示
-- ❌ 状态放在共享层但只被一个模块用 → ✅ Agent/Room 各自 Store，不混放
+- ❌ 无接口设计直接写实现 → ✅ types.ts 先行
+- ❌ 深层继承链 → ✅ 接口 + 独立实现
+- ❌ 链式调用穿过 3 对象 → ✅ ChatPanel → strategy.execute()
+- ❌ 第一次重复就抽象 → ✅ EventDriven 和 Passive 是两个独立实现，证明接口有意义（两个适配器 = 真正的缝）
+- ❌ 吞异常 → ✅ 每层 console.warn + 返回 null/空数组
+- ❌ 状态放共享层但只被一个模块用 → ✅ cooling 在 Strategy 内部，不上升
 
 ---
 
-## 十、更新记录
+## 九、更新记录
 
 | 时间 | 更新内容 |
 |------|----------|
-| 2026-06-20 | 创建架构设计 v1.0 |
+| 2026-06-20 | v1.0 创建 |
+| 2026-06-20 | v2.0 合并 AI 模块 + ChatStrategy + AgentModule 双可拔插接口 |

@@ -35,7 +35,7 @@ export function useModuleToggles() {
 }
 
 /** 各模块id列表，用于设置页枚举 */
-export const ALL_MODULE_IDS = ['welcome', 'settings', 'wallpaper', 'todo', 'diary', 'ai', 'inspiration', 'theme']
+export const ALL_MODULE_IDS = ['welcome', 'settings', 'wallpaper', 'todo', 'diary', 'ai', 'inspiration', 'theme', 'agents']
 export const MODULE_NAMES: Record<string, string> = {
   welcome: '首页',
   settings: '系统设置',
@@ -45,6 +45,7 @@ export const MODULE_NAMES: Record<string, string> = {
   ai: 'AI 助手',
   inspiration: '每日灵感',
   theme: '主题管理',
+  agents: '多 Agent 群聊',
 }
 
 /** 读取模块开关状态（纯函数，供 HomePage/Sidebar 复用） */
@@ -101,6 +102,7 @@ async function initBuiltinModules() {
     import('../modules/ai').then(m => m.AIModule),
     import('../modules/inspiration').then(m => m.InspirationModule),
     import('../modules/theme').then(m => m.ThemeModule),
+    import('../modules/agents').then(m => m.AgentsModule),
   ])
 
   for (const mod of modules) {
