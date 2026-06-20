@@ -13,30 +13,38 @@
 meta:
   project: "cyq_UI"
   file_version: "2.2"
-  last_updated: "2026-06-20T15:45:00+08:00"
+  last_updated: "2026-06-20T16:16:00+08:00"
 
 # ============================================================
 # 活跃任务（AI 只读这里）
 # ============================================================
 active:
   summary:
-    total: 1
+    total: 2
     pending: 0
-    in_progress: 0
+    in_progress: 1
     blocked: 1
 
   constraint:
     max_in_progress: 1
 
   tasks:
+    - name: "主题系统模块化"
+      status: "in_progress"
+      dir: "2026-06-20-1616_主题系统模块化"
+      priority: "high"
+      dependencies: []
+      created_at: "2026-06-20"
+      detail: "共识达成。主题=引擎+参数+字体+壁纸快照。三栏主题页面(列表+预览+配置)。JSON文件持久化"
+
     - name: "设置页设计改造"
       status: "blocked"
       dir: "2026-06-20-1202_设置页设计改造"
       priority: "medium"
       dependencies: []
-      blocked_by: "Bento布局重构已完成，建议基于新token体系进行设置页改造"
+      blocked_by: "主题系统模块化优先"
       created_at: "2026-07-20"
-      detail: "阶段0待用户确认5个全局设计决策。6阶段27问题改造计划已产出tasks.md+architecture.md"
+      detail: "阶段0待用户确认5个全局设计决策"
 
 # ============================================================
 # 已完成（跳过，勿读）
