@@ -15,7 +15,6 @@ import { AISummary } from '../components/ai/AISummary'
 import { ChatPanel } from '../components/chat/ChatPanel'
 import { WallpaperManager } from '../components/wallpaper/WallpaperManager'
 import { InspirationSection } from '../modules/inspiration/pages/InspirationSection'
-import { AgentSection } from '../modules/agents/pages/AgentSection'
 import { useTodoStore, selectTodoStats } from '../store/useTodoStore'
 import { useDiaryStore, selectSortedDiaries } from '../store/useDiaryStore'
 import { useWallpaperStore } from '../store/useWallpaperStore'
@@ -166,8 +165,14 @@ export function HomePage() {
           }`}
         >
           <SectionTitle title="智能体群聊" subtitle="创建 AI 智能体，让它们一起聊天" />
-          <div ref={(el) => registerPanel(el, { cornerRadius: 24 })} className="rounded-3xl p-5">
-            <AgentSection />
+          <div className="text-center py-12">
+            <p className="text-sm text-white/40 mb-2">多 Agent 群聊已迁移到独立页面</p>
+            <button
+              onClick={() => window.location.href = '/agents'}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-white/70 text-sm transition-colors"
+            >
+              🤖 进入多 Agent 群聊
+            </button>
           </div>
         </section>
       )}

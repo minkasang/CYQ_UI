@@ -61,10 +61,12 @@ export const useMAChatStore = create<MAState>((set, get) => ({
 
   create: (agents, strategy = 'event-driven') => {
     const id = genId()
-    const names = agents.map(a => a.name).join('、')
+    const title = agents.length === 1
+      ? agents[0].name
+      : `群聊: ${agents.map(a => a.name).join('、')}`
     const chat: MAChat = {
       id,
-      title: `群聊: ${names}`,
+      title,
       messages: [],
       agents,
       strategy,

@@ -25,7 +25,6 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   loaded: false,
 
   load: async () => {
-    if (get().loaded) return
     try {
       const data = await loadFromFile<{ agents: AgentConfig[] }>(FILE_KEYS.AGENTS, { agents: [] })
       // 向后兼容：确保旧数据有 modules 字段
