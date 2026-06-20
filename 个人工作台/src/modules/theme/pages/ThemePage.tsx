@@ -169,13 +169,17 @@ export function ThemePage() {
           />
         </div>
 
-        {/* 中：预览区 — 提示文字 */}
-        <div className="flex-1 flex items-center justify-center bg-[var(--bg-root)]">
-          <div className="text-center">
-            <p className="text-4xl mb-2">🎨</p>
-            <p className="text-sm text-[var(--text-secondary)]">实时预览</p>
-            <p className="text-xs text-[var(--text-tertiary)] mt-1">
-              {activePreset ? `当前：${activePreset.name}` : '选择一个主题'}
+        {/* 中：预览区 — 透明让背景透出 */}
+        <div className="flex-1 flex items-center justify-center bg-transparent relative overflow-hidden">
+          {/* 背景透出 */}
+          <div className="absolute inset-0 -z-10 bg-[var(--bg-root)] opacity-50" />
+          <div className="text-center z-10">
+            <p className="text-6xl mb-3 opacity-30">🎨</p>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {activePreset ? activePreset.name : '选择一个主题'}
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-2">
+              {activePreset?.engine === 'liquid-glass' ? '液态玻璃' : activePreset?.engine === 'flat' ? '扁平' : ''}
             </p>
           </div>
         </div>

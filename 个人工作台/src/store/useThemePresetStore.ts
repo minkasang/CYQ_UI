@@ -164,16 +164,7 @@ export const useThemePresetStore = create<ThemePresetState>((set, get) => ({
       localStorage.setItem('pw-font-size', String(preset.fontSize))
     }
 
-    // 2. 应用壁纸
-    try {
-      const { useWallpaperStore } = await import('../store/useWallpaperStore')
-      useWallpaperStore.getState().setCurrent({
-        id: 'theme-preset',
-        type: preset.wallpaper.type,
-        value: preset.wallpaper.value,
-        createdAt: Date.now(),
-      })
-    } catch { /* wallpaper store may not be ready */ }
+    // 2. 壁纸不自动应用 — 避免覆盖用户当前壁纸
 
     // 3. 应用引擎参数
     try {

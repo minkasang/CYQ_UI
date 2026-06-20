@@ -23,7 +23,8 @@ export interface Chat {
   updatedAt: number
   provider?: AIProvider
   model?: string
-  pinned?: boolean       // 置顶
+  pinned?: boolean
+  hasUnread?: boolean     // 有未读 AI 回复
 }
 
 interface ChatState {
@@ -58,6 +59,9 @@ interface ChatState {
   
   // 置顶/取消置顶
   togglePin: (id: string) => void
+  
+  // 标记已读
+  markAsRead: (id: string) => void
 }
 
 // 生成简单唯一 ID
@@ -183,6 +187,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
   togglePin: (id) => {
     const newChats = get().chats.map(c =>
       c.id === id ? { ...c, pinned: !c.pinned } : c
+    )
+    set({ chats: newChats })
+    saveToFile(FILE_KEYS.CHATS, { chats: newChats, activeChatId: get().activeChatId })
+  },
+
+  // 标记已读
+  markAsRead: (id) => {
+    const chat = get().chats.find(c => c.id === id)
+    if (!chat?.hasUnread) return
+    const newChats = get().chats.map(c =>
+      c.id === id ? { ...c, hasUnread: false } : c
     )
     set({ chats: newChats })
     saveToFile(FILE_KEYS.CHATS, { chats: newChats, activeChatId: get().activeChatId })
