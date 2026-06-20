@@ -30,7 +30,7 @@ interface DockItem {
   scrollTo?: string
 }
 
-const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'chat', 'settings']
+const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'chat', 'theme', 'settings']
 
 const ITEM_MAP: Record<string, DockItem> = {
   home: { id: 'home', to: '/', icon: '🏠', label: '首页' },
@@ -41,6 +41,7 @@ const ITEM_MAP: Record<string, DockItem> = {
   ai: { id: 'ai', to: '/', icon: '✨', label: 'AI 总结', scrollTo: 'ai' },
   chat: { id: 'chat', to: '/', icon: '💬', label: 'AI 聊天', scrollTo: 'chat' },
   settings: { id: 'settings', to: '/settings', icon: '⚙️', label: '设置' },
+  theme: { id: 'theme', to: '/theme', icon: '🎨', label: '主题' },
 }
 
 const ORDER_KEY = 'pw-dock-order'

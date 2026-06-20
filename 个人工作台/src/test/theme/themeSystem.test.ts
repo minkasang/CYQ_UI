@@ -15,7 +15,8 @@ function mockEngine(name = 'mock'): ThemeEngine {
     render: vi.fn(),
     update: vi.fn(),
     destroy: vi.fn(),
-    getCapabilities: vi.fn().mockReturnValue({ glassEffect: true, darkMode: false, animations: true })
+    getCapabilities: vi.fn().mockReturnValue({ dynamicBackground: false, realTimeParams: true, customShapes: false, performance: 'medium' as const, supportedBrowsers: ['Chrome'] }),
+    getParamDefs: vi.fn().mockReturnValue([]),
   }
 }
 

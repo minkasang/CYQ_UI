@@ -129,6 +129,27 @@ export class LiquidGlassEngine implements ThemeEngine {
     }
   }
 
+  getParamDefs(): import('../../types/theme').ParamDef[] {
+    return [
+      { key: 'refraction',      label: '折射率',   type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 0.69 },
+      { key: 'chromAberration', label: '色差强度', type: 'slider', min: 0, max: 10, step: 0.01, defaultValue: 0.05 },
+      { key: 'fresnel',         label: '菲涅尔',   type: 'slider', min: 0, max: 2, step: 0.01, defaultValue: 1.0 },
+      { key: 'specular',        label: '镜面反射', type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 0.0 },
+      { key: 'cornerRadius',    label: '圆角',     type: 'slider', min: 0, max: 50, step: 1, defaultValue: 24 },
+      { key: 'zRadius',         label: 'Z轴半径',  type: 'slider', min: 0, max: 80, step: 1, defaultValue: 40 },
+      { key: 'opacity',         label: '不透明度', type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 1.0 },
+      { key: 'saturation',      label: '饱和度',   type: 'slider', min: 0, max: 300, step: 1, defaultValue: 0 },
+      { key: 'brightness',      label: '亮度',     type: 'slider', min: -50, max: 50, step: 1, defaultValue: 0 },
+      { key: 'tintStrength',    label: '色调强度', type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 0.0 },
+      { key: 'shadowOpacity',   label: '阴影不透明度', type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 0.30 },
+      { key: 'shadowSpread',    label: '阴影扩散', type: 'slider', min: 0, max: 40, step: 1, defaultValue: 10 },
+      { key: 'shadowOffsetY',   label: '阴影Y偏移', type: 'slider', min: 0, max: 20, step: 1, defaultValue: 1 },
+      { key: 'blurAmount',      label: '模糊度',   type: 'slider', min: 0, max: 2, step: 0.1, defaultValue: 0.0 },
+      { key: 'distortion',      label: '畸变',     type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 0.0 },
+      { key: 'edgeHighlight',   label: '边缘高光', type: 'slider', min: 0, max: 0.5, step: 0.01, defaultValue: 0.05 },
+    ]
+  }
+
   /**
    * 提取背景 URL
    */

@@ -138,6 +138,16 @@ export class FlatThemeEngine implements ThemeEngine {
     }
   }
 
+  getParamDefs(): import('../../types/theme').ParamDef[] {
+    return [
+      { key: 'borderWidth',    label: '边框宽度', type: 'slider', min: 0, max: 4, step: 0.5, defaultValue: 1 },
+      { key: 'borderOpacity',  label: '边框透明度', type: 'slider', min: 0, max: 1, step: 0.01, defaultValue: 0.08 },
+      { key: 'cornerRadius',   label: '圆角',     type: 'slider', min: 0, max: 24, step: 1, defaultValue: 8 },
+      { key: 'shadowSize',     label: '阴影大小', type: 'slider', min: 0, max: 20, step: 1, defaultValue: 4 },
+      { key: 'shadowOpacity',  label: '阴影不透明度', type: 'slider', min: 0, max: 0.5, step: 0.01, defaultValue: 0.08 },
+    ]
+  }
+
   /**
    * 应用基础样式
    */

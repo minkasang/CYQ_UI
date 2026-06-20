@@ -126,6 +126,18 @@ export interface ThemeConfig {
   borders?: BorderScheme         // 边框方案
 }
 
+// ========== 参数定义 ==========
+/** 单个参数定义 — 供配置面板动态渲染滑块 */
+export interface ParamDef {
+  key: string
+  label: string
+  type: 'slider' | 'toggle' | 'number'
+  min?: number
+  max?: number
+  step?: number
+  defaultValue: number | boolean
+}
+
 // ========== 主题引擎接口 ==========
 /**
  * 主题引擎接口 - 所有主题引擎必须实现此接口
@@ -169,6 +181,12 @@ export interface ThemeEngine {
    * @returns 主题能力标记
    */
   getCapabilities(): ThemeCapabilities
+
+  /**
+   * 获取引擎可调参数定义
+   * @returns 参数定义列表（供配置面板动态渲染）
+   */
+  getParamDefs(): ParamDef[]
 }
 
 // ========== 主题包结构 ==========

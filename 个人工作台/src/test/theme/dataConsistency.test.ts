@@ -258,7 +258,8 @@ describe('数据一致性测试 - 数据同步', () => {
             render: vi.fn(),
             update: vi.fn(),
             destroy: vi.fn(),
-            getCapabilities: vi.fn().mockReturnValue({})
+            getCapabilities: vi.fn().mockReturnValue({ dynamicBackground: false, realTimeParams: true, customShapes: false, performance: 'medium' as const, supportedBrowsers: ['Chrome'] }),
+            getParamDefs: vi.fn().mockReturnValue([]),
           }
         }
         registerTheme(mockTheme as any)
