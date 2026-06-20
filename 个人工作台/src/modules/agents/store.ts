@@ -2,7 +2,7 @@
 // 独立于单 Agent ChatStore，自有持久化文件
 
 import { create } from 'zustand'
-import { loadFromFile, saveToFile, FILE_KEYS } from '../../utils/fileStorage'
+import { loadFromFile, saveToFile } from '../../utils/fileStorage'
 import type { ChatAgent } from '../../types/agent'
 
 export interface MAMessage {

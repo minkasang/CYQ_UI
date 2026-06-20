@@ -66,7 +66,7 @@ export function ThemePage() {
   }
 
   return (
-    <div className="max-w-[720px] mx-auto p-6 space-y-8">
+    <div className="max-w-[720px] mx-auto p-6 space-y-8 min-h-full bg-transparent">
       {/* 标题 */}
       <div>
         <h2 className="text-xl font-bold text-[var(--text-primary)]">主题</h2>
