@@ -111,6 +111,10 @@ export function SettingsPage() {
                 <TextColorPanel inline />
               </div>
               <div ref={(el) => registerPanel(el, { cornerRadius: 12 })} className="rounded-xl p-5">
+                <h3 className="text-sm font-medium text-white/80 mb-4">文字大小</h3>
+                <FontSizeSlider />
+              </div>
+              <div ref={(el) => registerPanel(el, { cornerRadius: 12 })} className="rounded-xl p-5">
                 <h3 className="text-sm font-medium text-white/80 mb-4">玻璃效果</h3>
                 <GlassControlPanel inline />
               </div>
@@ -217,6 +221,48 @@ export function SettingsPage() {
         </div>
       )}
       <APIKeyModal open={apiModalOpen} onClose={() => setApiModalOpen(false)} />
+    </div>
+  )
+}
+
+// 初始化字号
+export function initFontSize() {
+  const saved = localStorage.getItem('pw-font-size')
+  if (saved) document.documentElement.style.fontSize = `${saved}px`
+}
+
+function FontSizeSlider() {
+  const [size, setSize] = useState(() => {
+    const s = parseFloat(localStorage.getItem('pw-font-size') || '13')
+    return isNaN(s) ? 13 : s
+  })
+  const apply = (v: number) => {
+    setSize(v)
+    localStorage.setItem('pw-font-size', String(v))
+    document.documentElement.style.fontSize = `${v}px`
+  }
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] text-white/70">基础字号</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => apply(Math.max(10, size - 1))}
+            className="text-[11px] px-2 py-px rounded bg-white/8 text-white/60 hover:bg-white/15 transition-colors">−</button>
+          <input type="number" min={10} max={20} value={size}
+            onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) apply(Math.min(20, Math.max(10, v))) }}
+            className="w-[40px] text-center text-[11px] text-white/70 font-mono bg-white/5 border border-white/10 rounded px-1 py-0.5 outline-none" />
+          <button onClick={() => apply(Math.min(20, size + 1))}
+            className="text-[11px] px-2 py-px rounded bg-white/8 text-white/60 hover:bg-white/15 transition-colors">+</button>
+          <span className="text-[10px] text-white/30">px</span>
+        </div>
+      </div>
+      <input type="range" min={10} max={20} step={1} value={size}
+        onChange={e => apply(Number(e.target.value))}
+        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer
+          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5
+          [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full
+          [&::-webkit-slider-thumb]:bg-blue-400 [&::-webkit-slider-thumb]:cursor-pointer" />
+      <p className="text-[10px] text-white/30 mt-1">macOS 默认 13px · 范围 10-20px</p>
     </div>
   )
 }

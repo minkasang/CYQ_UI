@@ -12,6 +12,8 @@ export function GlobalBackground() {
     const overlay = localStorage.getItem('pw-overlay-opacity')
     if (overlay) document.documentElement.style.setProperty('--overlay-opacity', overlay)
     initTextColor()
+    const fontSize = localStorage.getItem('pw-font-size')
+    if (fontSize) document.documentElement.style.fontSize = `${fontSize}px`
   }, [])
 
   // 根据壁纸类型生成 CSS 背景
