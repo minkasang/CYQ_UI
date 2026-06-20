@@ -25,7 +25,6 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
   const [provider, setProvider] = useState<AIProvider>(initial?.provider || 'deepseek')
   const [model, setModel] = useState(initial?.model || 'deepseek-chat')
   const [systemPrompt, setSystemPrompt] = useState(initial?.systemPrompt || '')
-  const [replyProbability, setReplyProbability] = useState(initial?.replyProbability ?? 0.7)
   const [cooldownMin, setCooldownMin] = useState(initial?.cooldownMin ?? 5000)
   const [cooldownMax, setCooldownMax] = useState(initial?.cooldownMax ?? 15000)
 
@@ -46,7 +45,6 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
       provider,
       model,
       systemPrompt,
-      replyProbability,
       cooldownMin,
       cooldownMax,
     })
@@ -147,21 +145,6 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
             placeholder="描述这个 Agent 的性格、说话风格、知识背景..."
             rows={3}
             className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-white/15 outline-none focus:border-[#0A84FF] transition-colors resize-none"
-          />
-        </div>
-
-        {/* 回复概率 */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/30">回复概率</label>
-            <span className="text-[10px] text-white/40">{Math.round(replyProbability * 100)}%</span>
-          </div>
-          <input
-            type="range"
-            min="0" max="1" step="0.05"
-            value={replyProbability}
-            onChange={e => setReplyProbability(parseFloat(e.target.value))}
-            className="w-full h-1 accent-[#0A84FF]"
           />
         </div>
 

@@ -53,7 +53,6 @@ export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
 
         {/* 底部属性 */}
         <div className="flex items-center gap-3 mt-2.5 text-[10px] text-white/25">
-          <span>概率 {Math.round(agent.replyProbability * 100)}%</span>
           <span>冷却 {Math.round(agent.cooldownMin / 1000)}~{Math.round(agent.cooldownMax / 1000)}s</span>
         </div>
       </div>

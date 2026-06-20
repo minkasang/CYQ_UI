@@ -47,9 +47,9 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       provider: data.provider,
       model: data.model,
       systemPrompt: data.systemPrompt,
-      replyProbability: data.replyProbability,
       cooldownMin: data.cooldownMin,
       cooldownMax: data.cooldownMax,
+      modules: [],
       createdAt: now,
       updatedAt: now,
     }

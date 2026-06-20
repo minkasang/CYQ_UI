@@ -110,7 +110,6 @@
 }
 
 html {
-  font-size: 13px; /* macOS 默认 body 字号 */
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

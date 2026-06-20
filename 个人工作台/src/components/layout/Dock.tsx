@@ -30,7 +30,7 @@ interface DockItem {
   scrollTo?: string
 }
 
-const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'chat', 'theme', 'settings']
+const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'chat', 'agents', 'theme', 'settings']
 
 const ITEM_MAP: Record<string, DockItem> = {
   home: { id: 'home', to: '/', icon: '🏠', label: '首页' },
@@ -40,6 +40,7 @@ const ITEM_MAP: Record<string, DockItem> = {
   wallpaper: { id: 'wallpaper', to: '/', icon: '🖼', label: '壁纸', scrollTo: 'wallpaper' },
   ai: { id: 'ai', to: '/', icon: '✨', label: 'AI 总结', scrollTo: 'ai' },
   chat: { id: 'chat', to: '/', icon: '💬', label: 'AI 聊天', scrollTo: 'chat' },
+  agents: { id: 'agents', to: '/', icon: '🤖', label: '智能体', scrollTo: 'agents' },
   settings: { id: 'settings', to: '/settings', icon: '⚙️', label: '设置' },
   theme: { id: 'theme', to: '/theme', icon: '🎨', label: '主题' },
 }

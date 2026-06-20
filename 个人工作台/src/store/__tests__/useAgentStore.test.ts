@@ -19,7 +19,6 @@ function sampleAgent(overrides: Partial<AgentFormData> = {}): AgentFormData {
     provider: 'deepseek',
     model: 'deepseek-chat',
     systemPrompt: '你是一个测试助手',
-    replyProbability: 0.7,
     cooldownMin: 5000,
     cooldownMax: 15000,
     ...overrides,
@@ -56,10 +55,10 @@ describe('useAgentStore', () => {
 
   it('update 修改 Agent 字段', () => {
     const agent = useAgentStore.getState().add(sampleAgent())!
-    useAgentStore.getState().update(agent.id, { name: '改名后', replyProbability: 0.5 })
+    useAgentStore.getState().update(agent.id, { name: '改名后', cooldownMin: 3000 })
     const updated = useAgentStore.getState().getById(agent.id)
     expect(updated!.name).toBe('改名后')
-    expect(updated!.replyProbability).toBe(0.5)
+    expect(updated!.cooldownMin).toBe(3000)
     expect(updated!.updatedAt).toBeGreaterThanOrEqual(agent.updatedAt)
   })
 
