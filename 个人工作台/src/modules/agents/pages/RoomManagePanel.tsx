@@ -2,7 +2,7 @@
 // 首页 Section 内使用
 
 import { useState, useEffect } from 'react'
-import { Plus, MessageSquare } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useRoomStore } from '../../../store/useRoomStore'
 import { useAgentStore } from '../../../store/useAgentStore'
 import { RoomCard } from '../../../components/agents/RoomCard'

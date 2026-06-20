@@ -25,18 +25,21 @@ export default {
       },
 
       // ========================================
-      // 字体系统 — Apple 9级 Type Scale
+      // 字体系统 — 保持 Tailwind 默认 + Apple 扩展
+      // 注意：不覆盖 text-xs/sm/base/lg/xl/2xl/3xl/4xl 默认值
+      //       避免影响已有组件。Apple 字号通过 CSS 变量使用
       // ========================================
       fontSize: {
-        'xs':    ['11px', { lineHeight: '14px', fontWeight: '400' }],  // Caption
-        'sm':    ['12px', { lineHeight: '16px', fontWeight: '400' }],  // Footnote
-        'base':  ['13px', { lineHeight: '18px', fontWeight: '400' }],  // Body (macOS 默认)
-        'md':    ['15px', { lineHeight: '20px', fontWeight: '600' }],  // Title 3
-        'lg':    ['17px', { lineHeight: '22px', fontWeight: '400' }],  // Title 2
-        'xl':    ['22px', { lineHeight: '28px', fontWeight: '400' }],  // Title 1
-        '2xl':   ['26px', { lineHeight: '32px', fontWeight: '700' }],  // Large Title
-        '3xl':   ['34px', { lineHeight: '41px', fontWeight: '700' }],  // Hero 副标题
-        '4xl':   ['48px', { lineHeight: '52px', fontWeight: '700' }],  // Hero 大标题
+        // 仅扩展 Apple 专用字号（不覆盖默认）
+        'apple-xs':   ['11px', { lineHeight: '14px', fontWeight: '400' }],
+        'apple-sm':   ['12px', { lineHeight: '16px', fontWeight: '400' }],
+        'apple-base': ['13px', { lineHeight: '18px', fontWeight: '400' }],
+        'apple-md':   ['15px', { lineHeight: '20px', fontWeight: '600' }],
+        'apple-lg':   ['17px', { lineHeight: '22px', fontWeight: '400' }],
+        'apple-xl':   ['22px', { lineHeight: '28px', fontWeight: '400' }],
+        'apple-2xl':  ['26px', { lineHeight: '32px', fontWeight: '700' }],
+        'apple-3xl':  ['34px', { lineHeight: '41px', fontWeight: '700' }],
+        'apple-4xl':  ['48px', { lineHeight: '52px', fontWeight: '700' }],
       },
 
       // ========================================
