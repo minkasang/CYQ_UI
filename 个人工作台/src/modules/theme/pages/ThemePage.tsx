@@ -104,7 +104,7 @@ export function ThemePage() {
             {isActive && (
               <div className="mt-3 ml-2 pl-4 border-l-2 border-[var(--border-subtle)] space-y-3">
                 {/* 实时预览 */}
-                <div className="rounded-xl overflow-hidden bg-[var(--bg-root)]" style={{ height: 200 }}>
+                <div className="rounded-xl overflow-hidden bg-transparent" style={{ height: 200 }}>
                   <ThemePreview preset={activePreset?.engine === engine ? activePreset : enginePresetList[0] || null} />
                 </div>
 
