@@ -38,12 +38,12 @@ export function ThemePreview({ preset }: ThemePreviewProps) {
   const cr = (preset.params.cornerRadius as number) || 16
 
   return (
-    <div ref={containerRef} className="h-full flex flex-col items-center justify-center p-8 relative overflow-hidden">
+    <div ref={containerRef} className="h-full flex flex-col items-center justify-center p-8 relative">
       {/* 模拟窗口 */}
       <div
-        className="w-full max-w-[320px] rounded-xl overflow-hidden"
+        className="w-full max-w-[320px] rounded-xl overflow-hidden backdrop-blur-sm"
         style={{
-          background: isGlass ? 'rgba(0,0,0,0.3)' : 'rgba(22,33,62,0.85)',
+          background: isGlass ? 'rgba(0,0,0,0.25)' : 'rgba(22,33,62,0.70)',
           border: isGlass ? 'none' : `${preset.params.borderWidth || 1}px solid rgba(255,255,255,${preset.params.borderOpacity || 0.08})`,
           borderRadius: `${cr}px`,
           boxShadow: isGlass

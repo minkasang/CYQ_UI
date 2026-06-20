@@ -170,9 +170,13 @@ export function ThemePage() {
           />
         </div>
 
-        {/* 中：实时预览 (flex-1) */}
-        <div className="flex-1 bg-[var(--bg-root)]">
-          <ThemePreview preset={activePreset} />
+        {/* 中：实时预览 (flex-1) — 透明背景让壁纸透出 */}
+        <div className="flex-1 bg-transparent relative overflow-hidden">
+          {/* 半透明遮罩突出模拟窗口 */}
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="relative z-10 h-full">
+            <ThemePreview preset={activePreset} />
+          </div>
         </div>
 
         {/* 右：配置面板 (260px) */}
