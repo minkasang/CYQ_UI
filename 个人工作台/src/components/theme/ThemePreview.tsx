@@ -1,6 +1,7 @@
 // 主题预览组件 — 模拟窗口展示引擎效果
 import { useEffect, useRef } from 'react'
 import { useLiquidGlass } from '../../hooks/useLiquidGlass'
+import { useWallpaperStore } from '../../store/useWallpaperStore'
 import type { ThemePreset } from '../../store/useThemePresetStore'
 
 interface ThemePreviewProps {
@@ -9,21 +10,26 @@ interface ThemePreviewProps {
 
 export function ThemePreview({ preset }: ThemePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const windowRef = useRef<HTMLDivElement>(null)
   const card1Ref = useRef<HTMLDivElement>(null)
   const card2Ref = useRef<HTMLDivElement>(null)
 
-  const wallpaperUrl = preset?.wallpaper?.type === 'url' || preset?.wallpaper?.type === 'local'
-    ? preset.wallpaper.value
+  // 使用当前实际壁纸 URL（不是预设里存的渐变/颜色）
+  const currentWallpaper = useWallpaperStore(s => s.current)
+  const wallpaperUrl = currentWallpaper?.type === 'url' || currentWallpaper?.type === 'local'
+    ? currentWallpaper.value
     : undefined
 
   const { registerPanel } = useLiquidGlass(wallpaperUrl)
 
   useEffect(() => {
     if (!preset || preset.engine !== 'liquid-glass') return
+    const w = windowRef.current
     const c1 = card1Ref.current
     const c2 = card2Ref.current
-    if (c1) registerPanel(c1, { cornerRadius: (preset.params.cornerRadius as number) || 16 })
-    if (c2) registerPanel(c2, { cornerRadius: ((preset.params.cornerRadius as number) || 16) - 4 })
+    if (w) registerPanel(w, { cornerRadius: (preset.params.cornerRadius as number) || 16 })
+    if (c1) registerPanel(c1, { cornerRadius: (preset.params.cornerRadius as number) || 12 })
+    if (c2) registerPanel(c2, { cornerRadius: Math.max(((preset.params.cornerRadius as number) || 12) - 4, 4) })
   }, [preset, registerPanel])
 
   if (!preset) {
@@ -41,6 +47,7 @@ export function ThemePreview({ preset }: ThemePreviewProps) {
     <div ref={containerRef} className="h-full flex flex-col items-center justify-center p-8 relative">
       {/* 模拟窗口 */}
       <div
+        ref={windowRef}
         className="w-full max-w-[320px] rounded-xl overflow-hidden backdrop-blur-sm"
         style={{
           background: isGlass ? 'rgba(0,0,0,0.25)' : 'rgba(22,33,62,0.70)',
