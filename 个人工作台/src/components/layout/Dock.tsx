@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { getGlobalLG } from '../../hooks/useLiquidGlass'
+import { useLayoutRegistry } from '../../store/useLayoutRegistry'
 import {
   DndContext,
   closestCenter,
@@ -67,6 +68,8 @@ export function Dock() {
   const navigate = useNavigate()
   const dockRef = useRef<HTMLDivElement>(null)
   const [order, setOrder] = useState<string[]>(loadOrder)
+  const activeLayout = useLayoutRegistry(s => s.activeId)
+  const isBento = activeLayout === 'bento'
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -99,6 +102,12 @@ export function Dock() {
   }, [])
 
   const scrollToSection = (id: string) => {
+    // Bento 布局：派发手风琴展开事件
+    if (isBento && location.pathname === '/') {
+      window.dispatchEvent(new CustomEvent('bento-accordion-expand', { detail: { id } }))
+      return
+    }
+    // 原有逻辑：滚动到 section
     if (location.pathname === '/') {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     } else {

@@ -9,11 +9,14 @@ import { DashboardLayout } from '../../layouts/DashboardLayout'
 import { FullWidthLayout } from '../../layouts/FullWidthLayout'
 import { TopNavLayout } from '../../layouts/TopNavLayout'
 
+import { BentoLayout } from '../../layouts/BentoLayout'
+
 import type { ReactNode } from 'react'
 type ShellComponent = (props: { children: ReactNode }) => ReactNode
 const SHELL_MAP: Record<string, ShellComponent> = {
   default: DefaultLayout,
   macos: MacOSLayout,
+  bento: BentoLayout,
   dashboard: DashboardLayout,
   fullwidth: FullWidthLayout,
   topnav: TopNavLayout,

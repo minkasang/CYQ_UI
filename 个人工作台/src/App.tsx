@@ -2,10 +2,18 @@
 import { Routes, Route } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { HomePage } from './pages/HomePage'
+import { HomePageBento } from './pages/HomePageBento'
 import { DemoPage } from './pages/DemoPage'
 import { ThemeDemoPage } from './pages/ThemeDemoPage'
 import { ThemeProvider } from './components/layout/ThemeProvider'
 import { useModuleRoutes } from './hooks/useModuleRoutes'
+import { useLayoutRegistry } from './store/useLayoutRegistry'
+
+/** 根据当前布局壳选择首页变体 */
+function HomePageSwitch() {
+  const activeId = useLayoutRegistry(s => s.activeId)
+  return activeId === 'bento' ? <HomePageBento /> : <HomePage />
+}
 
 export function App() {
   const moduleRoutes = useModuleRoutes()
@@ -14,7 +22,7 @@ export function App() {
     <ThemeProvider>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
+          <Route index element={<HomePageSwitch />} />
           {/* 模块热拔插路由 — 由 ModuleManager 动态管理 */}
           {moduleRoutes}
         </Route>
