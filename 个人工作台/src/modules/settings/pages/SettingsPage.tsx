@@ -79,7 +79,7 @@ export function SettingsPage() {
   return (
     <div className="h-full flex gap-0">
       {/* 左侧边栏 */}
-      <aside className="w-[180px] flex-shrink-0 py-6 px-3 overflow-auto"
+      <aside className="w-[200px] flex-shrink-0 py-6 px-3 overflow-auto"
         style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
         <nav className="space-y-0.5">
           {SECTIONS.map(s => (
@@ -101,7 +101,8 @@ export function SettingsPage() {
       </aside>
 
       {/* 右侧内容 */}
-      <main className="flex-1 overflow-auto py-8 px-10 space-y-5">
+      <main className="flex-1 overflow-auto py-8 px-10">
+        <div className="max-w-[780px] space-y-5">
           {activeSection === 'display' && (
             <>
               <h2 className="text-[22px] font-normal text-white">🎨 显示</h2>
@@ -210,6 +211,7 @@ export function SettingsPage() {
               </div>
             </>
           )}
+        </div>
       </main>
 
       {toast && (
