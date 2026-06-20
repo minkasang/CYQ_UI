@@ -100,9 +100,9 @@ export function SettingsPage() {
         </nav>
       </aside>
 
-      {/* 右侧内容 */}
+      {/* 右侧内容 — 多列卡片网格 */}
       <main className="flex-1 overflow-auto py-8 px-10">
-        <div className="max-w-[780px] space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {activeSection === 'display' && (
             <>
               <h2 className="text-[22px] font-normal text-white">🎨 显示</h2>
