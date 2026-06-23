@@ -101,8 +101,10 @@ function BentoCard({ className, onClick, children }: {
   onClick?: () => void
   children: React.ReactNode
 }) {
+  const ref = useRef<HTMLDivElement>(null)
   return (
     <div
+      ref={ref}
       onClick={onClick}
       className={`bento-card p-5 ${className || ''}`}
     >
@@ -136,6 +138,14 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
   const navigate = useNavigate()
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null)
   const accordionRef = useRef<HTMLDivElement>(null)
+
+  // 注册 Bento 卡片为玻璃面板
+  useEffect(() => {
+    const el = document.querySelector('.bento-grid')
+    if (!el) return
+    const cards = el.querySelectorAll('.bento-card')
+    cards.forEach(card => registerPanel(card as HTMLElement, { cornerRadius: 16 }))
+  }, [registerPanel, showAccordion])
 
   // 加载所有配置数据
   useEffect(() => {
@@ -250,7 +260,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
       {/* ============================================================
           Section 1 — Bento Grid
           ============================================================ */}
-      <section className="min-h-dvh flex flex-col justify-center py-12">
+      <section className="min-h-dvh flex flex-col justify-center py-12 bento-grid">
         {/* ── Row 1: Hero + Stats ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {/* Hero */}
