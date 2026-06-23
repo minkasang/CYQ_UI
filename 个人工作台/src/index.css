@@ -353,19 +353,15 @@ body {
    Bento 卡片工具类
    ======================================== */
 .bento-card {
-  background: var(--bg-card);
-  border: 0.5px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  box-shadow: none;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
-  transition: box-shadow var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out),
-              transform var(--duration-fast) var(--ease-out);
+  transition: transform var(--duration-fast) var(--ease-out);
   cursor: pointer;
   overflow: hidden;
 }
 .bento-card:hover {
-  border-color: var(--border-hairline);
-  box-shadow: var(--shadow-card-hover);
   transform: translateY(-1px);
 }
 .bento-card:active {
