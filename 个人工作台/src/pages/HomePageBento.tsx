@@ -96,18 +96,20 @@ function AccordionZone({ items, expandedId, onToggle }: {
 // Bento Cards
 // ============================================================
 
-function BentoCard({ className, onClick, children }: {
+function BentoCard({ className, onClick, children, registerPanel }: {
   className?: string
   onClick?: () => void
   children: React.ReactNode
+  registerPanel?: (el: HTMLElement, conf?: any) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (ref.current && registerPanel) {
+      registerPanel(ref.current, { cornerRadius: 16 })
+    }
+  }, [registerPanel])
   return (
-    <div
-      ref={ref}
-      onClick={onClick}
-      className={`bento-card p-5 ${className || ''}`}
-    >
+    <div ref={ref} onClick={onClick} className={`bento-card p-5 ${className || ''}`}>
       {children}
     </div>
   )
@@ -138,14 +140,6 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
   const navigate = useNavigate()
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null)
   const accordionRef = useRef<HTMLDivElement>(null)
-
-  // 注册 Bento 卡片为玻璃面板
-  useEffect(() => {
-    const el = document.querySelector('.bento-grid')
-    if (!el) return
-    const cards = el.querySelectorAll('.bento-card')
-    cards.forEach(card => registerPanel(card as HTMLElement, { cornerRadius: 16 }))
-  }, [registerPanel, showAccordion])
 
   // 加载所有配置数据
   useEffect(() => {
@@ -260,12 +254,12 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
       {/* ============================================================
           Section 1 — Bento Grid
           ============================================================ */}
-      <section className="min-h-dvh flex flex-col justify-center py-12 bento-grid">
+      <section className="min-h-dvh flex flex-col justify-center py-12">
         {/* ── Row 1: Hero + Stats ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {/* Hero */}
           <div className="md:col-span-2">
-            <BentoCard>
+            <BentoCard registerPanel={registerPanel}>
               <div className="py-3">
                 <div className="text-[11px] uppercase tracking-[0.15em] text-[var(--text-tertiary)] mb-2">
                   {friendlyDate(new Date())}
@@ -283,7 +277,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
           {/* Stats Stack */}
           <div className="flex flex-col gap-4">
             {isOn('todo') && (
-              <BentoCard onClick={() => handleCardClick('todo', '/todo')}>
+              <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('todo', '/todo')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">待办</span>
                   <CheckSquare size={14} className="text-[var(--text-tertiary)]" />
@@ -293,7 +287,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
               </BentoCard>
             )}
             {isOn('diary') && (
-              <BentoCard onClick={() => handleCardClick('diary', '/diary')}>
+              <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('diary', '/diary')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">日记</span>
                   <BookText size={14} className="text-[var(--text-tertiary)]" />
@@ -312,7 +306,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
           {/* Inspiration — 大卡片 */}
           {isOn('inspiration') && (
             <div className="md:col-span-2">
-              <BentoCard onClick={() => handleCardClick('inspiration', '/inspiration')}>
+              <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('inspiration', '/inspiration')}>
                 <div className="flex items-center gap-2 mb-3">
                   <Lightbulb size={16} className="text-[var(--accent)]" />
                   <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">每日灵感</span>
@@ -349,7 +343,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
 
           {/* AI Summary — 小卡片 */}
           {isOn('ai') && (
-            <BentoCard onClick={() => handleCardClick('ai', '/ai')}>
+            <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('ai', '/ai')}>
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={16} className="text-[var(--accent)]" />
                 <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">AI 总结</span>
@@ -367,13 +361,13 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
         {/* ── Row 3: Quick links ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {isOn('ai') && (
-            <BentoCard onClick={() => handleCardClick('chat', '/ai')} className="text-center">
+            <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('chat', '/ai')} className="text-center">
               <MessageCircle size={18} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
               <span className="text-[var(--text-xs)] text-[var(--text-secondary)]">AI 聊天</span>
             </BentoCard>
           )}
           {isOn('wallpaper') && (
-            <BentoCard onClick={() => handleCardClick('wallpaper', '/wallpaper')} className="text-center">
+            <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('wallpaper', '/wallpaper')} className="text-center">
               <Image size={18} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
               <span className="text-[var(--text-xs)] text-[var(--text-secondary)]">壁纸</span>
             </BentoCard>
