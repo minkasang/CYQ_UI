@@ -13,7 +13,7 @@ import { useLayoutRegistry } from './store/useLayoutRegistry'
 /** 根据当前布局壳选择首页变体 */
 function HomePageSwitch() {
   const activeId = useLayoutRegistry(s => s.activeId)
-  return activeId === 'bento' ? <HomePageBento /> : <HomePage />
+  return activeId === 'bento' ? <HomePageBento /> : activeId === 'macos' ? <HomePageBento showAccordion={false} /> : <HomePage />
 }
 
 export function App() {

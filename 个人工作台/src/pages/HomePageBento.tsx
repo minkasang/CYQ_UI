@@ -6,6 +6,7 @@
 //   3. 服从模块开关，关掉的模块 Bento 和手风琴都不显示
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CheckSquare, BookText, Sparkles, MessageCircle,
   Image, Plus, ArrowRight, ChevronDown, ChevronRight, Lightbulb,
@@ -114,7 +115,7 @@ function BentoCard({ className, onClick, children }: {
 // Main
 // ============================================================
 
-export function HomePageBento() {
+export function HomePageBento({ showAccordion = true }: { showAccordion?: boolean }) {
   const stats = useTodoStore(selectTodoStats)
   const diaries = useDiaryStore(selectSortedDiaries)
   const loadTodos = useTodoStore(s => s.loadTodos)
@@ -132,6 +133,7 @@ export function HomePageBento() {
 
   const { registerPanel } = useLiquidGlass(bgUrl)
   const { isOn } = useModuleToggles()
+  const navigate = useNavigate()
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null)
   const accordionRef = useRef<HTMLDivElement>(null)
 
@@ -167,6 +169,15 @@ export function HomePageBento() {
       }, 150)
     }
   }, [])
+
+  // 点 Bento 卡片：有手风琴→展开，无手风琴→跳转路由
+  const handleCardClick = useCallback((moduleId: string, route: string) => {
+    if (showAccordion) {
+      handleAccordionToggle(moduleId)
+    } else {
+      navigate(route)
+    }
+  }, [showAccordion, handleAccordionToggle, navigate])
 
   // ============================================================
   // Accordion items — 按模块开关过滤
@@ -262,7 +273,7 @@ export function HomePageBento() {
           {/* Stats Stack */}
           <div className="flex flex-col gap-4">
             {isOn('todo') && (
-              <BentoCard onClick={() => handleAccordionToggle('todo')}>
+              <BentoCard onClick={() => handleCardClick('todo', '/todo')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">待办</span>
                   <CheckSquare size={14} className="text-[var(--text-tertiary)]" />
@@ -272,7 +283,7 @@ export function HomePageBento() {
               </BentoCard>
             )}
             {isOn('diary') && (
-              <BentoCard onClick={() => handleAccordionToggle('diary')}>
+              <BentoCard onClick={() => handleCardClick('diary', '/diary')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">日记</span>
                   <BookText size={14} className="text-[var(--text-tertiary)]" />
@@ -291,7 +302,7 @@ export function HomePageBento() {
           {/* Inspiration — 大卡片 */}
           {isOn('inspiration') && (
             <div className="md:col-span-2">
-              <BentoCard onClick={() => handleAccordionToggle('inspiration')}>
+              <BentoCard onClick={() => handleCardClick('inspiration', '/inspiration')}>
                 <div className="flex items-center gap-2 mb-3">
                   <Lightbulb size={16} className="text-[var(--accent)]" />
                   <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">每日灵感</span>
@@ -328,7 +339,7 @@ export function HomePageBento() {
 
           {/* AI Summary — 小卡片 */}
           {isOn('ai') && (
-            <BentoCard onClick={() => handleAccordionToggle('ai')}>
+            <BentoCard onClick={() => handleCardClick('ai', '/ai')}>
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={16} className="text-[var(--accent)]" />
                 <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">AI 总结</span>
@@ -346,13 +357,13 @@ export function HomePageBento() {
         {/* ── Row 3: Quick links ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {isOn('ai') && (
-            <BentoCard onClick={() => handleAccordionToggle('chat')} className="text-center">
+            <BentoCard onClick={() => handleCardClick('chat', '/ai')} className="text-center">
               <MessageCircle size={18} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
               <span className="text-[var(--text-xs)] text-[var(--text-secondary)]">AI 聊天</span>
             </BentoCard>
           )}
           {isOn('wallpaper') && (
-            <BentoCard onClick={() => handleAccordionToggle('wallpaper')} className="text-center">
+            <BentoCard onClick={() => handleCardClick('wallpaper', '/wallpaper')} className="text-center">
               <Image size={18} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
               <span className="text-[var(--text-xs)] text-[var(--text-secondary)]">壁纸</span>
             </BentoCard>
@@ -360,7 +371,7 @@ export function HomePageBento() {
         </div>
 
         {/* 向下滚动提示 */}
-        {accordionItems.length > 0 && (
+        {showAccordion && accordionItems.length > 0 && (
           <div className="flex justify-center mt-10">
             <button
               onClick={() => {
@@ -377,9 +388,9 @@ export function HomePageBento() {
       </section>
 
       {/* ============================================================
-          Section 2 — Accordion Zone
+          Section 2 — Accordion Zone (仅有手风琴时)
           ============================================================ */}
-      {accordionItems.length > 0 && (
+      {showAccordion && accordionItems.length > 0 && (
         <section ref={accordionRef} className="py-12">
           <div className="mb-6">
             <h2 className="text-[var(--text-xl)] font-bold text-[var(--text-primary)] mb-1">模块详情</h2>

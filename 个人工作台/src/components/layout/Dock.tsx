@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { getGlobalLG } from '../../hooks/useLiquidGlass'
-import { useLayoutRegistry } from '../../store/useLayoutRegistry'
 import {
   House, HouseLine, HouseSimple,
   Lightbulb, LightbulbFilament, Flame, Star,
@@ -73,17 +72,17 @@ const ORDER_KEY = 'pw-dock-order'
 const S = 22
 
 interface DockItemDef {
-  id: string; to: string; label: string; scrollTo?: string
+  id: string; to: string; label: string
 }
 
 const ITEM_DEFS: Record<string, DockItemDef> = {
   home: { id: 'home', to: '/', label: '首页' },
-  inspiration: { id: 'inspiration', to: '/', label: '灵感', scrollTo: 'inspiration' },
-  todo: { id: 'todo', to: '/', label: '待办', scrollTo: 'todo' },
-  diary: { id: 'diary', to: '/', label: '日记', scrollTo: 'diary' },
-  wallpaper: { id: 'wallpaper', to: '/', label: '壁纸', scrollTo: 'wallpaper' },
-  ai: { id: 'ai', to: '/', label: 'AI 总结', scrollTo: 'ai' },
-  chat: { id: 'chat', to: '/', label: 'AI 聊天', scrollTo: 'chat' },
+  inspiration: { id: 'inspiration', to: '/inspiration', label: '灵感' },
+  todo: { id: 'todo', to: '/todo', label: '待办' },
+  diary: { id: 'diary', to: '/diary', label: '日记' },
+  wallpaper: { id: 'wallpaper', to: '/wallpaper', label: '壁纸' },
+  ai: { id: 'ai', to: '/ai', label: 'AI 总结' },
+  chat: { id: 'chat', to: '/ai', label: 'AI 聊天' },
   agents: { id: 'agents', to: '/agents', label: '智能体' },
   settings: { id: 'settings', to: '/settings', label: '设置' },
   theme: { id: 'theme', to: '/theme', label: '主题' },
@@ -107,8 +106,16 @@ export function Dock() {
   const dockRef = useRef<HTMLDivElement>(null)
   const [order, setOrder] = useState<string[]>(loadOrder)
   const [icons, setIcons] = useState<Record<string, IconKey>>(loadIcons)
-  const activeLayout = useLayoutRegistry(s => s.activeId)
-  const isBento = activeLayout === 'bento'
+
+  // Dock 导航 — 直接跳转路由
+  const handleNavigate = useCallback((item: { id: string; to: string }) => {
+    if (item.id === 'home' && location.pathname === '/') {
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    if (location.pathname === item.to) return
+    navigate(item.to)
+  }, [location.pathname, navigate])
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -122,14 +129,6 @@ export function Dock() {
     }, 100)
     return () => { clearInterval(tryRegister); const lg = getGlobalLG(); if (lg) { const idx = lg.panels.findIndex(p => p.el === el); if (idx >= 0) lg.panels.splice(idx, 1) } }
   }, [])
-
-  const scrollToSection = (id: string) => {
-    if (isBento && location.pathname === '/') {
-      window.dispatchEvent(new CustomEvent('bento-accordion-expand', { detail: { id } })); return
-    }
-    if (location.pathname === '/') document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-    else { navigate('/'); setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 100) }
-  }
 
   const setIcon = useCallback((id: string, key: IconKey) => {
     const next = { ...icons, [id]: key }
@@ -158,18 +157,9 @@ export function Dock() {
               item={item}
               iconNode={ICON_FACTORY[item.iconKey]?.(S)}
               iconKey={item.iconKey}
-              isActive={
-                item.scrollTo ? location.pathname === '/'
-                : item.id === 'settings' ? location.pathname.startsWith('/settings')
-                : location.pathname === item.to
-              }
-              onClick={() => {
-                if (item.id === 'home') {
-                  if (location.pathname === '/') document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })
-                  else navigate('/')
-                } else if (item.scrollTo) scrollToSection(item.scrollTo)
-              }}
-              isLink={!item.scrollTo && item.id !== 'home'}
+              isActive={location.pathname === item.to || (item.id === 'home' && location.pathname === '/')}
+              onClick={() => handleNavigate(item)}
+              isLink={item.id !== 'home'}
               to={item.to}
               onIconChange={(key) => setIcon(item.id, key)}
             />
