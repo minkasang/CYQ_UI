@@ -46,7 +46,6 @@ const ICON_OPTIONS: Record<string, IconKey[]> = {
   diary: ['bookOpen', 'notebook', 'pencilLine', 'scroll'],
   wallpaper: ['image', 'imageSquare', 'mountains', 'pictureInPicture'],
   ai: ['sparkle', 'brain', 'lightning', 'magicWand'],
-  chat: ['chats', 'chatTeardrop', 'chatCentered', 'chatCircle'],
   agents: ['robot', 'detective', 'userCircleGear'],
   theme: ['paintBrush', 'palette', 'paintBucket', 'dropHalf'],
   settings: ['gear', 'gearSix', 'sliders', 'wrench'],
@@ -54,7 +53,7 @@ const ICON_OPTIONS: Record<string, IconKey[]> = {
 
 const DEFAULT_ICONS: Record<string, IconKey> = {
   home: 'house', inspiration: 'lightbulb', todo: 'checkSquare', diary: 'bookOpen',
-  wallpaper: 'image', ai: 'sparkle', chat: 'chats', agents: 'robot',
+  wallpaper: 'image', ai: 'sparkle', agents: 'robot',
   theme: 'paintBrush', settings: 'gear',
 }
 
@@ -67,7 +66,7 @@ function loadIcons(): Record<string, IconKey> {
 }
 
 // ── Dock Item ──
-const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'chat', 'agents', 'theme', 'settings']
+const DEFAULT_ORDER = ['home', 'inspiration', 'todo', 'diary', 'wallpaper', 'ai', 'agents', 'theme', 'settings']
 const ORDER_KEY = 'pw-dock-order'
 const S = 22
 
@@ -81,8 +80,7 @@ const ITEM_DEFS: Record<string, DockItemDef> = {
   todo: { id: 'todo', to: '/todo', label: '待办' },
   diary: { id: 'diary', to: '/diary', label: '日记' },
   wallpaper: { id: 'wallpaper', to: '/wallpaper', label: '壁纸' },
-  ai: { id: 'ai', to: '/ai', label: 'AI 总结' },
-  chat: { id: 'chat', to: '/ai', label: 'AI 聊天' },
+  ai: { id: 'ai', to: '/ai', label: 'AI 助手' },
   agents: { id: 'agents', to: '/agents', label: '智能体' },
   settings: { id: 'settings', to: '/settings', label: '设置' },
   theme: { id: 'theme', to: '/theme', label: '主题' },
