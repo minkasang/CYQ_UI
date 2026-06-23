@@ -1,6 +1,6 @@
 ---
 name: redesign-existing-projects
-description: Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS.
+description: "现有项目设计升级：审查当前设计、识别通用AI痕迹、应用高端设计标准而不破坏功能。适用于任何CSS框架或原生CSS。"
 ---
 
 # Redesign Skill

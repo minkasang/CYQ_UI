@@ -43,7 +43,7 @@ enabled = true   # language server tools; servers launch lazily when used
 # extensions = [".go"]
 
 [skills]
-# paths = []   # 所有 skill 已统一放入 .reasonix/skills/
+paths = ["/media/cyq/455E28568C7503F7/project/cyq_UI/开源项目参考/impeccable-main/skill", "/media/cyq/455E28568C7503F7/project/cyq_UI/开源项目参考/impeccable-main/skill/agents"]   # extra custom skill roots
 # excluded_paths = ["~/.agents/skills"]   # hide convention roots without deleting folders
 # max_depth = 3   # nested scan depth; set 1 for legacy root-only discovery
 # disabled_skills = ["review"]   # hide noisy or unwanted skills

@@ -1,6 +1,6 @@
 ---
 name: "macos-design"
-description: "macOS native design system for frontend UI. Invoke on any UI design, styling, layout, glass effects, color, typography, shadows, spacing, animation, or interaction pattern tasks."
+description: "macOS原生设计系统：毛玻璃效果、SF风格字体、原生配色、阴影、动画、交互模式。适用于任何UI设计/样式/布局/动效任务。"
 ---
 
 # macOS Native App Design Skill

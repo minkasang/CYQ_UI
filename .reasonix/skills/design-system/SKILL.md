@@ -1,6 +1,6 @@
 ---
 name: ckm:design-system
-description: Token architecture, component specifications, and slide generation. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, strategic slide creation. Use for design tokens, systematic design, brand-compliant presentations.
+description: "设计系统架构：三层Token（原始→语义→组件）、CSS变量、间距/字体尺度、组件规范、策略性幻灯片生成。适用于设计Token管理、系统化设计、品牌合规演示。"
 argument-hint: "[component or token]"
 license: MIT
 metadata:
