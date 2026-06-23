@@ -30,6 +30,19 @@ export function ThemePreview({ preset }: ThemePreviewProps) {
     if (w) registerPanel(w, { cornerRadius: (preset.params.cornerRadius as number) || 16 })
     if (c1) registerPanel(c1, { cornerRadius: (preset.params.cornerRadius as number) || 12 })
     if (c2) registerPanel(c2, { cornerRadius: Math.max(((preset.params.cornerRadius as number) || 12) - 4, 4) })
+
+    // 清理：组件卸载时移除预览面板
+    return () => {
+      const lg = (window as any).__liquidGlass
+      if (lg) {
+        ;[w, c1, c2].forEach(el => {
+          if (el) {
+            const idx = lg.panels.findIndex((p: any) => p.el === el)
+            if (idx >= 0) lg.panels.splice(idx, 1)
+          }
+        })
+      }
+    }
   }, [preset, registerPanel])
 
   if (!preset) {

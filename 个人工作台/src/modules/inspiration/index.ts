@@ -1,6 +1,7 @@
 // 每日灵感模块 — 仅首页 Section，无独立路由
 import type { Module, ModuleContext } from '../../types/module'
 import { useInspirationStore } from '../../store/useInspirationStore'
+import { InspirationPage } from './pages/InspirationPage'
 
 export const InspirationModule: Module = {
   metadata: {
@@ -15,14 +16,20 @@ export const InspirationModule: Module = {
   },
 
   capabilities: {
-    routes: false,
+    routes: true,
     stores: true,
     components: false,
     services: false,
     api: false,
   },
 
-  routes: [],
+  routes: [
+    {
+      path: 'inspiration',
+      element: InspirationPage,
+      meta: { title: '每日灵感', icon: 'lightbulb' },
+    },
+  ],
 
   stores: [
     {
