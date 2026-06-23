@@ -55,14 +55,14 @@ export function KanbanCard({ todo, isDragging }: KanbanCardProps) {
 
       {/* 元信息 */}
       <div className="flex items-center gap-2 mt-2 flex-wrap">
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">
+        <span className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-white/60">
           {CATEGORY_LABELS[todo.category]}
         </span>
 
         {todoTags.slice(0, 2).map(tag => (
           <span
             key={tag.id}
-            className="text-[10px] px-1.5 py-0.5 rounded text-white"
+            className="text-xs px-1.5 py-0.5 rounded text-white"
             style={{ backgroundColor: tag.color }}
           >
             {tag.name}
@@ -70,13 +70,13 @@ export function KanbanCard({ todo, isDragging }: KanbanCardProps) {
         ))}
 
         {todo.dueDate && (
-          <span className="text-[10px] text-white/40">
+          <span className="text-xs text-white/40">
             📅 {todo.dueDate}
           </span>
         )}
 
         {todo.subtasks.length > 0 && (
-          <span className="text-[10px] text-white/40">
+          <span className="text-xs text-white/40">
             📋 {todo.subtasks.filter(s => s.completed).length}/{todo.subtasks.length}
           </span>
         )}

@@ -96,7 +96,7 @@ export function TagInput({ value = [], onChange, suggestions = [] }: TagInputPro
         }
       >
         <div className="p-2">
-          <div className="text-[10px] text-white/30 mb-1 px-1">建议标签</div>
+          <div className="text-xs text-white/30 mb-1 px-1">建议标签</div>
           <div className="flex flex-wrap gap-1">
             {filteredSuggestions.slice(0, 6).map((s) => (
               <button

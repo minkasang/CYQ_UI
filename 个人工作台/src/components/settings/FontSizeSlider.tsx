@@ -3,8 +3,8 @@ import { useState } from 'react'
 
 export function FontSizeSlider() {
   const [size, setSize] = useState(() => {
-    const s = parseFloat(localStorage.getItem('pw-font-size') || '13')
-    return isNaN(s) ? 13 : s
+    const s = parseFloat(localStorage.getItem('pw-font-size') || '15')
+    return isNaN(s) ? 15 : s
   })
 
   const apply = (v: number) => {
@@ -34,7 +34,7 @@ export function FontSizeSlider() {
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3
           [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full
           [&::-webkit-slider-thumb]:bg-[var(--accent)] [&::-webkit-slider-thumb]:cursor-pointer" />
-      <p className="text-[11px] text-[var(--text-tertiary)] mt-1.5">macOS 默认 13px · 范围 10-20px</p>
+      <p className="text-[11px] text-[var(--text-tertiary)] mt-1.5">macOS 默认 15px · 范围 10-20px</p>
     </div>
   )
 }

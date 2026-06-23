@@ -230,11 +230,11 @@ ${diaryContent}
 
         {/* 错误提示 */}
         {error && (
-          <div className="text-[10px] text-red-300 mt-1">{error}</div>
+          <div className="text-xs text-red-300 mt-1">{error}</div>
         )}
 
         {!currentProviderHasKey && (
-          <div className="text-[10px] text-orange-300/70 mt-1">请先配置 API Key</div>
+          <div className="text-xs text-orange-300/70 mt-1">请先配置 API Key</div>
         )}
       </div>
     </div>

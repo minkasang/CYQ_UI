@@ -116,7 +116,7 @@ export function WallpaperManager() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`text-[10px] px-2 py-1 rounded transition ${
+                  className={`text-xs px-2 py-1 rounded transition ${
                     activeCategory === cat
                       ? 'bg-blue-500/30 text-white border border-blue-400/50'
                       : 'bg-white/5 text-white/60 hover:bg-white/10 border border-transparent'
@@ -141,12 +141,12 @@ export function WallpaperManager() {
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-1.5">
-                    <span className="text-[10px] text-white">{preset.name}</span>
+                    <span className="text-xs text-white">{preset.name}</span>
                   </div>
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-white/50 mt-2">
+            <p className="text-xs text-white/50 mt-2">
               💡 推荐使用网络图片作为背景，能更好展示流体玻璃的变形效果
             </p>
           </div>
@@ -195,7 +195,7 @@ export function WallpaperManager() {
             >
               <Upload size={24} />
               <span className="text-sm">点击上传图片</span>
-              <span className="text-[10px] text-white/40">支持 JPG/PNG/WebP</span>
+              <span className="text-xs text-white/40">支持 JPG/PNG/WebP</span>
             </button>
           </div>
         )}
@@ -241,7 +241,7 @@ export function WallpaperManager() {
         <div className="mt-2 text-xs text-white/70 flex items-center justify-between">
           <span>{current.name || '未命名'} · {current.type}</span>
           {current.type === 'gradient' && (
-            <span className="text-yellow-300/80 text-[10px]">💡 换张照片效果更好</span>
+            <span className="text-yellow-300/80 text-xs">💡 换张照片效果更好</span>
           )}
         </div>
       </GlassPanel>
@@ -290,7 +290,7 @@ export function WallpaperManager() {
         </GlassPanel>
       )}
 
-      <p className="text-[10px] text-white/40 px-2">
+      <p className="text-xs text-white/40 px-2">
         💡 流体玻璃效果在有颜色变化的背景上最明显，推荐使用网络图片
       </p>
     </div>

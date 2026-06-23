@@ -31,18 +31,22 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       const agents = (data.agents || []).map(a => ({
         ...a,
         modules: a.modules || [],
+        temperature: a.temperature ?? 0.7,
+        maxTokens: a.maxTokens ?? 500,
+        description: a.description || '',
+        avatar: a.avatar || '🤖',
       }))
+      console.log('[AgentStore] loaded', agents.length)
       set({ agents, loaded: true })
-    } catch {
+    } catch (err) {
+      console.error('[AgentStore] load failed:', err)
       set({ agents: [], loaded: true })
     }
   },
 
   add: (data) => {
-    // 重名校验
-    if (get().agents.some(a => a.name === data.name.trim())) {
-      return null
-    }
+    if (!get().loaded) { console.warn('[AgentStore] 未加载，拒绝创建'); return null }
+    if (get().agents.some(a => a.name === data.name.trim())) return null
 
     const now = Date.now()
     const agent: AgentConfig = {
@@ -53,6 +57,10 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       systemPrompt: data.systemPrompt,
       cooldownMin: data.cooldownMin,
       cooldownMax: data.cooldownMax,
+      temperature: data.temperature,
+      maxTokens: data.maxTokens,
+      description: data.description,
+      avatar: data.avatar,
       modules: [],
       createdAt: now,
       updatedAt: now,
@@ -65,6 +73,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   },
 
   update: (id, patch) => {
+    if (!get().loaded) return
     const agents = get().agents.map(a =>
       a.id === id ? { ...a, ...patch, updatedAt: Date.now() } : a
     )

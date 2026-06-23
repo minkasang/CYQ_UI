@@ -58,11 +58,10 @@ export const EventDrivenStrategy: ChatStrategy = {
     for (let round = 0; round < MAX_ROUNDS; round++) {
       // 筛选本轮参与者
       const participants = agents.filter(a => {
-        // 已发言 → 排除
         if (replied.has(a.agentId)) return false
-        // @@提及 → 强制参与，绕过冷却
         if (mentioned.some(m => m.agentId === a.agentId)) return true
-        // 冷却中 → 排除
+        // 1v1 对话不冷却
+        if (agents.length === 1) return true
         const last = cooling.get(a.agentId)
         if (last) {
           const elapsed = Date.now() - last
@@ -84,10 +83,11 @@ export const EventDrivenStrategy: ChatStrategy = {
       for (const r of results) {
         if (r.status === 'fulfilled' && r.value) {
           const { agent, content } = r.value
-          const msg: Message = {
+          const msg: any = {
             id: `agent-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
             role: 'assistant',
-            content: `**${agent.name}**：${content}`,
+            content,
+            senderName: agent.name,
             createdAt: Date.now(),
           }
           roundReplies.push(msg)

@@ -21,6 +21,10 @@ function sampleAgent(overrides: Partial<AgentFormData> = {}): AgentFormData {
     systemPrompt: '你是一个测试助手',
     cooldownMin: 5000,
     cooldownMax: 15000,
+    temperature: 0.7,
+    maxTokens: 500,
+    description: '',
+    avatar: '🤖',
     ...overrides,
   }
 }

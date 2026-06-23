@@ -43,7 +43,7 @@ export function RoomForm({ allAgents, initial, onSave, onCancel }: RoomFormProps
       <div className="p-5 space-y-4">
         {/* 名称 */}
         <div>
-          <label className="block text-[10px] text-white/30 mb-1">房间名称</label>
+          <label className="block text-xs text-white/30 mb-1">房间名称</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
@@ -54,7 +54,7 @@ export function RoomForm({ allAgents, initial, onSave, onCancel }: RoomFormProps
 
         {/* 选择 Agent */}
         <div>
-          <label className="block text-[10px] text-white/30 mb-2">
+          <label className="block text-xs text-white/30 mb-2">
             选择 Agent 成员 ({selectedIds.length})
           </label>
           {allAgents.length === 0 ? (
@@ -84,7 +84,7 @@ export function RoomForm({ allAgents, initial, onSave, onCancel }: RoomFormProps
                     </span>
                     <div className="min-w-0">
                       <span className="truncate block">{agent.name}</span>
-                      <span className="text-[9px] text-white/20">{agent.provider}</span>
+                      <span className="text-[11px] text-white/20">{agent.provider}</span>
                     </div>
                   </button>
                 )

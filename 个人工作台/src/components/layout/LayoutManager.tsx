@@ -85,7 +85,7 @@ export function LayoutManager() {
                   <span className="text-sm text-white">{l.name}</span>
                   {isActive && <Check size={14} className="ml-auto text-blue-400" />}
                 </div>
-                <div className="text-[10px] text-white/40 mt-1">{l.description}</div>
+                <div className="text-xs text-white/40 mt-1">{l.description}</div>
               </button>
               {/* 删除按钮 — 仅自定义布局显示 */}
               {!l.isBuiltin && !isActive && (

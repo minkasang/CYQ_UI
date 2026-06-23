@@ -24,13 +24,6 @@ export function MacOSLayout({ children }: { children: ReactNode }) {
     <div className="h-screen w-screen overflow-hidden flex flex-col">
       <GlobalBackground />
 
-      {/* Traffic light 装饰 */}
-      <div className="absolute top-[16px] left-[12px] flex gap-2 z-[60] pointer-events-none">
-        <span className="w-3 h-3 rounded-full" style={{ background: '#FF5F57' }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: '#FEBC2E' }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: '#28C840' }} />
-      </div>
-
       {/* 顶栏 — 44px, sticky, 滚动渐变 */}
       <div
         className={`sticky top-0 z-40 flex items-center px-4 flex-shrink-0 h-[44px] transition-colors duration-300 ${

@@ -58,7 +58,7 @@ export function DependencySelector({
         <Link size={14} className="text-white/60" />
         <span className="text-xs text-white/60">前置依赖</span>
         {hasBlocking && (
-          <span className="text-[10px] text-orange-300 flex items-center gap-1">
+          <span className="text-xs text-orange-300 flex items-center gap-1">
             <AlertCircle size={10} />
             有阻塞
           </span>
@@ -145,7 +145,7 @@ export function DependencySelector({
 
       {/* 空状态 */}
       {dependencyTasks.length === 0 && availableTasks.length === 0 && (
-        <p className="text-[10px] text-white/40">没有可依赖的任务</p>
+        <p className="text-xs text-white/40">没有可依赖的任务</p>
       )}
     </div>
   )

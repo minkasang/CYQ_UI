@@ -299,7 +299,7 @@ function StatCard({ label, value, icon: Icon, onClick, registerPanel }: StatCard
           <ArrowRight size={12} className="text-white/50" />
         </div>
         <div className="text-2xl font-bold text-white text-center">{value}</div>
-        <div className="text-[10px] text-white/70 mt-0.5 text-center">{label}</div>
+        <div className="text-xs text-white/70 mt-0.5 text-center">{label}</div>
       </div>
     </button>
   )

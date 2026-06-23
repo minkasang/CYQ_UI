@@ -27,21 +27,21 @@ export function AgentSection() {
         <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3">
           <div className="flex items-center gap-2 mb-1">
             <Bot size={14} className="text-white/40" />
-            <span className="text-[10px] text-white/30">Agent</span>
+            <span className="text-xs text-white/30">Agent</span>
           </div>
           <span className="text-xl font-bold text-white/80">{agents.length}</span>
         </div>
         <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3">
           <div className="flex items-center gap-2 mb-1">
             <MessageSquare size={14} className="text-white/40" />
-            <span className="text-[10px] text-white/30">聊天室</span>
+            <span className="text-xs text-white/30">聊天室</span>
           </div>
           <span className="text-xl font-bold text-white/80">{rooms.length}</span>
         </div>
         <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-[#30D158]" />
-            <span className="text-[10px] text-white/30">运行中</span>
+            <span className="text-xs text-white/30">运行中</span>
           </div>
           <span className="text-xl font-bold text-white/80">{activeRoomCount}</span>
         </div>

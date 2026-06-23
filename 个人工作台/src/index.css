@@ -14,26 +14,26 @@
   --font-mono: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
 
   /* ── Type Scale (Apple 9级 + 扩展) ── */
-  --text-xs:     11px;
-  --text-sm:     12px;
-  --text-base:   13px;
-  --text-md:     15px;
-  --text-lg:     17px;
-  --text-xl:     22px;
-  --text-2xl:    26px;
-  --text-3xl:    34px;
-  --text-4xl:    48px;
+  --text-xs:     12px;
+  --text-sm:     13px;
+  --text-base:   15px;
+  --text-md:     17px;
+  --text-lg:     20px;
+  --text-xl:     26px;
+  --text-2xl:    30px;
+  --text-3xl:    40px;
+  --text-4xl:    56px;
 
   /* ── Line Heights ── */
-  --leading-xs:   14px;
-  --leading-sm:   16px;
-  --leading-base: 18px;
-  --leading-md:   20px;
-  --leading-lg:   22px;
-  --leading-xl:   28px;
-  --leading-2xl:  32px;
-  --leading-3xl:  41px;
-  --leading-4xl:  52px;
+  --leading-xs:   16px;
+  --leading-sm:   18px;
+  --leading-base: 21px;
+  --leading-md:   23px;
+  --leading-lg:   26px;
+  --leading-xl:   32px;
+  --leading-2xl:  36px;
+  --leading-3xl:  48px;
+  --leading-4xl:  62px;
 
   /* ── 字重 ── */
   --weight-normal:   400;

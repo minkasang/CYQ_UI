@@ -46,13 +46,13 @@ export function AgentCard({ agent, onEdit, onDelete }: AgentCardProps) {
 
         {/* 人设摘要 */}
         {agent.systemPrompt && (
-          <p className="text-[10px] text-white/20 mt-1.5 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-white/20 mt-1.5 line-clamp-2 leading-relaxed">
             {agent.systemPrompt}
           </p>
         )}
 
         {/* 底部属性 */}
-        <div className="flex items-center gap-3 mt-2.5 text-[10px] text-white/25">
+        <div className="flex items-center gap-3 mt-2.5 text-xs text-white/25">
           <span>冷却 {Math.round(agent.cooldownMin / 1000)}~{Math.round(agent.cooldownMax / 1000)}s</span>
         </div>
       </div>

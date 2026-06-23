@@ -90,10 +90,10 @@ export function APIConfig() {
                     {providerHasKey ? (
                       <Check size={12} className="text-green-400" />
                     ) : (
-                      <span className="text-[10px] text-red-400/60">未配置</span>
+                      <span className="text-xs text-red-400/60">未配置</span>
                     )}
                   </div>
-                  <div className="text-[10px] text-white/50 mt-0.5">{info.desc}</div>
+                  <div className="text-xs text-white/50 mt-0.5">{info.desc}</div>
                 </button>
               )
             })}
@@ -121,7 +121,7 @@ export function APIConfig() {
               管理 Key
             </button>
           </div>
-          <p className="text-[10px] text-white/40 mt-2">
+          <p className="text-xs text-white/40 mt-2">
             🔒 API Key 仅存浏览器本地，不会上传到任何服务器
           </p>
         </div>
@@ -173,7 +173,7 @@ export function APIConfig() {
           )}
         </div>
 
-        <p className="text-[10px] text-white/40 mt-3 leading-relaxed">
+        <p className="text-xs text-white/40 mt-3 leading-relaxed">
           💡 提示：DeepSeek 注册送额度，国产服务对中文支持好。OpenAI 需科学上网。
         </p>
       </GlassPanel>

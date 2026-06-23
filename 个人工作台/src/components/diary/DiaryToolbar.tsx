@@ -143,7 +143,7 @@ export function DiaryToolbar({ content, onApply }: DiaryToolbarProps) {
           }
         >
           <div className="p-2">
-            <div className="text-[10px] text-white/30 mb-1 px-1">选择风格</div>
+            <div className="text-xs text-white/30 mb-1 px-1">选择风格</div>
             {REWRITE_STYLES.map((style) => (
               <button
                 key={style.value}
@@ -158,7 +158,7 @@ export function DiaryToolbar({ content, onApply }: DiaryToolbarProps) {
 
         {/* API Key 提示 */}
         {!currentProviderHasKey && (
-          <span className="text-[10px] text-orange-300/70">请先配置 API Key</span>
+          <span className="text-xs text-orange-300/70">请先配置 API Key</span>
         )}
       </div>
 

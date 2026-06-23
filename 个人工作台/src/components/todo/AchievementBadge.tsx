@@ -32,7 +32,7 @@ export function AchievementBadge({ achievement, unlocked, showProgress = false }
       </div>
 
       {/* 描述 */}
-      <div className="text-[10px] text-white/40 mt-0.5">
+      <div className="text-xs text-white/40 mt-0.5">
         {achievement.description}
       </div>
 
@@ -45,7 +45,7 @@ export function AchievementBadge({ achievement, unlocked, showProgress = false }
               style={{ width: `${progress.percent}%` }}
             />
           </div>
-          <div className="text-[10px] text-white/30 mt-1 text-right">
+          <div className="text-xs text-white/30 mt-1 text-right">
             {progress.current}/{progress.target}
           </div>
         </div>
@@ -54,7 +54,7 @@ export function AchievementBadge({ achievement, unlocked, showProgress = false }
       {/* 解锁标记 */}
       {unlocked && (
         <div className="absolute top-2 right-2">
-          <span className="text-[10px] text-yellow-300">✓</span>
+          <span className="text-xs text-yellow-300">✓</span>
         </div>
       )}
     </div>

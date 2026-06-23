@@ -61,7 +61,7 @@ export function ProjectSidebar({ selectedProjectId, onSelectProject }: ProjectSi
         >
           <Folder size={14} />
           <span className="text-xs flex-1">全部任务</span>
-          <span className="text-[10px] text-white/40">{todos.filter(t => !t.archived).length}</span>
+          <span className="text-xs text-white/40">{todos.filter(t => !t.archived).length}</span>
         </button>
 
         {/* 项目列表 */}
@@ -82,7 +82,7 @@ export function ProjectSidebar({ selectedProjectId, onSelectProject }: ProjectSi
                   style={{ backgroundColor: project.color }}
                 />
                 <span className="text-xs flex-1 truncate">{project.name}</span>
-                <span className="text-[10px] text-white/40">{getProjectCount(project.id)}</span>
+                <span className="text-xs text-white/40">{getProjectCount(project.id)}</span>
               </button>
 
               {/* 操作按钮 */}

@@ -123,7 +123,7 @@ export function DiaryFeedback({ diaryId: _diaryId, content, onFeedbackGenerated,
           </button>
 
           {!currentProviderHasKey && (
-            <p className="text-[10px] text-orange-300/70">请先配置 API Key</p>
+            <p className="text-xs text-orange-300/70">请先配置 API Key</p>
           )}
         </div>
       )}

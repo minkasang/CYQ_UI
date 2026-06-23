@@ -51,7 +51,7 @@ export function GlassControlPanel({ onClose, inline }: Props) {
         </div>
         <SliderGroups glass={glass} updateParam={updateParam} />
         <div className="mt-3">
-          <h4 className="text-[10px] text-white/40 mb-1.5 uppercase tracking-wider">显示</h4>
+          <h4 className="text-xs text-white/40 mb-1.5 uppercase tracking-wider">显示</h4>
           <ParamSlider label="暗化强度" value={overlayVal} min={0} max={0.5} step={0.01} onChange={v => {
             setOverlayVal(v)
             document.documentElement.style.setProperty('--overlay-opacity', String(v))
@@ -88,7 +88,7 @@ export function GlassControlPanel({ onClose, inline }: Props) {
         </div>
         <SliderGroups glass={glass} updateParam={updateParam} />
         <div className="mt-3">
-          <h4 className="text-[10px] text-white/40 mb-1.5 uppercase tracking-wider">显示</h4>
+          <h4 className="text-xs text-white/40 mb-1.5 uppercase tracking-wider">显示</h4>
           <ParamSlider label="暗化强度" value={overlayVal} min={0} max={0.5} step={0.01} onChange={v => {
             setOverlayVal(v)
             document.documentElement.style.setProperty('--overlay-opacity', String(v))
@@ -148,7 +148,7 @@ function SliderGroups({ glass, updateParam }: { glass: any; updateParam: (k: str
 function SliderSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-3">
-      <h4 className="text-[10px] text-white/40 mb-1.5 uppercase tracking-wider">{title}</h4>
+      <h4 className="text-xs text-white/40 mb-1.5 uppercase tracking-wider">{title}</h4>
       <div className="space-y-1.5">{children}</div>
     </div>
   )
@@ -169,7 +169,7 @@ function ParamSlider({ label, value, min, max, step, onChange }: {
             const v = parseFloat(e.target.value)
             if (!isNaN(v)) onChange(Math.min(max, Math.max(min, v)))
           }}
-          className="w-[60px] text-right text-[10px] text-white/60 font-mono bg-white/5 border border-white/10 rounded px-1.5 py-px outline-none focus:border-[#0A84FF] transition-colors"
+          className="w-[60px] text-right text-xs text-white/60 font-mono bg-white/5 border border-white/10 rounded px-1.5 py-px outline-none focus:border-[#0A84FF] transition-colors"
           style={{ fontFamily: 'inherit' }}
         />
       </div>
@@ -203,7 +203,7 @@ function ColorPicker({ label, value, onChange }: { label: string; value: string;
           className="w-6 h-6 rounded cursor-pointer border-0 p-0"
           style={{ background: 'transparent' }}
         />
-        <span className="text-[10px] text-white/40 font-mono">{hex}</span>
+        <span className="text-xs text-white/40 font-mono">{hex}</span>
       </div>
     </div>
   )

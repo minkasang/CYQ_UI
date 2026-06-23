@@ -106,7 +106,7 @@ export function ChatInput({
           trigger={
             <button className={pillBase(false)}>
               <span>{PROVIDER_NAMES[provider]}</span>
-              {hasKey ? <span className="text-green-400 text-[10px]">✓</span> : <span className="text-red-400 text-[10px]">!</span>}
+              {hasKey ? <span className="text-green-400 text-xs">✓</span> : <span className="text-red-400 text-xs">!</span>}
               <ChevronDown size={12} />
             </button>
           }
@@ -122,9 +122,9 @@ export function ChatInput({
               >
                 <span>{PROVIDER_NAMES[p]}</span>
                 {hasKey ? (
-                  <span className="text-green-400/70 text-[10px]">已配置</span>
+                  <span className="text-green-400/70 text-xs">已配置</span>
                 ) : (
-                  <span className="text-red-400/40 text-[10px]">未配置</span>
+                  <span className="text-red-400/40 text-xs">未配置</span>
                 )}
               </button>
             ))}
@@ -145,7 +145,7 @@ export function ChatInput({
           <div className="py-1 max-h-64 overflow-y-auto">
             {reasoningModels.length > 0 && (
               <div className="mb-1">
-                <div className="px-3 py-1 text-[10px] text-purple-400/60 flex items-center gap-1">
+                <div className="px-3 py-1 text-xs text-purple-400/60 flex items-center gap-1">
                   <Brain size={10} /> 推理模型
                 </div>
                 {reasoningModels.map((m) => (
@@ -164,7 +164,7 @@ export function ChatInput({
             )}
             {textModels.length > 0 && (
               <div className="mb-1">
-                <div className="px-3 py-1 text-[10px] text-white/30">文本模型</div>
+                <div className="px-3 py-1 text-xs text-white/30">文本模型</div>
                 {textModels.map((m) => (
                   <button
                     key={m.id}
@@ -181,7 +181,7 @@ export function ChatInput({
             )}
             {imageModels.length > 0 && (
               <div className="mb-1">
-                <div className="px-3 py-1 text-[10px] text-blue-400/60 flex items-center gap-1">
+                <div className="px-3 py-1 text-xs text-blue-400/60 flex items-center gap-1">
                   <Image size={10} /> 图片生成
                 </div>
                 {imageModels.map((m) => (
@@ -200,7 +200,7 @@ export function ChatInput({
             )}
             {videoModels.length > 0 && (
               <div>
-                <div className="px-3 py-1 text-[10px] text-red-400/60 flex items-center gap-1">
+                <div className="px-3 py-1 text-xs text-red-400/60 flex items-center gap-1">
                   <Video size={10} /> 视频生成
                 </div>
                 {videoModels.map((m) => (
@@ -245,7 +245,7 @@ export function ChatInput({
                 : 'bg-white/[0.03] border-white/[0.06] text-white/40 hover:text-white/60 hover:bg-white/5'
             }`}
           >
-            <span className="text-[10px]">🌐</span>
+            <span className="text-xs">🌐</span>
             <span>联网搜索</span>
           </button>
         )}
@@ -256,15 +256,15 @@ export function ChatInput({
           minWidth={200}
           trigger={
             <button className="flex items-center gap-1 px-2 py-1 rounded text-xs text-white/40 hover:text-white/70 transition-colors border border-white/[0.04] hover:bg-white/5">
-              <span className="text-[10px]">⚙</span>
+              <span className="text-xs">⚙</span>
             </button>
           }
         >
           <div className="p-3 space-y-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-white/40">Temperature</span>
-                <span className="text-[10px] text-white/30">{temperature.toFixed(1)}</span>
+                <span className="text-xs text-white/40">Temperature</span>
+                <span className="text-xs text-white/30">{temperature.toFixed(1)}</span>
               </div>
               <input
                 type="range" min="0" max="2" step="0.1"
@@ -275,8 +275,8 @@ export function ChatInput({
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-white/40">Max Tokens</span>
-                <span className="text-[10px] text-white/30">{maxTokens}</span>
+                <span className="text-xs text-white/40">Max Tokens</span>
+                <span className="text-xs text-white/30">{maxTokens}</span>
               </div>
               <input
                 type="range" min="256" max="8192" step="256"
@@ -314,7 +314,7 @@ export function ChatInput({
                     {k.id === activeKeyId && <span className="text-green-400 text-[8px]">●</span>}
                     <span>{k.label}</span>
                   </div>
-                  <span className="text-white/25 text-[10px] font-mono">
+                  <span className="text-white/25 text-xs font-mono">
                     {k.key.slice(0, 6)}...
                   </span>
                 </button>

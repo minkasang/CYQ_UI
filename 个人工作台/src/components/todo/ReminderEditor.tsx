@@ -88,7 +88,7 @@ export function ReminderEditor({ value, dueDate, onChange }: ReminderEditorProps
       </button>
 
       {!dueDate && (
-        <p className="text-[10px] text-white/40">需要设置截止日期才能开启提醒</p>
+        <p className="text-xs text-white/40">需要设置截止日期才能开启提醒</p>
       )}
 
       {/* 提醒配置 */}
@@ -113,7 +113,7 @@ export function ReminderEditor({ value, dueDate, onChange }: ReminderEditorProps
             className="px-2 py-1 rounded bg-white/5 border border-white/10 text-xs text-white outline-none"
           />
 
-          <span className="text-[10px] text-white/40">提醒</span>
+          <span className="text-xs text-white/40">提醒</span>
         </div>
       )}
     </div>

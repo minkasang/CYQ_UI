@@ -55,23 +55,23 @@ export function RoomCard({ room, agents, onToggleActive, onManage, onDelete }: R
 
         {/* 成员信息 */}
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-[10px] text-white/25">
+          <span className="text-xs text-white/25">
             {memberNames.length + 1} 人
           </span>
           {memberNames.length > 0 && (
-            <span className="text-[10px] text-white/15 truncate">
+            <span className="text-xs text-white/15 truncate">
               {memberNames.join('、')}
             </span>
           )}
           {memberNames.length === 0 && (
-            <span className="text-[10px] text-white/12">暂无 AI 成员</span>
+            <span className="text-xs text-white/12">暂无 AI 成员</span>
           )}
         </div>
 
         {/* 开关按钮 */}
         <button
           onClick={onToggleActive}
-          className={`mt-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] transition-colors ${
+          className={`mt-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors ${
             room.isActive
               ? 'bg-[#30D158]/15 text-[#30D158] hover:bg-[#30D158]/25'
               : 'bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white/50'

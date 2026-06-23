@@ -9,6 +9,7 @@ export interface MAMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
+  senderName?: string      // Agent 名（assistant 消息时有值）
   createdAt: number
 }
 
@@ -32,8 +33,9 @@ interface MAState {
   create: (agents: ChatAgent[], strategy?: string) => string
   delete: (id: string) => void
   setActive: (id: string) => void
-  addMessage: (chatId: string, role: 'user' | 'assistant', content: string) => void
+  addMessage: (chatId: string, role: 'user' | 'assistant', content: string, senderName?: string) => void
   toggleActive: (id: string) => void
+  updateStrategy: (id: string, strategy: string) => void
   getById: (id: string) => MAChat | undefined
 }
 
@@ -92,8 +94,8 @@ export const useMAChatStore = create<MAState>((set, get) => ({
     saveToFile(STORE_KEY, { chats: get().chats, activeChatId: id })
   },
 
-  addMessage: (chatId, role, content) => {
-    const msg: MAMessage = { id: genId(), role, content, createdAt: Date.now() }
+  addMessage: (chatId, role, content, senderName?: string) => {
+    const msg: MAMessage = { id: genId(), role, content, senderName, createdAt: Date.now() }
     const chats = get().chats.map(c =>
       c.id === chatId
         ? { ...c, messages: [...c.messages, msg], updatedAt: Date.now() }
@@ -106,6 +108,14 @@ export const useMAChatStore = create<MAState>((set, get) => ({
   toggleActive: (id) => {
     const chats = get().chats.map(c =>
       c.id === id ? { ...c, isActive: !c.isActive } : c
+    )
+    set({ chats })
+    saveToFile(STORE_KEY, { chats, activeChatId: get().activeChatId })
+  },
+
+  updateStrategy: (id, strategy) => {
+    const chats = get().chats.map(c =>
+      c.id === id ? { ...c, strategy } : c
     )
     set({ chats })
     saveToFile(STORE_KEY, { chats, activeChatId: get().activeChatId })

@@ -187,14 +187,14 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
                         href={info.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[10px] text-blue-400/70 hover:text-blue-400"
+                        className="text-xs text-blue-400/70 hover:text-blue-400"
                       >
                         获取 Key
                       </a>
                     )}
                   </div>
                   {providerKeys.length === 0 && !isAdding && (
-                    <span className="text-[10px] text-white/30">未配置</span>
+                    <span className="text-xs text-white/30">未配置</span>
                   )}
                 </div>
 
@@ -222,7 +222,7 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
                         {/* Key 显示 */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-white/50">{entry.label}</span>
+                            <span className="text-xs text-white/50">{entry.label}</span>
                           </div>
                           <div className="text-xs text-white/70 font-mono">
                             {showKeys[entry.id] ? entry.key : maskKey(entry.key)}
@@ -246,7 +246,7 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
                           {testingProvider === entry.id ? (
                             <Loader2 size={12} className="animate-spin" />
                           ) : (
-                            <span className="text-[10px]">测试</span>
+                            <span className="text-xs">测试</span>
                           )}
                         </button>
                         <button
@@ -270,7 +270,7 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
                       return (
                         <div
                           key={entry.id}
-                          className="text-[10px] px-2 py-1 rounded flex items-center gap-1"
+                          className="text-xs px-2 py-1 rounded flex items-center gap-1"
                           style={{
                             background: r.ok ? 'rgba(74, 222, 128, 0.15)' : 'rgba(248, 113, 113, 0.15)',
                             color: r.ok ? '#4ade80' : '#f87171',
@@ -330,7 +330,7 @@ export function APIKeyModal({ open, onClose }: APIKeyModalProps) {
                 ) : (
                   <button
                     onClick={() => setAddingProvider(provider)}
-                    className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white/70"
+                    className="flex items-center gap-1 text-xs text-white/40 hover:text-white/70"
                   >
                     <Plus size={10} />
                     添加 Key

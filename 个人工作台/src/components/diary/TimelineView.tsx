@@ -128,7 +128,7 @@ export function TimelineView({ onSelectDiary, selectedId, filterTag }: TimelineV
                       <BookOpen size={14} className="text-white/40 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm text-white/90 truncate">{diary.title}</div>
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-white/50">
+                        <div className="flex items-center gap-2 mt-1 text-xs text-white/50">
                           <span>{diary.date}</span>
                           <span>·</span>
                           <span>{diary.wordCount}字</span>
@@ -145,13 +145,13 @@ export function TimelineView({ onSelectDiary, selectedId, filterTag }: TimelineV
                             {diary.tags.slice(0, 3).map(tag => (
                               <span
                                 key={tag}
-                                className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-white/50"
+                                className="px-1.5 py-0.5 rounded bg-white/10 text-xs text-white/50"
                               >
                                 {tag}
                               </span>
                             ))}
                             {diary.tags.length > 3 && (
-                              <span className="text-[10px] text-white/30">+{diary.tags.length - 3}</span>
+                              <span className="text-xs text-white/30">+{diary.tags.length - 3}</span>
                             )}
                           </div>
                         )}

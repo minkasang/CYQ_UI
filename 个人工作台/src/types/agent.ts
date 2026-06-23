@@ -43,6 +43,10 @@ export interface ChatAgent {
   systemPrompt: string
   cooldownMin: number
   cooldownMax: number
+  temperature: number
+  maxTokens: number
+  description: string
+  avatar: string
   modules: AgentModule[]
 }
 
@@ -79,6 +83,10 @@ export interface AgentConfig {
   systemPrompt: string
   cooldownMin: number
   cooldownMax: number
+  temperature: number         // 0.0 ~ 2.0，默认 0.7
+  maxTokens: number           // 最大回复长度，默认 500
+  description: string         // 简短描述，显示在卡片上
+  avatar: string              // emoji 头像，默认 🤖
   modules: AgentModule[]
   createdAt: number
   updatedAt: number

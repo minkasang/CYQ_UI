@@ -76,7 +76,7 @@ export function DiaryList({ filterTag }: DiaryListProps) {
                 <BookOpen size={16} className="text-white/50 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-white/90 truncate">{diary.title}</div>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-white/50">
+                  <div className="flex items-center gap-2 mt-1 text-xs text-white/50">
                     <span>{diary.date}</span>
                     <span>·</span>
                     <span>{relativeTime(diary.updatedAt)}</span>
@@ -89,7 +89,7 @@ export function DiaryList({ filterTag }: DiaryListProps) {
                       {diary.tags.slice(0, 2).map(tag => (
                         <span
                           key={tag}
-                          className={`px-1.5 py-0.5 rounded text-[10px] ${
+                          className={`px-1.5 py-0.5 rounded text-xs ${
                             tag === filterTag
                               ? 'bg-blue-500/30 text-blue-200'
                               : 'bg-white/10 text-white/50'
@@ -99,7 +99,7 @@ export function DiaryList({ filterTag }: DiaryListProps) {
                         </span>
                       ))}
                       {diary.tags.length > 2 && (
-                        <span className="text-[10px] text-white/30">+{diary.tags.length - 2}</span>
+                        <span className="text-xs text-white/30">+{diary.tags.length - 2}</span>
                       )}
                     </div>
                   )}

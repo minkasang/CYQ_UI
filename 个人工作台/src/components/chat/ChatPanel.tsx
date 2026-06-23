@@ -338,7 +338,7 @@ export function ChatPanel() {
           {currentChatState?.lastSentProvider ? (
             <>
               <span className="text-[11px] text-white/35">{PROVIDER_NAMES_FOR_SYSTEM[currentChatState.lastSentProvider as AIProvider] || currentChatState.lastSentProvider}</span>
-              <span className="text-[10px] text-white/15">·</span>
+              <span className="text-xs text-white/15">·</span>
               <span className="text-[11px] text-white/25">{currentChatState.lastSentModel}</span>
             </>
           ) : (

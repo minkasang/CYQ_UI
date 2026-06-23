@@ -112,7 +112,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         {!collapsed && (
           <div>
             <h1 className="text-sm font-semibold text-white">工作台</h1>
-            <p className="text-[10px] text-white/50">v0.1</p>
+            <p className="text-xs text-white/50">v0.1</p>
           </div>
         )}
       </div>

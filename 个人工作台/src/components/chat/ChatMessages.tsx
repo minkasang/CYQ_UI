@@ -190,7 +190,7 @@ export function ChatMessages({
         <div className="flex flex-col items-center text-white/50">
           <Brain size={32} className="mb-3 opacity-30" />
           <p className="text-xs">开始新的对话</p>
-          <p className="text-[10px] mt-1">输入你的问题，AI 会帮你解答</p>
+          <p className="text-xs mt-1">输入你的问题，AI 会帮你解答</p>
         </div>
       </div>
     )
@@ -219,7 +219,7 @@ export function ChatMessages({
             >
               <Brain size={12} />
               <span>思考过程</span>
-              <span className="text-[10px]">{reasoningExpanded ? '▼' : '▶'}</span>
+              <span className="text-xs">{reasoningExpanded ? '▼' : '▶'}</span>
             </button>
             {reasoningExpanded && (
               <div

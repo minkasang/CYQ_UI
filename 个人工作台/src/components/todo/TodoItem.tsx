@@ -144,7 +144,7 @@ export function TodoItem({ todo }: TodoItemProps) {
                   background: subtaskPct === 1 ? '#30D158' : '#0A84FF',
                 }} />
               </div>
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
                 {subtaskDone}/{subtaskTotal}
               </span>
             </div>

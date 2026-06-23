@@ -63,7 +63,7 @@ export function ThemePreview({ preset }: ThemePreviewProps) {
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FF5F57' }} />
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FEBC2E' }} />
           <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28C840' }} />
-          <span className="text-[10px] text-white/30 ml-2" style={{ fontFamily: preset.fontFamily }}>
+          <span className="text-xs text-white/30 ml-2" style={{ fontFamily: preset.fontFamily }}>
             预览窗口
           </span>
         </div>
@@ -116,7 +116,7 @@ export function ThemePreview({ preset }: ThemePreviewProps) {
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-white/70">待办事项</div>
-                  <div className="text-[10px] text-white/40">今日 5 项 · 完成 3 项</div>
+                  <div className="text-xs text-white/40">今日 5 项 · 完成 3 项</div>
                 </div>
               </>
             ) : (
@@ -126,7 +126,7 @@ export function ThemePreview({ preset }: ThemePreviewProps) {
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-white/70">待办事项</div>
-                  <div className="text-[10px] text-white/40">今日 5 项 · 完成 3 项</div>
+                  <div className="text-xs text-white/40">今日 5 项 · 完成 3 项</div>
                 </div>
               </>
             )}

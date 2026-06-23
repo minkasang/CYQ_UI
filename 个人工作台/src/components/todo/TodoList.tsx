@@ -161,7 +161,7 @@ export function TodoList() {
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
               >
                 {f.label}
-                <span className="text-[10px] px-1.5 py-px rounded-full"
+                <span className="text-xs px-1.5 py-px rounded-full"
                   style={{
                     background: isActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
                     color: isActive ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
@@ -269,7 +269,7 @@ function StatCard({ label, value, color }: { label: string; value: number; color
       }}
     >
       <div className={`text-lg font-semibold ${color}`}>{value}</div>
-      <div className="text-[10px] text-white/50 mt-0.5">{label}</div>
+      <div className="text-xs text-white/50 mt-0.5">{label}</div>
     </div>
   )
 }

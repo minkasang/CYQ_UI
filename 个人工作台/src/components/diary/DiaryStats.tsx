@@ -201,7 +201,7 @@ export function DiaryStats() {
                 }}
                 title={`${item.count} 篇`}
               />
-              <span className="text-[10px] text-white/40">{item.day}</span>
+              <span className="text-xs text-white/40">{item.day}</span>
             </div>
           ))}
         </div>

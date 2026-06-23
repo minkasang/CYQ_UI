@@ -218,7 +218,7 @@ export function EmotionChart() {
               )
             })}
           </div>
-          <div className="flex justify-between text-[10px] text-white/30 mt-1">
+          <div className="flex justify-between text-xs text-white/30 mt-1">
             <span>{trendData[0]?.date.slice(5)}</span>
             <span>{trendData[trendData.length - 1]?.date.slice(5)}</span>
           </div>

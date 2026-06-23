@@ -27,6 +27,10 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
   const [systemPrompt, setSystemPrompt] = useState(initial?.systemPrompt || '')
   const [cooldownMin, setCooldownMin] = useState(initial?.cooldownMin ?? 5000)
   const [cooldownMax, setCooldownMax] = useState(initial?.cooldownMax ?? 15000)
+  const [temperature, setTemperature] = useState(initial?.temperature ?? 0.7)
+  const [maxTokens, setMaxTokens] = useState(initial?.maxTokens ?? 500)
+  const [description, setDescription] = useState(initial?.description || '')
+  const [avatar, setAvatar] = useState(initial?.avatar || '🤖')
 
   const models = PROVIDER_MODELS[provider] || []
   const currentModelName = getModelName(provider, model)
@@ -42,11 +46,10 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
     if (!name.trim()) return
     onSave({
       name: name.trim(),
-      provider,
-      model,
-      systemPrompt,
-      cooldownMin,
-      cooldownMax,
+      provider, model, systemPrompt,
+      cooldownMin, cooldownMax,
+      temperature, maxTokens,
+      description, avatar,
     })
   }
 
@@ -68,7 +71,7 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
       <div className="p-5 space-y-4">
         {/* 名称 */}
         <div>
-          <label className="block text-[10px] text-white/30 mb-1">名称</label>
+          <label className="block text-xs text-white/30 mb-1">名称</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
@@ -80,7 +83,7 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
         {/* 模型选择 */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] text-white/30 mb-1">提供商</label>
+            <label className="block text-xs text-white/30 mb-1">提供商</label>
             <Popover
               align="left"
               minWidth={180}
@@ -107,7 +110,7 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
             </Popover>
           </div>
           <div>
-            <label className="block text-[10px] text-white/30 mb-1">模型</label>
+            <label className="block text-xs text-white/30 mb-1">模型</label>
             <Popover
               align="right"
               minWidth={220}
@@ -138,7 +141,7 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
 
         {/* 人设 */}
         <div>
-          <label className="block text-[10px] text-white/30 mb-1">人设 (System Prompt)</label>
+          <label className="block text-xs text-white/30 mb-1">人设 (System Prompt)</label>
           <textarea
             value={systemPrompt}
             onChange={e => setSystemPrompt(e.target.value)}
@@ -148,12 +151,58 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
           />
         </div>
 
+        {/* 描述 */}
+        <div>
+          <label className="block text-xs text-white/30 mb-1">简介</label>
+          <input
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            placeholder="一句话描述这个 Agent..."
+            className="w-full px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-white/15 outline-none focus:border-[#0A84FF] transition-colors"
+          />
+        </div>
+
+        {/* 头像 */}
+        <div>
+          <label className="block text-xs text-white/30 mb-1">头像 Emoji</label>
+          <div className="flex items-center gap-2">
+            <input
+              value={avatar}
+              onChange={e => setAvatar(e.target.value)}
+              className="w-14 px-3 py-2 rounded-lg text-center text-lg bg-white/[0.04] border border-white/[0.08] text-white outline-none focus:border-[#0A84FF] transition-colors"
+            />
+            <span className="text-xs text-white/20">点击编辑</span>
+          </div>
+        </div>
+
+        {/* temperature + maxTokens */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs text-white/30">Temperature</label>
+              <span className="text-xs text-white/40">{temperature.toFixed(1)}</span>
+            </div>
+            <input type="range" min="0" max="2" step="0.1" value={temperature}
+              onChange={e => setTemperature(parseFloat(e.target.value))}
+              className="w-full h-1 accent-[#0A84FF]" />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs text-white/30">Max Tokens</label>
+              <span className="text-xs text-white/40">{maxTokens}</span>
+            </div>
+            <input type="range" min="100" max="2048" step="100" value={maxTokens}
+              onChange={e => setMaxTokens(parseInt(e.target.value))}
+              className="w-full h-1 accent-[#0A84FF]" />
+          </div>
+        </div>
+
         {/* 冷却时间 */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/30">最小冷却</label>
-              <span className="text-[10px] text-white/40">{Math.round(cooldownMin / 1000)}s</span>
+              <label className="text-xs text-white/30">最小冷却</label>
+              <span className="text-xs text-white/40">{Math.round(cooldownMin / 1000)}s</span>
             </div>
             <input
               type="range"
@@ -165,8 +214,8 @@ export function AgentForm({ initial, onSave, onCancel }: AgentFormProps) {
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/30">最大冷却</label>
-              <span className="text-[10px] text-white/40">{Math.round(cooldownMax / 1000)}s</span>
+              <label className="text-xs text-white/30">最大冷却</label>
+              <span className="text-xs text-white/40">{Math.round(cooldownMax / 1000)}s</span>
             </div>
             <input
               type="range"

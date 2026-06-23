@@ -15,7 +15,7 @@ export function FullWidthLayout({ children }: { children: ReactNode }) {
       {/* 顶栏 — 极简：仅日期 */}
       <header className="flex-shrink-0 flex items-center justify-between px-4 h-[40px] bg-black/30 border-b border-white/5">
         <span className="text-xs text-white/70">{friendlyDate(new Date())}</span>
-        <span className="text-[10px] text-white/30">全宽布局</span>
+        <span className="text-xs text-white/30">全宽布局</span>
       </header>
 
       {/* 内容区 — 全宽，无最大宽度限制 */}

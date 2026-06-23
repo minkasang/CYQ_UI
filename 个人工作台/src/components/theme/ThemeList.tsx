@@ -27,7 +27,7 @@ export function ThemeList({ presets, activeId, onSelect, onDelete, onImport, onC
       <div className="flex-1 overflow-y-auto py-2">
         {/* 内置 */}
         <div className="px-3 mb-1">
-          <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--text-tertiary)] px-2">内置</span>
+          <span className="text-xs uppercase tracking-[0.12em] text-[var(--text-tertiary)] px-2">内置</span>
         </div>
         {builtins.map(p => (
           <ThemeListItem
@@ -43,7 +43,7 @@ export function ThemeList({ presets, activeId, onSelect, onDelete, onImport, onC
         {customs.length > 0 && (
           <>
             <div className="px-3 mt-3 mb-1">
-              <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--text-tertiary)] px-2">自定义</span>
+              <span className="text-xs uppercase tracking-[0.12em] text-[var(--text-tertiary)] px-2">自定义</span>
             </div>
             {customs.map(p => (
               <ThemeListItem
@@ -100,7 +100,7 @@ function ThemeListItem({ preset, isActive, onSelect, onDelete }: {
       {/* 名称 + 引擎 */}
       <div className="flex-1 min-w-0">
         <div className="text-xs text-[var(--text-primary)] truncate">{preset.name}</div>
-        <div className="text-[10px] text-[var(--text-tertiary)]">
+        <div className="text-xs text-[var(--text-tertiary)]">
           {preset.engine === 'liquid-glass' ? '液态玻璃' : '扁平'}
         </div>
       </div>

@@ -119,7 +119,7 @@ export function DiarySettingsPanel() {
         </div>
       </div>
 
-      <p className="text-[10px] text-white/40 mt-4">
+      <p className="text-xs text-white/40 mt-4">
         💡 提示：开启 AI 功能需要先配置 API Key。所有 AI 功能调用都会消耗 API 额度。
       </p>
     </div>

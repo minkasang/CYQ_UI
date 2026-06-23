@@ -306,7 +306,7 @@ export function DiaryEditor() {
         )}
       </div>
 
-      <p className="text-[10px] text-white/40">
+      <p className="text-xs text-white/40">
         💡 支持 Markdown：# 标题、**粗体**、*斜体*、`代码`、- 列表、&gt; 引用等
       </p>
 

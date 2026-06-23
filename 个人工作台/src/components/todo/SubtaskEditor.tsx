@@ -66,7 +66,7 @@ export function SubtaskEditor({ subtasks, onToggle, onDelete, onAdd }: SubtaskEd
                   : 'border-white/30 hover:border-white/50'
               }`}
             >
-              {subtask.completed && <span className="text-[10px]">✓</span>}
+              {subtask.completed && <span className="text-xs">✓</span>}
             </button>
             <span className={`flex-1 text-xs ${subtask.completed ? 'line-through text-white/40' : 'text-white/80'}`}>
               {subtask.title}

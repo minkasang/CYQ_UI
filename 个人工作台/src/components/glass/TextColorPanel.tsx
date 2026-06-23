@@ -88,7 +88,7 @@ export function TextColorPanel({ inline }: Props) {
             >
               <span className="w-5 h-5 rounded-full border border-white/20"
                 style={{ background: `rgb(${p.rgb})` }} />
-              <span className="text-[9px] text-white/50">{p.name}</span>
+              <span className="text-[11px] text-white/50">{p.name}</span>
             </button>
           )
         })}
@@ -96,7 +96,7 @@ export function TextColorPanel({ inline }: Props) {
 
       {/* 自定义色盘 */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-white/40">自定义</span>
+        <span className="text-xs text-white/40">自定义</span>
         <input
           type="color"
           value={hex}
@@ -109,8 +109,8 @@ export function TextColorPanel({ inline }: Props) {
           }}
           className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
         />
-        <span className="text-[10px] text-white/40 font-mono">{hex}</span>
-        {isCustom && <span className="text-[9px] text-white/30">· 自定义</span>}
+        <span className="text-xs text-white/40 font-mono">{hex}</span>
+        {isCustom && <span className="text-[11px] text-white/30">· 自定义</span>}
       </div>
     </div>
   )
