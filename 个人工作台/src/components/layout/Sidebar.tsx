@@ -10,7 +10,7 @@ import { Home, CheckSquare, BookText, Sparkles, Settings as SettingsIcon, Image 
 
 const ALL_SECTIONS = [
   { id: 'welcome', label: '首页', icon: Home },
-  { id: 'inspiration', label: '灵感', icon: Lightbulb },
+  { id: 'inspiration', label: '图谱', icon: Lightbulb },
   { id: 'todo', label: '待办', icon: CheckSquare },
   { id: 'diary', label: '日记', icon: BookText },
   { id: 'ai', label: 'AI 总结', icon: Sparkles },

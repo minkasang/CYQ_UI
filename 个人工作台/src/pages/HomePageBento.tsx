@@ -188,7 +188,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
   // ============================================================
   const accordionItems: AccordionItemData[] = [
     {
-      id: 'inspiration', label: '每日灵感', icon: '💡', moduleKey: 'inspiration',
+      id: 'inspiration', label: '人生图谱', icon: '💡', moduleKey: 'inspiration',
       children: <InspirationSection registerPanel={registerPanel} />,
     },
     {
@@ -309,7 +309,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
               <BentoCard registerPanel={registerPanel} onClick={() => handleCardClick('inspiration', '/inspiration')}>
                 <div className="flex items-center gap-2 mb-3">
                   <Lightbulb size={16} className="text-[var(--accent)]" />
-                  <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">每日灵感</span>
+                  <span className="text-[11px] uppercase tracking-[0.1em] text-[var(--text-tertiary)]">人生图谱</span>
                 </div>
                 {latestInspiration ? (
                   <div>
@@ -331,7 +331,7 @@ export function HomePageBento({ showAccordion = true }: { showAccordion?: boolea
                   </div>
                 ) : (
                   <div className="py-4 text-center">
-                    <p className="text-[var(--text-sm)] text-[var(--text-tertiary)] mb-2">记下触动你的第一句话</p>
+                    <p className="text-[var(--text-sm)] text-[var(--text-tertiary)] mb-2">记下会慢慢改变你的东西</p>
                     <span className="inline-flex items-center gap-1 text-[var(--text-sm)] text-[var(--accent)]">
                       <Plus size={14} /> 写一句
                     </span>

@@ -9,7 +9,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary'
 
 const NAV_ITEMS = [
   { to: '/', label: '首页' },
-  { to: '/', label: '灵感', scrollTo: 'inspiration' },
+  { to: '/', label: '图谱', scrollTo: 'inspiration' },
   { to: '/', label: '待办', scrollTo: 'todo' },
   { to: '/', label: '日记', scrollTo: 'diary' },
   { to: '/', label: 'AI', scrollTo: 'ai' },

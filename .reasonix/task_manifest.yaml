@@ -13,29 +13,37 @@
 meta:
   project: "cyq_UI"
   file_version: "2.2"
-  last_updated: "2026-06-20T17:10:00+08:00"
+  last_updated: "2026-06-28T23:15:00+08:00"
 
 # ============================================================
 # 活跃任务（AI 只读这里）
 # ============================================================
 active:
   summary:
-    total: 2
+    total: 3
     pending: 1
-    in_progress: 0
+    in_progress: 1
     blocked: 1
 
   constraint:
     max_in_progress: 1
 
   tasks:
-    - name: "智能体群聊"
-      status: "pending"
-      dir: "2026-06-20-1700_智能体群聊"
+    - name: "人生图谱"
+      status: "in_progress"
+      dir: "2026-06-28-2249_人生图谱"
       priority: "high"
       dependencies: []
-      created_at: "2026-06-20"
-      detail: "v2.0：合并到AI模块+ChatStrategy+AgentModule双可拔插接口。5步骤：类型接口→ChatStore扩展→EventDriven→AgentUI→验证"
+      created_at: "2026-06-28"
+      detail: "阶段1-4✅ 阶段5⚠️。代码14文件：types+store+InspirationSection+入口文案。vitest:18/18 lint:0。待：浏览器视觉验收；build阻塞(待办Tag TS，非本任务)。下一步：用户验收UI→归档或阶段2(AI提炼/日记联动)。"
+
+    - name: "AI圆桌工作坊"
+      status: "pending"
+      dir: "2026-06-28-2220_AI圆桌工作坊"
+      priority: "high"
+      dependencies: []
+      created_at: "2026-06-28"
+      detail: "进度：阶段0✅文档共识 阶段1✅纯逻辑(7模块+10/10测试) 阶段2⏳WorkshopOrchestrator待实现。代码：modules/agents/workshop/。manifest保持pending(人生图谱占用in_progress槽位)。"
 
     - name: "设置页设计改造"
       status: "blocked"

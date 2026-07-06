@@ -35,6 +35,33 @@ describe('useInspirationStore', () => {
       expect(item.impact).toBe(3)
     })
 
+    it('应支持人生图谱字段：类型、维度、洞察、原则和小行动实验', () => {
+      const item = useInspirationStore.getState().add({
+        content: '不要在情绪高峰做长期决定',
+        kind: 'principle',
+        dimensions: ['emotion', 'principle'],
+        insight: '强烈情绪会放大短期解释',
+        principle: '先降温，再决定',
+        actionExperiment: {
+          title: '延迟回应',
+          trigger: '想立刻反击时',
+          action: '先离开屏幕 10 分钟',
+        },
+      })
+
+      expect(item.kind).toBe('principle')
+      expect(item.dimensions).toEqual(['emotion', 'principle'])
+      expect(item.insight).toBe('强烈情绪会放大短期解释')
+      expect(item.principle).toBe('先降温，再决定')
+      expect(item.actionExperiment).toMatchObject({
+        title: '延迟回应',
+        trigger: '想立刻反击时',
+        action: '先离开屏幕 10 分钟',
+        status: 'planned',
+      })
+      expect(item.actionExperiment?.createdAt).toBeGreaterThan(0)
+    })
+
     it('内容应自动 trim', () => {
       const item = useInspirationStore.getState().add({ content: '  你好  ' })
       expect(item.content).toBe('你好')
@@ -133,6 +160,71 @@ describe('useInspirationStore', () => {
       const updated = useInspirationStore.getState().items[0]
       expect(updated.content).toBe('新内容')
       expect(updated.source).toBe('旧来源') // 未更新的字段保持不变
+    })
+
+    it('更新人生图谱字段时不应清空未传入字段', () => {
+      const item = useInspirationStore.getState().add({
+        content: '原始内容',
+        source: '来源',
+        tags: ['价值观'],
+        kind: 'insight',
+        dimensions: ['values'],
+      })
+      useInspirationStore.getState().update(item.id, { insight: '这是一个核心洞察' })
+      const updated = useInspirationStore.getState().items[0]
+
+      expect(updated.content).toBe('原始内容')
+      expect(updated.source).toBe('来源')
+      expect(updated.tags).toEqual(['价值观'])
+      expect(updated.kind).toBe('insight')
+      expect(updated.dimensions).toEqual(['values'])
+      expect(updated.insight).toBe('这是一个核心洞察')
+    })
+  })
+
+  describe('updateActionExperiment', () => {
+    it('应新增并更新小行动实验状态', () => {
+      const item = useInspirationStore.getState().add({ content: '把洞察变成行动' })
+
+      useInspirationStore.getState().updateActionExperiment(item.id, {
+        title: '写下下一步',
+        action: '打开待办写一个 5 分钟动作',
+      })
+      expect(useInspirationStore.getState().items[0].actionExperiment).toMatchObject({
+        title: '写下下一步',
+        action: '打开待办写一个 5 分钟动作',
+        status: 'planned',
+      })
+
+      useInspirationStore.getState().updateActionExperiment(item.id, { status: 'done' })
+      const done = useInspirationStore.getState().items[0].actionExperiment
+      expect(done?.status).toBe('done')
+      expect(done?.completedAt).toBeGreaterThan(0)
+    })
+
+    it('从完成状态改回其他状态时应清除 completedAt', () => {
+      const item = useInspirationStore.getState().add({
+        content: '实验',
+        actionExperiment: { title: '实验', action: '行动' },
+      })
+
+      useInspirationStore.getState().updateActionExperiment(item.id, { status: 'done' })
+      expect(useInspirationStore.getState().items[0].actionExperiment?.completedAt).toBeGreaterThan(0)
+
+      useInspirationStore.getState().updateActionExperiment(item.id, { status: 'active' })
+      const active = useInspirationStore.getState().items[0].actionExperiment
+      expect(active?.status).toBe('active')
+      expect(active?.completedAt).toBeUndefined()
+    })
+
+    it('传入 null 应清除小行动实验', () => {
+      const item = useInspirationStore.getState().add({
+        content: '实验',
+        actionExperiment: { title: '实验', action: '行动' },
+      })
+
+      useInspirationStore.getState().updateActionExperiment(item.id, null)
+      expect(useInspirationStore.getState().items[0].actionExperiment).toBeUndefined()
     })
   })
 })

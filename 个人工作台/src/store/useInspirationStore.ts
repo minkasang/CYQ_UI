@@ -1,28 +1,87 @@
-// 每日灵感 Store — Zustand persist
-// 个人数字 Commonplace Book：捕获触动自己的名言/哲理/好句子
+// 人生图谱 Store — Zustand persist
+// 从低门槛收集箱出发，逐步沉淀洞察、原则和小行动实验
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { InspirationItem } from '../types'
+import type {
+  ActionExperiment,
+  ActionExperimentStatus,
+  InspirationItem,
+  InspirationKind,
+  LifeDimension,
+} from '../types'
+
+type InspirationInput = {
+  content: string
+  source?: string
+  tags?: string[]
+  reflection?: string
+  kind?: InspirationKind
+  dimensions?: LifeDimension[]
+  insight?: string
+  principle?: string
+  actionExperiment?: {
+    title: string
+    trigger?: string
+    action: string
+    status?: ActionExperimentStatus
+  }
+  impact?: number
+}
+
+type InspirationPatch = Partial<Pick<
+  InspirationItem,
+  | 'content'
+  | 'source'
+  | 'tags'
+  | 'reflection'
+  | 'kind'
+  | 'dimensions'
+  | 'insight'
+  | 'principle'
+  | 'actionExperiment'
+  | 'linkedDiaryIds'
+>>
 
 interface InspirationStore {
   items: InspirationItem[]
   currentId: string | null
 
-  add: (input: {
-    content: string
-    source?: string
-    tags?: string[]
-    reflection?: string
-    impact?: number
-  }) => InspirationItem
+  add: (input: InspirationInput) => InspirationItem
 
   toggleFavorite: (id: string) => void
   setImpact: (id: string, impact: number) => void
   markReviewed: (id: string) => void
   getNextReview: () => InspirationItem | null
   remove: (id: string) => void
-  update: (id: string, patch: Partial<Pick<InspirationItem, 'content' | 'source' | 'tags' | 'reflection'>>) => void
+  update: (id: string, patch: InspirationPatch) => void
+  updateActionExperiment: (id: string, patch: Partial<ActionExperiment> | null) => void
+}
+
+function createActionExperiment(input: InspirationInput['actionExperiment']): ActionExperiment | undefined {
+  if (!input?.title.trim() || !input.action.trim()) return undefined
+  return {
+    title: input.title.trim(),
+    trigger: input.trigger?.trim() || undefined,
+    action: input.action.trim(),
+    status: input.status ?? 'planned',
+    createdAt: Date.now(),
+  }
+}
+
+function normalizePatch(patch: InspirationPatch): InspirationPatch {
+  const normalized: InspirationPatch = {}
+  if ('content' in patch) normalized.content = patch.content?.trim()
+  if ('source' in patch) normalized.source = patch.source?.trim() || undefined
+  if ('tags' in patch) normalized.tags = patch.tags?.map(t => t.trim()).filter(Boolean)
+  if ('reflection' in patch) normalized.reflection = patch.reflection?.trim() || undefined
+  if ('kind' in patch) normalized.kind = patch.kind
+  if ('dimensions' in patch) normalized.dimensions = patch.dimensions?.filter(Boolean)
+  if ('insight' in patch) normalized.insight = patch.insight?.trim() || undefined
+  if ('principle' in patch) normalized.principle = patch.principle?.trim() || undefined
+  if ('actionExperiment' in patch) normalized.actionExperiment = patch.actionExperiment
+  if ('linkedDiaryIds' in patch) normalized.linkedDiaryIds = patch.linkedDiaryIds
+  return normalized
 }
 
 export const useInspirationStore = create<InspirationStore>()(
@@ -39,6 +98,12 @@ export const useInspirationStore = create<InspirationStore>()(
           source: input.source?.trim() || undefined,
           tags: input.tags?.filter(Boolean) ?? [],
           reflection: input.reflection?.trim() || undefined,
+          kind: input.kind ?? 'fragment',
+          dimensions: input.dimensions?.filter(Boolean) ?? [],
+          insight: input.insight?.trim() || undefined,
+          principle: input.principle?.trim() || undefined,
+          actionExperiment: createActionExperiment(input.actionExperiment),
+          linkedDiaryIds: [],
           impact: input.impact ?? 2,
           isFavorite: false,
           createdAt: now,
@@ -98,10 +163,36 @@ export const useInspirationStore = create<InspirationStore>()(
       },
 
       update: (id, patch) => {
+        const normalized = normalizePatch(patch)
         set({
           items: get().items.map(item =>
-            item.id === id ? { ...item, ...patch } : item
+            item.id === id ? { ...item, ...normalized } : item
           ),
+        })
+      },
+
+      updateActionExperiment: (id, patch) => {
+        set({
+          items: get().items.map(item => {
+            if (item.id !== id) return item
+            if (patch === null) return { ...item, actionExperiment: undefined }
+
+            const previous = item.actionExperiment
+            const nextStatus = patch.status ?? previous?.status ?? 'planned'
+            const next: ActionExperiment = {
+              title: (patch.title ?? previous?.title ?? '').trim(),
+              trigger: (patch.trigger ?? previous?.trigger)?.trim() || undefined,
+              action: (patch.action ?? previous?.action ?? '').trim(),
+              status: nextStatus,
+              createdAt: previous?.createdAt ?? Date.now(),
+              completedAt: nextStatus === 'done'
+                ? patch.completedAt ?? previous?.completedAt ?? Date.now()
+                : undefined,
+            }
+
+            if (!next.title || !next.action) return item
+            return { ...item, actionExperiment: next }
+          }),
         })
       },
     }),

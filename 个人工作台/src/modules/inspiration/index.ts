@@ -1,4 +1,4 @@
-// 每日灵感模块 — 仅首页 Section，无独立路由
+// 人生图谱模块 — 从每日灵感升级，保留 inspiration 路由与持久化 key
 import type { Module, ModuleContext } from '../../types/module'
 import { useInspirationStore } from '../../store/useInspirationStore'
 import { InspirationPage } from './pages/InspirationPage'
@@ -6,12 +6,12 @@ import { InspirationPage } from './pages/InspirationPage'
 export const InspirationModule: Module = {
   metadata: {
     id: 'inspiration',
-    name: '每日灵感',
+    name: '人生图谱',
     version: '1.0.0',
-    description: '个人数字 Commonplace Book — 捕获触动自己的名言与哲理',
+    description: '记录、理解并转化那些会慢慢改变自己的东西',
     author: 'Personal Workbench Team',
     dependencies: [],
-    tags: ['inspiration', 'quotes', 'commonplace', 'memo'],
+    tags: ['inspiration', 'life-atlas', 'commonplace', 'reflection'],
     icon: 'lightbulb',
   },
 
@@ -27,7 +27,7 @@ export const InspirationModule: Module = {
     {
       path: 'inspiration',
       element: InspirationPage,
-      meta: { title: '每日灵感', icon: 'lightbulb' },
+      meta: { title: '人生图谱', icon: 'lightbulb' },
     },
   ],
 

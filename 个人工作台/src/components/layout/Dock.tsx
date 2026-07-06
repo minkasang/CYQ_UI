@@ -76,7 +76,7 @@ interface DockItemDef {
 
 const ITEM_DEFS: Record<string, DockItemDef> = {
   home: { id: 'home', to: '/', label: '首页' },
-  inspiration: { id: 'inspiration', to: '/inspiration', label: '灵感' },
+  inspiration: { id: 'inspiration', to: '/inspiration', label: '图谱' },
   todo: { id: 'todo', to: '/todo', label: '待办' },
   diary: { id: 'diary', to: '/diary', label: '日记' },
   wallpaper: { id: 'wallpaper', to: '/wallpaper', label: '壁纸' },

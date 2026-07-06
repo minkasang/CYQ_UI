@@ -43,7 +43,7 @@ export const MODULE_NAMES: Record<string, string> = {
   todo: '待办管理',
   diary: '日记',
   ai: 'AI 助手',
-  inspiration: '每日灵感',
+  inspiration: '人生图谱',
   theme: '主题管理',
   agents: '多 Agent 群聊',
 }

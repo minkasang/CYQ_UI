@@ -148,13 +148,43 @@ export interface ModelCapabilities {
   videoGen?: boolean    // 视频生成
 }
 
-// ============== 每日灵感 ==============
+// ============== 人生图谱 / 每日灵感 ==============
+export type InspirationKind = 'fragment' | 'quote' | 'insight' | 'principle' | 'pattern' | 'action'
+
+export type LifeDimension =
+  | 'values'
+  | 'relationship'
+  | 'work'
+  | 'emotion'
+  | 'body'
+  | 'learning'
+  | 'creation'
+  | 'principle'
+  | 'other'
+
+export type ActionExperimentStatus = 'planned' | 'active' | 'done' | 'paused'
+
+export interface ActionExperiment {
+  title: string          // 小行动实验名称
+  trigger?: string       // 如果遇到什么情况
+  action: string         // 我就做什么
+  status: ActionExperimentStatus
+  createdAt: number
+  completedAt?: number
+}
+
 export interface InspirationItem {
   id: string              // crypto.randomUUID()
   content: string         // 那句话本身（必填）
   source?: string         // 谁说的/哪看到的
   tags: string[]          // 多标签
   reflection?: string     // 我的感想
+  kind?: InspirationKind  // 记录类型，旧数据默认视为 fragment
+  dimensions?: LifeDimension[] // 关联的人生维度
+  insight?: string        // 提炼后的核心洞察
+  principle?: string      // 沉淀出的原则提醒
+  actionExperiment?: ActionExperiment // 小行动实验
+  linkedDiaryIds?: string[] // 后续与日记互相引用
   impact: number          // 触动程度 1-3（默认2）
   isFavorite: boolean     // 收藏标记
   createdAt: number       // 收集时间戳

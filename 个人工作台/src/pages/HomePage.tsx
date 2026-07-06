@@ -141,7 +141,7 @@ export function HomePage() {
         </section>
       )}
 
-      {/* ===== 第 2 屏：每日灵感 ===== */}
+      {/* ===== 第 2 屏：人生图谱 ===== */}
       {isOn('inspiration') && (
         <section
           id="inspiration"
@@ -150,7 +150,7 @@ export function HomePage() {
             inspirationAnim.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <SectionTitle title="每日灵感" subtitle="记录触动你的名言与哲理" />
+          <SectionTitle title="人生图谱" subtitle="记录那些会慢慢改变你的东西" />
           <InspirationSection registerPanel={registerPanel} />
         </section>
       )}

@@ -9,8 +9,7 @@ export function InspirationPage() {
   const { registerPanel } = useLiquidGlass(bgUrl)
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 py-8">
-      <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">每日灵感</h2>
+    <div className="max-w-[1120px] mx-auto px-4 py-8">
       <InspirationSection registerPanel={registerPanel} />
     </div>
   )
